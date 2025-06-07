@@ -23,7 +23,7 @@ Installation
 To set up "Hotel per Hour" locally, follow these steps:
 
 Clone the Repository:
-git clone https://github.com/your-username/hotel-per-hour.git
+git clone https://github.com/OlaitanSalam/hotelperhour.git
 cd hotel-per-hour
 
 
