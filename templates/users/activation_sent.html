@@ -1,0 +1,128 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Check Your Email - Hotel per Hour{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="text-center mb-4">
+                <div class="success-icon mb-3">
+                    <i class="fas fa-envelope-open fa-4x text-primary"></i>
+                </div>
+                <h1 class="display-6 fw-bold text-primary mb-2">Check Your Email</h1>
+                <p class="lead text-muted">We've sent you an activation link</p>
+            </div>
+            
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="alert alert-info d-flex align-items-center mb-4">
+                        <i class="fas fa-paper-plane me-3 fa-lg"></i>
+                        <div>
+                            <strong>Activation Email Sent!</strong><br>
+                            <small>Please check your inbox and spam folder</small>
+                        </div>
+                    </div>
+                    
+                    <div class="instructions-section mb-4">
+                        <h6 class="fw-bold mb-3">Next Steps:</h6>
+                        <div class="step-list">
+                            <div class="step-item d-flex align-items-start mb-3">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <strong>Check your email inbox</strong><br>
+                                    <small class="text-muted">Look for an email from Hotel per Hour</small>
+                                </div>
+                            </div>
+                            <div class="step-item d-flex align-items-start mb-3">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <strong>Check your spam folder</strong><br>
+                                    <small class="text-muted">Sometimes emails end up in spam</small>
+                                </div>
+                            </div>
+                            <div class="step-item d-flex align-items-start mb-3">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <strong>Click the activation link</strong><br>
+                                    <small class="text-muted">This will activate your account</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h6 class="fw-bold mb-3">Need Help?</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="resendEmail()">
+                                <i class="fas fa-redo me-2"></i>Resend Activation Email
+                            </button>
+                            <a href="{% url 'contacts' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Activation links expire after 24 hours for security
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .success-icon {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .step-number {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .step-content {
+        flex: 1;
+    }
+    
+    .help-section .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 12px 20px;
+    }
+</style>
+
+<script>
+    function resendEmail() {
+        // Add your resend email logic here
+        alert('Resend functionality would be implemented here');
+    }
+</script>
+{% endblock %}

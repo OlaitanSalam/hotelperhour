@@ -1,0 +1,644 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}{{ hotel.name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="position-relative">
+    {% if hotel.image %}
+        <div class="hotel-hero-image" style="background-image: url('{{ hotel.image.url }}');"></div>
+    {% else %}
+        <div class="hotel-hero-image" style="background-image: url('{% static 'images/default-hotel.jpg' %}');"></div>
+    {% endif %}
+    <div class="hotel-hero-overlay"></div>
+    <div class="container position-relative">
+        <div class="hotel-hero-content">
+            <h1 class="display-4 fw-bold text-white mb-2">{{ hotel.name }}</h1>
+            <div class="d-flex align-items-center text-white mb-3">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                <span>{{ hotel.address }}</span>
+            </div>
+            <div class="d-flex flex-wrap gap-3 text-white">
+                {% if hotel.hotel_phone %}
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-phone me-2"></i>
+                    <a href="tel:{{ hotel.hotel_phone }}" class="text-white text-decoration-none">{{ hotel.hotel_phone }}</a>
+                </div>
+                {% endif %}
+                {% if hotel.hotel_email %}
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-envelope me-2"></i>
+                    <a href="mailto:{{ hotel.hotel_email }}" class="text-white text-decoration-none">{{ hotel.hotel_email }}</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-9 mb-4">
+            <!-- Hotel Information Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>About This Hotel</h4>
+                    <p class="card-text mb-4">{{ hotel.description }}</p>
+                    
+                    <!-- Contact Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="contact-info-compact">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    <span>{{ hotel.address }}</span>
+                                </div>
+                                {% if hotel.hotel_phone %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-phone text-success me-2"></i>
+                                    <a href="tel:{{ hotel.hotel_phone }}" class="text-decoration-none">{{ hotel.hotel_phone }}</a>
+                                </div>
+                                {% endif %}
+                                {% if hotel.hotel_email %}
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    <a href="mailto:{{ hotel.hotel_email }}" class="text-decoration-none">{{ hotel.hotel_email }}</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-2">
+                                {% if hotel.hotel_phone %}
+                                <a href="tel:{{ hotel.hotel_phone }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-phone me-1"></i>Call
+                                </a>
+                                {% endif %}
+                                {% if hotel.hotel_email %}
+                                <a href="mailto:{{ hotel.hotel_email }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </a>
+                                {% endif %}
+                                <button class="btn btn-outline-info btn-sm" onclick="shareHotel()">
+                                    <i class="fas fa-share-alt me-1"></i>Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rooms Section with Filters and Grid -->
+            <div class="rooms-section">
+                <!-- Rooms Header with Controls -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="mb-1"><i class="fas fa-bed me-2 text-primary"></i>Available Rooms</h3>
+                        <small class="text-muted">
+                            <span id="rooms-count">{{ hotel.rooms.all|length }}</span> room{{ hotel.rooms.all|length|pluralize }} available
+                        </small>
+                    </div>
+                    
+                    <!-- View Toggle -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" id="grid-view" onclick="toggleView('grid')">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="list-view" onclick="toggleView('list')">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body py-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <select class="form-select form-select-sm" id="capacity-filter">
+                                    <option value="">Any Capacity</option>
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4+ Guests</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <select class="form-select form-select-sm" id="price-filter">
+                                    <option value="">Any Price</option>
+                                    <option value="0-3000">₦0 - ₦3,000</option>
+                                    <option value="3000-5000">₦3,000 - ₦5,000</option>
+                                    <option value="5000-10000">₦5,000 - ₦10,000</option>
+                                    <option value="10000+">₦10,000+</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select form-select-sm" id="availability-filter">
+                                    <option value="">All Rooms</option>
+                                    <option value="available">Available Only</option>
+                                    <option value="unavailable">Unavailable Only</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rooms Grid/List Container -->
+                <div id="rooms-container" class="rooms-grid">
+                    {% for room in hotel.rooms.all %}
+                        <div class="room-item" 
+                             data-room-type="{{ room.room_type|lower }}" 
+                             data-capacity="{{ room.capacity }}" 
+                             data-price="{{ room.price_per_hour }}"
+                             data-availability="{% if room.is_available %}available{% else %}unavailable{% endif %}">
+                            
+                            <!-- Grid View Card -->
+                            <div class="room-card-grid">
+                                <div class="room-image-container">
+                                    {% if room.image %}
+                                        <img src="{{ room.image.url }}" alt="{{ room.room_type }}" class="room-image">
+                                    {% else %}
+                                        <div class="room-image-placeholder">
+                                            <i class="fas fa-bed fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Availability Badge -->
+                                    <div class="availability-badge">
+                                        <span class="badge {% if room.is_available %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if room.is_available %}Available{% else %}Booked{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="room-content p-3">
+                                    <h6 class="room-title mb-2">{{ room.room_type }}</h6>
+                                    
+                                    <div class="room-details mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users me-1"></i>{{ room.capacity }} guest{{ room.capacity|pluralize }}
+                                        </small>
+                                    </div>
+                                    
+                                    <p class="room-description">{{ room.description|truncatewords:8 }}</p>
+                                    
+                                    <!-- Amenities -->
+                                    <div class="amenities mb-3">
+                                        <span class="amenity-badge"><i class="fas fa-snowflake"></i></span>
+                                        <span class="amenity-badge"><i class="fas fa-wifi"></i></span>
+                                        <span class="amenity-badge"><i class="fas fa-tv"></i></span>
+                                        <span class="amenity-badge"><i class="fas fa-bath"></i></span>
+                                    </div>
+                                    
+                                    <!-- Price and Booking -->
+                                    <div class="room-footer">
+                                        <div class="price-section mb-2">
+                                            <span class="price">₦{{ room.price_per_hour|floatformat:0 }}</span>
+                                            <span class="price-unit">/hour</span>
+                                        </div>
+                                        
+                                        {% if room.is_available %}
+                                            <a href="{% url 'book_room' room.id %}" class="btn btn-primary btn-sm w-100">
+                                                <i class="fas fa-calendar-check me-1"></i>Book Now
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-secondary btn-sm w-100" disabled>
+                                                <i class="fas fa-ban me-1"></i>Not Available
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- List View Card (hidden by default) -->
+                            <div class="room-card-list" style="display: none;">
+                                <div class="row g-0">
+                                    <div class="col-md-3">
+                                        <div class="room-image-container-list">
+                                            {% if room.image %}
+                                                <img src="{{ room.image.url }}" alt="{{ room.room_type }}" class="room-image">
+                                            {% else %}
+                                                <div class="room-image-placeholder">
+                                                    <i class="fas fa-bed fa-2x text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0">{{ room.room_type }}</h6>
+                                            <span class="badge {% if room.is_available %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {% if room.is_available %}Available{% else %}Booked{% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-users me-1"></i>{{ room.capacity }} guest{{ room.capacity|pluralize }}
+                                            </small>
+                                        </div>
+                                        
+                                        <p class="mb-2">{{ room.description|truncatewords:15 }}</p>
+                                        
+                                        <div class="amenities">
+                                            <span class="amenity-badge"><i class="fas fa-snowflake"></i> AC</span>
+                                            <span class="amenity-badge"><i class="fas fa-wifi"></i> WiFi</span>
+                                            <span class="amenity-badge"><i class="fas fa-tv"></i> TV</span>
+                                            <span class="amenity-badge"><i class="fas fa-bath"></i> Bath</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 p-3 bg-light d-flex flex-column justify-content-center">
+                                        <div class="text-center mb-2">
+                                            <span class="price">₦{{ room.price_per_hour|floatformat:0 }}</span>
+                                            <span class="price-unit d-block">/hour</span>
+                                        </div>
+                                        
+                                        {% if room.is_available %}
+                                            <a href="{% url 'book_room' room.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-calendar-check me-1"></i>Book Now
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="fas fa-ban me-1"></i>Not Available
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>No rooms available</strong><br>
+                                <small>Please check back later or contact the hotel directly.</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- No Results Message -->
+                <div id="no-results" class="alert alert-warning text-center" style="display: none;">
+                    <i class="fas fa-search me-2"></i>
+                    <strong>No rooms match your filters</strong><br>
+                    <small>Try adjusting your search criteria</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Room Summary -->
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Room Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Rooms:</span>
+                        <span class="summary-value">{{ hotel.rooms.all|length }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Available:</span>
+                        <span class="summary-value text-success">{{ hotel.rooms.all|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Hero section styles */
+    .hotel-hero-image {
+        height: 400px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    
+    .hotel-hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+    }
+    
+    .hotel-hero-content {
+        padding: 2rem 0;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+    
+    /* Rooms Grid Layout */
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .rooms-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    /* Room Card Styles */
+    .room-card-grid {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .room-card-grid:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .room-card-list {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .room-card-list:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    /* Room Image Styles */
+    .room-image-container {
+        height: 200px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .room-image-container-list {
+        height: 150px;
+        overflow: hidden;
+    }
+    
+    .room-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .room-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .availability-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    /* Room Content */
+    .room-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .room-title {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .room-description {
+        font-size: 0.875rem;
+        color: #6c757d;
+        flex: 1;
+    }
+    
+    /* Amenities */
+    .amenities {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .amenity-badge {
+        background: #f8f9fa;
+        color: #6c757d;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    /* Price Styles */
+    .price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+    
+    .price-unit {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Summary Styles */
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .rooms-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .hotel-hero-image {
+            height: 300px;
+        }
+        
+        .hotel-hero-content h1 {
+            font-size: 2rem;
+        }
+        
+        .room-image-container {
+            height: 150px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hotel-hero-image {
+            height: 250px;
+        }
+        
+        .rooms-grid {
+            gap: 0.75rem;
+        }
+    }
+    
+    /* Filter animations */
+    .room-item {
+        transition: all 0.3s ease;
+    }
+    
+    .room-item.hidden {
+        display: none;
+    }
+    
+    /* View toggle buttons */
+    .btn-group .btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+</style>
+
+<script>
+    // View Toggle Functionality
+    function toggleView(viewType) {
+        const container = document.getElementById('rooms-container');
+        const gridBtn = document.getElementById('grid-view');
+        const listBtn = document.getElementById('list-view');
+        const roomItems = document.querySelectorAll('.room-item');
+        
+        if (viewType === 'grid') {
+            container.className = 'rooms-grid';
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+            
+            roomItems.forEach(item => {
+                item.querySelector('.room-card-grid').style.display = 'flex';
+                item.querySelector('.room-card-list').style.display = 'none';
+            });
+        } else {
+            container.className = 'rooms-list';
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+            
+            roomItems.forEach(item => {
+                item.querySelector('.room-card-grid').style.display = 'none';
+                item.querySelector('.room-card-list').style.display = 'block';
+            });
+        }
+    }
+    
+    // Filter Functionality
+    function filterRooms() {
+        const capacityFilter = document.getElementById('capacity-filter').value;
+        const priceFilter = document.getElementById('price-filter').value;
+        const availabilityFilter = document.getElementById('availability-filter').value;
+        
+        const roomItems = document.querySelectorAll('.room-item');
+        let visibleCount = 0;
+        
+        roomItems.forEach(item => {
+            let show = true;
+            
+            // Capacity filter
+            if (capacityFilter) {
+                const capacity = parseInt(item.dataset.capacity);
+                const filterCapacity = parseInt(capacityFilter);
+                if (filterCapacity === 4 && capacity < 4) show = false;
+                else if (filterCapacity !== 4 && capacity !== filterCapacity) show = false;
+            }
+            
+            // Price filter
+            if (priceFilter) {
+                const price = parseInt(item.dataset.price);
+                const [min, max] = priceFilter.split('-').map(p => parseInt(p.replace('+', '')));
+                
+                if (priceFilter.includes('+')) {
+                    if (price < min) show = false;
+                } else {
+                    if (price < min || price > max) show = false;
+                }
+            }
+            
+            // Availability filter
+            if (availabilityFilter && item.dataset.availability !== availabilityFilter) {
+                show = false;
+            }
+            
+            if (show) {
+                item.style.display = 'block';
+                item.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+                item.classList.add('hidden');
+            }
+        });
+        
+        // Update count
+        document.getElementById('rooms-count').textContent = visibleCount;
+        
+        // Show/hide no results message
+        const noResults = document.getElementById('no-results');
+        if (visibleCount === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    // Add event listeners for filters
+    document.addEventListener('DOMContentLoaded', function() {
+        const filters = ['capacity-filter', 'price-filter', 'availability-filter'];
+        filters.forEach(filterId => {
+            document.getElementById(filterId).addEventListener('change', filterRooms);
+        });
+    });
+    
+    // Share Hotel Function
+    function shareHotel() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ hotel.name }}',
+                text: 'Check out this hotel: {{ hotel.name }}',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Hotel link copied to clipboard!');
+            });
+        }
+    }
+</script>
+{% endblock %}

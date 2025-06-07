@@ -1,0 +1,510 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4 fw-bold">
+                        {% if is_edit %}Edit Hotel{% else %}Register a Hotel{% endif %}
+                    </h2>
+                    {% if form.errors or formset.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {% for field in form %}{{ field.errors }}{% endfor %}
+                            {{ form.non_field_errors }}
+                            {% for form in formset %}{{ form.errors }}{% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    <form method="post" id="hotel_form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Hotel Information Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-hotel me-2"></i>Hotel Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- Name and Address -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="id_name" class="form-label fw-semibold">Hotel Name *</label>
+                                        {{ form.name }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="id_address" class="form-label fw-semibold">Address *</label>
+                                        {{ form.address }}
+                                    </div>
+                                </div>
+                                <!-- Email and Phone -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="id_hotel_email" class="form-label fw-semibold">Hotel Email *</label>
+                                        {{ form.hotel_email }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="id_hotel_phone" class="form-label fw-semibold">Hotel Phone *</label>
+                                        {{ form.hotel_phone }}
+                                    </div>
+                                </div>
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    <label for="id_description" class="form-label fw-semibold">Description</label>
+                                    {{ form.description }}
+                                </div>
+                                <!-- Hotel Image -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="id_image" class="form-label fw-semibold">Hotel Image</label>
+                                        <div class="image-upload-container">
+                                            {{ form.image }}
+                                            <div class="image-preview-container mt-2">
+                                                {% if form.instance.image %}
+                                                    <img src="{{ form.instance.image.url }}" alt="Hotel Image" class="img-thumbnail room-image-preview">
+                                                    <small class="text-muted d-block mt-1">Current image</small>
+                                                {% else %}
+                                                    <div class="default-image-placeholder">
+                                                        <div class="placeholder-content">
+                                                            <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                                                            <small class="text-muted">No image uploaded</small>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-map-marker-alt me-2"></i>Location</h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- Map Style Toggle -->
+                                <div class="mb-3">
+                                    <label for="map-style" class="form-label fw-semibold">Map Style</label>
+                                    <select id="map-style" class="form-select w-auto">
+                                        <option value="mapbox://styles/mapbox/streets-v12" selected>Streets</option>
+                                        <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
+                                    </select>
+                                </div>
+                                <div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+                                {{ form.latitude }}
+                                {{ form.longitude }}
+                                <small class="text-muted mt-2 d-block">Click on the map or search for a location to set the hotel's position</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Rooms Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-bed me-2"></i>Rooms (<span id="room-count">{{ formset.forms|length }}</span>)</h4>
+                            </div>
+                            <div class="card-body">
+                                {{ formset.management_form }}
+                                <div id="room-forms">
+                                    {% for form in formset %}
+                                        <div class="room-form-container mb-3 animate__animated animate__fadeIn">
+                                            <div class="room-form-header bg-light p-3">
+                                                <h6 class="room-form-title mb-0 fw-semibold">
+                                                    <i class="fas fa-door-open me-2 text-primary"></i>Room {{ forloop.counter }}
+                                                </h6>
+                                            </div>
+                                            <div class="room-form-content p-3">
+                                                {{ form.id }}
+                                                <!-- Room Type and Price -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                        <label for="{{ form.room_type.id_for_label }}" class="form-label fw-semibold">Room Type *</label>
+                                                        {{ form.room_type }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="{{ form.price_per_hour.id_for_label }}" class="form-label fw-semibold">Price per Hour *</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">₦</span>
+                                                            {{ form.price_per_hour }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Capacity and Image -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                        <label for="{{ form.capacity.id_for_label }}" class="form-label fw-semibold">Capacity *</label>
+                                                        {{ form.capacity }}
+                                                        <small class="form-text text-muted">Maximum number of guests</small>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">Room Image</label>
+                                                        <div class="image-upload-container">
+                                                            {{ form.image }}
+                                                            <div class="image-preview-container mt-2">
+                                                                {% if form.instance.image %}
+                                                                    <img src="{{ form.instance.image.url }}" alt="Room Image" class="img-thumbnail room-image-preview">
+                                                                    <small class="text-muted d-block mt-1">Current image</small>
+                                                                {% else %}
+                                                                    <div class="default-image-placeholder">
+                                                                        <div class="placeholder-content">
+                                                                            <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                                                                            <small class="text-muted">No image uploaded</small>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Description -->
+                                                <div class="row mb-3">
+                                                    <div class="col-12">
+                                                        <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
+                                                        {{ form.description }}
+                                                        <small class="form-text text-muted">Brief description of room features</small>
+                                                    </div>
+                                                </div>
+                                                <!-- Delete Option -->
+                                                {% if form.DELETE %}
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="form-check p-2 bg-light border border-warning rounded">
+                                                                {{ form.DELETE }}
+                                                                <label class="form-check-label fw-semibold text-danger" for="{{ form.DELETE.id_for_label }}">
+                                                                    <i class="fas fa-exclamation-triangle me-1"></i>Delete Room
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <!-- No Rooms Message -->
+                                <div id="no-rooms-message" class="text-center py-4" style="display: {% if formset.forms|length == 0 %}block{% else %}none{% endif %};">
+                                    <i class="fas fa-bed fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No rooms added yet</h6>
+                                    <p class="text-muted mb-3">Add your first room to get started</p>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('add-room').click()">
+                                        <i class="fas fa-plus me-2"></i>Add First Room
+                                    </button>
+                                </div>
+                                <!-- Add Room Button -->
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="add-room" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Room
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Submit Hotel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- External Libraries -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+/* Custom Styles */
+.form-control, .form-select {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.card-header {
+    padding: 1rem 1.25rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Room Form Styling */
+.room-form-container {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem !important; /* Tight spacing */
+}
+
+.room-form-container:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 10px rgba(0, 123, 255, 0.1);
+}
+
+.room-form-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.room-form-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.room-form-content {
+    padding: 1rem;
+}
+
+/* Image Upload Styling */
+.image-upload-container {
+    position: relative;
+}
+
+.image-preview-container {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+}
+
+.room-image-preview {
+    max-height: 100px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.default-image-placeholder {
+    width: 100%;
+    height: 100px;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+
+.default-image-placeholder:hover {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+/* Description Textarea */
+textarea[id$=description] {
+    resize: vertical;
+    min-height: 60px;
+    max-height: 60px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .room-form-content, .room-form-header {
+        padding: 0.75rem;
+    }
+    .card-body {
+        padding: 1rem;
+    }
+    .image-preview-container {
+        min-height: 80px;
+    }
+    .room-image-preview, .default-image-placeholder {
+        max-height: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 576px) {
+    .room-form-header .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Map Styling */
+#map {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: #dc3545;
+}
+.is-valid {
+    border-color: #28a745;
+}
+
+/* Delete Checkbox Styling */
+.form-check {
+    padding: 0.5rem;
+}
+</style>
+
+<script>
+// Initialize form elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form-control classes
+    document.querySelectorAll('input, select, textarea').forEach(element => {
+        if (!element.classList.contains('form-control') && !element.classList.contains('form-select') && !element.classList.contains('form-check-input')) {
+            if (element.tagName === 'SELECT') {
+                element.classList.add('form-select');
+            } else if (element.type !== 'checkbox' && element.type !== 'radio' && element.type !== 'hidden') {
+                element.classList.add('form-control');
+            }
+        }
+    });
+
+    // Set description textarea rows
+    document.querySelectorAll('textarea[id$=description]').forEach(textarea => {
+        textarea.setAttribute('rows', '2');
+        textarea.classList.add('form-control');
+    });
+
+    // Update room count
+    function updateRoomCount() {
+        const roomCount = document.querySelectorAll('.room-form-container').length;
+        document.getElementById('room-count').textContent = roomCount;
+        document.getElementById('no-rooms-message').style.display = roomCount === 0 ? 'block' : 'none';
+        document.querySelectorAll('.room-form-title').forEach((title, index) => {
+            title.innerHTML = `<i class="fas fa-door-open me-2 text-primary"></i>Room ${index + 1}`;
+        });
+    }
+
+    // Initialize Mapbox
+    mapboxgl.accessToken = '{{ mapbox_access_token }}';
+    var initialLat = {% if is_edit %}{{ hotel.latitude|default_if_none:8.6753 }}{% else %}8.6753{% endif %};
+    var initialLng = {% if is_edit %}{{ hotel.longitude|default_if_none:9.0820 }}{% else %}9.0820{% endif %};
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [initialLng, initialLat],
+        zoom: {% if is_edit and hotel.latitude and hotel.longitude %}12{% else %}10{% endif %}
+    });
+
+    var geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        placeholder: 'Search for an address in Nigeria',
+        countries: 'NG'
+    });
+    map.addControl(geocoder);
+
+    var marker = new mapboxgl.Marker({
+        draggable: true
+    }).setLngLat([initialLng, initialLat]).addTo(map);
+
+    marker.on('dragend', function() {
+        var lngLat = marker.getLngLat();
+        document.getElementById('id_latitude').value = lngLat.lat;
+        document.getElementById('id_longitude').value = lngLat.lng;
+        updateAddress(lngLat.lng, lngLat.lat);
+    });
+
+    geocoder.on('result', function(e) {
+        var coordinates = e.result.geometry.coordinates;
+        marker.setLngLat(coordinates);
+        map.setCenter(coordinates);
+        document.getElementById('id_latitude').value = coordinates[1];
+        document.getElementById('id_longitude').value = coordinates[0];
+        document.getElementById('id_address').value = e.result.place_name;
+    });
+
+    map.on('click', function(e) {
+        marker.setLngLat(e.lngLat);
+        document.getElementById('id_latitude').value = e.lngLat.lat;
+        document.getElementById('id_longitude').value = e.lngLat.lng;
+        updateAddress(e.lngLat.lng, e.lngLat.lat);
+    });
+
+    document.getElementById('map-style').addEventListener('change', function(e) {
+        map.setStyle(e.target.value);
+    });
+
+    function updateAddress(lng, lat) {
+        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&country=NG`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.features.length > 0) {
+                    document.getElementById('id_address').value = data.features[0].place_name;
+                }
+            });
+    }
+
+    // Handle adding new rooms
+    document.getElementById('add-room').addEventListener('click', function() {
+        var formset = document.getElementById('room-forms');
+        var totalForms = document.querySelector('#id_room-TOTAL_FORMS');
+        var formCount = parseInt(totalForms.value);
+        var templateForm = formset.querySelector('.room-form-container');
+
+        if (!templateForm) return;
+
+        var newForm = templateForm.cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/room-\d+-/g, `room-${formCount}-`);
+        newForm.classList.add('animate__animated', 'animate__fadeIn');
+
+        // Clear all input values in the new form
+        newForm.querySelectorAll('input, textarea, select').forEach(input => {
+            input.value = '';
+            if (input.type === 'checkbox') input.checked = false;
+        });
+
+        // Ensure description textarea has only 2 rows
+        newForm.querySelectorAll('textarea[id$=description]').forEach(textarea => {
+            textarea.setAttribute('rows', '2');
+            textarea.classList.add('form-control');
+        });
+
+        // Remove any existing images
+        newForm.querySelectorAll('.room-image-preview').forEach(img => {
+            img.parentElement.innerHTML = `
+                <div class="default-image-placeholder">
+                    <div class="placeholder-content">
+                        <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                        <small class="text-muted">No image uploaded</small>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Remove DELETE input for new forms
+        newForm.querySelectorAll('input[id$="-DELETE"]').forEach(input => {
+            input.parentElement.remove();
+        });
+
+        formset.appendChild(newForm);
+        totalForms.value = formCount + 1;
+        updateRoomCount();
+        newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // Initial room count update
+    updateRoomCount();
+});
+</script>
+{% endblock %}

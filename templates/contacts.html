@@ -1,0 +1,283 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Contact Us - Hotel Per Hour{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">Get In Touch</h1>
+        <p class="lead text-muted">We're here to help with any questions about our hotel booking service</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Contact Information -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4 text-center">Contact Information</h4>
+                    
+                    <!-- Phone -->
+                    <div class="contact-item mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon-wrapper me-3">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Phone</h6>
+                                <a href="tel:+2349154304099" class="text-decoration-none text-muted">+234 915 430 4099</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="contact-item mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon-wrapper me-3">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Email</h6>
+                                <a href="mailto:info@hospitalitaltd.com" class="text-decoration-none text-muted">info@hospitalitaltd.com</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="contact-item mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon-wrapper me-3">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Location</h6>
+                                <span class="text-muted">Lagos, Nigeria</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Business Hours -->
+                    <div class="contact-item">
+                        <div class="d-flex align-items-center">
+                            <div class="contact-icon-wrapper me-3">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Business Hours</h6>
+                                <span class="text-muted">24/7 Customer Support</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Form -->
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4 text-center">Send us a Message</h4>
+                    
+                    <form method="post" class="contact-form">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+234 800 000 0000">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="booking">Booking Inquiry</option>
+                                    <option value="support">Customer Support</option>
+                                    <option value="partnership">Hotel Partnership</option>
+                                    <option value="feedback">Feedback</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Tell us how we can help you..." required></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Frequently Asked Questions</h2>
+                <p class="text-muted">Quick answers to common questions</p>
+            </div>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How does hourly hotel booking work?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    You choose a hotel, select the number of hours you want to stay, pick your check-in time, and confirm your booking. It's fast, flexible, and affordable.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    How many hours can I book for?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    You can typically book for 3, 4, 6, or 8 hours. The minimum is 3 hours.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Is hourly booking private and discreet?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes. All bookings are confidential. Our hotel partners respect your privacy and treat each guest professionally.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Can I cancel or modify my booking?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, you can cancel or modify your booking up to 2 hours before your check-in time. Cancellation policies may vary by hotel.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Contact icon styling */
+    .contact-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .contact-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .contact-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Form styling */
+    .contact-form .form-control:focus,
+    .contact-form .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    /* Card styling */
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Accordion styling */
+    .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa;
+        color: #007bff;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: #007bff;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .contact-icon-wrapper {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .display-4 {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<script>
+    // Form submission handling
+    document.querySelector('.contact-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        submitBtn.disabled = true;
+        
+        // Simulate form submission (replace with actual form handling)
+        setTimeout(() => {
+            alert('Thank you for your message! We\'ll get back to you soon.');
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 2000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+<!-- bookings/payment_error.html -->
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Payment Error</h2>
+    <p>There was an issue processing your payment. Please try again.</p>
+    <a href="{% url 'booking_confirmation' booking_reference=booking.booking_reference %}" class="btn btn-secondary">Back to Booking</a>
+    </div>
+{% endblock %}

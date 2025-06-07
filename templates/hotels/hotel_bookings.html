@@ -1,0 +1,44 @@
+{% extends 'base2.html' %}
+
+{% block title %}Bookings for {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Bookings for {{ hotel.name }}</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Reference</th>
+                    <th>Room</th>
+                    <th>Customer</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Price</th>
+                    <th>Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.booking_reference }}</td>
+                    <td>{{ booking.room.room_type }}</td>
+                    <td>{{ booking.name }}</td>
+                    <td>{{ booking.check_in }}</td>
+                    <td>{{ booking.check_out }}</td>
+                    <td>₦{{ booking.total_price }}</td>
+                    <td>{{ booking.is_paid|yesno:"Yes,No" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No bookings found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Pagination -->
+    {% include 'pagination.html' with page_obj=bookings query_string=query_string %}
+    <a href="{% url 'hotel_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

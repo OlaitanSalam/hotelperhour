@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Application Update - Hotel per Hour</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .info-icon {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto 0;
+            font-size: 40px;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .content h2 {
+            color: #dc3545;
+            font-size: 28px;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+        }
+        .content p {
+            color: #495057;
+            font-size: 16px;
+            margin: 15px 0;
+        }
+        .hotel-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .hotel-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        .reasons-section {
+            background-color: #fff5f5;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: left;
+        }
+        .reasons-section h3 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        .reasons-section ul {
+            color: #495057;
+            margin: 0;
+            padding-left: 20px;
+        }
+        .reasons-section li {
+            margin: 8px 0;
+        }
+        .next-steps {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .next-steps h3 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 10px;
+            transition: transform 0.2s ease;
+        }
+        .button.secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+        .footer p {
+            margin: 5px 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .footer .brand {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .social-links {
+            margin: 15px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #6c757d;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 25px 15px;
+            }
+            .button {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hotel per Hour</h1>
+            <p class="subtitle">Your Trusted Hourly Booking Platform</p>
+            <div class="info-icon">!</div>
+        </div>
+        
+        <div class="content">
+            <h2>Application Update</h2>
+            <p>Thank you for your interest in joining Hotel per Hour. After careful review, we're unable to approve your hotel application at this time.</p>
+            
+            <div class="hotel-info">
+                <div class="hotel-name">{{ hotel.name }}</div>
+                <p style="margin: 5px 0; color: #6c757d;">{{ hotel.address }}</p>
+                <div class="status-badge">REQUIRES REVIEW</div>
+            </div>
+            
+            <div class="reasons-section">
+                <h3>Common Reasons for Review</h3>
+                <ul>
+                    <li>Incomplete hotel information or missing required details</li>
+                    <li>Photos don't meet our quality standards</li>
+                    <li>Location or address verification needed</li>
+                    <li>Additional documentation required</li>
+                    <li>Hotel doesn't meet our service criteria</li>
+                </ul>
+            </div>
+            
+            <div class="next-steps">
+                <h3>What You Can Do</h3>
+                <p style="margin: 0; color: #495057;">
+                    Don't worry! You can resubmit your application after addressing any issues. 
+                    Our support team is ready to help you through the process.
+                </p>
+            </div>
+            
+            <div style="margin: 30px 0;">
+                <a href="#" class="button">Contact Support</a>
+                <a href="#" class="button secondary">Resubmit Application</a>
+            </div>
+            
+            <p style="margin-top: 30px; color: #6c757d; font-size: 14px;">
+                We appreciate your understanding and look forward to potentially working with you in the future.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p class="brand">Hotel per Hour Team</p>
+            <p>© 2025 Hotel per Hour. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#">Support</a> • 
+                <a href="#">Help Center</a> • 
+                <a href="#">Contact Us</a>
+            </div>
+            <p style="font-size: 12px; margin-top: 15px;">
+                This email was sent regarding your hotel application. Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

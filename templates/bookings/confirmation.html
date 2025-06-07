@@ -1,0 +1,373 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmation{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Success Header -->
+            <div class="text-center mb-4">
+                <div class="success-icon mb-3">
+                    <i class="fas fa-check-circle text-success"></i>
+                </div>
+                <h1 class="display-5 fw-bold text-success mb-2">Booking Confirmed!</h1>
+                <p class="lead text-muted">Your reservation has been successfully created</p>
+            </div>
+            
+            <!-- Booking Details Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Booking Details</h4>
+                        <span class="badge bg-light text-primary">{{ booking.booking_reference }}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Copy Feedback Alert (Hidden Initially) -->
+                    <div id="copy-alert" class="alert alert-success alert-dismissible fade d-none" role="alert">
+                        Copied!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Booking Reference -->
+                    <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <strong>Booking Reference:</strong> 
+                            <span class="fw-bold">{{ booking.booking_reference }}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ booking.booking_reference }}')">
+                            <i class="fas fa-copy me-1"></i>Copy
+                        </button>
+                    </div>
+                    
+                    <!-- Hotel and Room Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title"><i class="fas fa-hotel me-2"></i>Hotel Information</h6>
+                                <div class="info-item">
+                                    <span class="label">Hotel:</span>
+                                    <span class="value">{{ booking.room.hotel.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Room Type:</span>
+                                    <span class="value">{{ booking.room.room_type }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Capacity:</span>
+                                    <span class="value">{{ booking.room.capacity }} guest{{ booking.room.capacity|pluralize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title"><i class="fas fa-clock me-2"></i>Booking Period</h6>
+                                <div class="info-item">
+                                    <span class="label">Check-in:</span>
+                                    <span class="value">{{ booking.check_in|date:"M d, Y - g:i A" }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Check-out:</span>
+                                    <span class="value">{{ booking.check_out|date:"M d, Y - g:i A" }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Duration:</span>
+                                    <span class="value">{{ booking.total_hours }} hour{{ booking.total_hours|pluralize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Guest Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title"><i class="fas fa-user me-2"></i>Guest Information</h6>
+                                <div class="info-item">
+                                    <span class="label">Name:</span>
+                                    <span class="value">{{ booking.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Phone:</span>
+                                    <span class="value">{{ booking.phone_number }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Email:</span>
+                                    <span class="value">{{ booking.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-section">
+                                <h6 class="section-title"><i class="fas fa-credit-card me-2"></i>Payment Summary</h6>
+                                <div class="info-item">
+                                    <span class="label">Rate per Hour:</span>
+                                    <span class="value">₦{{ booking.room.price_per_hour|floatformat:0 }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Total Hours:</span>
+                                    <span class="value">{{ booking.total_hours }}</span>
+                                </div>
+                                <div class="info-item total-price">
+                                    <span class="label">Total Amount:</span>
+                                    <span class="value text-success fw-bold">₦{{ booking.total_price|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div class="payment-status mb-4">
+                        {% if booking.is_paid %}
+                            <div class="alert alert-success d-flex align-items-center">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Payment Status: PAID</strong>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Payment Status: PENDING</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        {% if not booking.is_paid %}
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <a href="{% url 'initiate_payment' booking_reference=booking.booking_reference %}" class="btn btn-success w-100">
+    <i class="fas fa-credit-card me-2"></i>Pay Now
+</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-clock me-2"></i>Pay Later
+                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="{% url 'cancel_booking' booking_reference=booking.booking_reference %}" class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="row g-2">
+                                <div class="col-md-6 offset-md-3">
+                                    <button class="btn btn-outline-info w-100" onclick="shareBooking()">
+                                        <i class="fas fa-share-alt me-2"></i>Share Booking
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Important Information -->
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Important Information</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Please arrive at the hotel with a valid ID</li>
+                        <li>Your booking reference is required for check-in</li>
+                        <li>Check-in is available 15 minutes before your scheduled time</li>
+                        <li>Late arrivals may result in reduced booking time</li>
+                        <li>For any changes or inquiries, contact the hotel directly</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            {% if booking.room.hotel.hotel_phone or booking.room.hotel.hotel_email %}
+            <div class="text-center mt-4">
+                <h6>Need Help?</h6>
+                <div class="d-flex justify-content-center gap-3">
+                    {% if booking.room.hotel.hotel_phone %}
+                    <a href="tel:{{ booking.room.hotel.hotel_phone }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-phone me-1"></i>Call Hotel
+                    </a>
+                    {% endif %}
+                    {% if booking.room.hotel.hotel_email %}
+                    <a href="mailto:{{ booking.room.hotel.hotel_email }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-envelope me-1"></i>Email Hotel
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Success icon */
+    .success-icon i {
+        font-size: 3.5rem;
+    }
+    
+    /* Info sections */
+    .info-section {
+        background: #f8f9fa;
+        padding: 1.25rem;
+        border-radius: 8px;
+        height: 100%;
+    }
+    
+    .section-title {
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-item .label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .info-item .value {
+        font-weight: 600;
+        color: #212529;
+    }
+    
+    .total-price {
+        background: #e8f5e8;
+        margin: 0 -1rem;
+        padding: 0.75rem 1rem !important;
+        border-radius: 6px;
+        border: none !important;
+    }
+    
+    /* Card styling */
+    .card {
+        border-radius: 10px;
+    }
+    
+    /* Button styling */
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    /* Alert styling */
+    #copy-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        padding: 0.75rem;
+        min-width: 200px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .success-icon i {
+            font-size: 2.5rem;
+        }
+        
+        .display-5 {
+            font-size: 1.75rem;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+        
+        .action-buttons .row {
+            gap: 0.5rem;
+        }
+        
+        #copy-alert {
+            top: 10px;
+            right: 10px;
+            width: calc(100% - 20px);
+            max-width: 300px;
+        }
+    }
+</style>
+
+<script>
+    function copyToClipboard(text) {
+        // Modern clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyAlert();
+            }).catch(err => {
+                console.error('Clipboard copy failed:', err);
+                fallbackCopyToClipboard(text);
+            });
+        } else {
+            fallbackCopyToClipboard(text);
+        }
+    }
+
+    function fallbackCopyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showCopyAlert();
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
+            alert('Failed to copy to clipboard. Please copy manually.');
+        }
+        document.body.removeChild(textarea);
+    }
+
+    function showCopyAlert() {
+        const alert = document.getElementById('copy-alert');
+        alert.classList.remove('d-none');
+        alert.classList.add('show');
+        setTimeout(() => {
+            alert.classList.remove('show');
+            alert.classList.add('d-none');
+        }, 2000);
+    }
+
+    function shareBooking() {
+        const bookingDetails = `Booking Confirmed!\nReference: {{ booking.booking_reference }}\nHotel: {{ booking.room.hotel.name }}\nRoom: {{ booking.room.room_type }}\nCheck-in: {{ booking.check_in|date:"M d, Y - g:i A" }}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Hotel Booking Confirmation',
+                text: bookingDetails,
+                url: window.location.href
+            }).catch(err => {
+                console.error('Share failed:', err);
+                copyToClipboard(bookingDetails);
+            });
+        } else {
+            copyToClipboard(bookingDetails);
+        }
+    }
+</script>
+{% endblock %}

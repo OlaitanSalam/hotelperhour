@@ -1,0 +1,10 @@
+<!-- bookings/unavailable.html -->
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Room Not Available</h2>
+    <p>The room "{{ room.room_type }}" is currently not available for booking.</p>
+    <a href="{% url 'hotel_detail' room.hotel.id %}" class="btn btn-secondary">Back to Hotel</a>
+</div>
+{% endblock %}

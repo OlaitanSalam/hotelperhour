@@ -1,0 +1,47 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Nearby Hotels</h2>
+    {% if nearby_hotels %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Distance (km)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in nearby_hotels %}
+                    <tr>
+                        <td>{{ item.hotel.name }}</td>
+                        <td>{{ item.hotel.address }}</td>
+                        <td>{{ item.distance|floatformat:2 }}</td>
+                        <td><a href="{% url 'hotel_detail' item.hotel.slug %}" class="btn btn-primary btn-sm">View</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hotels found nearby. Please try again or enter an address.</p>
+    {% endif %}
+    <script>
+        if (!window.location.search.includes('lat') && !window.location.search.includes('lng')) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    window.location.href = '/hotels/nearby?lat=' + lat + '&lng=' + lng;
+                }, function(error) {
+                    console.error("Geolocation error:", error);
+                    // No redirect on error, let user see message
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+    </script>
+</div>
+{% endblock %}

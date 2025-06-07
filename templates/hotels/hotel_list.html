@@ -1,0 +1,54 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Find Your Perfect Hotel</h2>
+    
+    <!-- Search and Nearby Links -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search by name, address, or keyword..." 
+                       value="{{ request.GET.q }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'nearby_hotels' %}" class="btn btn-outline-secondary">Find Nearby Hotels</a>
+        </div>
+    </div>
+    
+    <!-- Hotel List -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for hotel in hotels %}
+        <div class="col">
+            <div class="card h-100">
+                {% if hotel.image %}
+                <img src="{{ hotel.image.url }}" class="card-img-top hotel-list-image" 
+                     alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" 
+                     style="height: 200px;">
+                    No Image Available
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ hotel.name }}</h5>
+                    <p class="card-text text-muted">{{ hotel.address }}</p>
+                    <div class="d-grid">
+                       <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hotels found matching your criteria.</div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% include 'pagination.html' with page_obj=hotels query_string=query_string %}
+</div>
+{% endblock %}

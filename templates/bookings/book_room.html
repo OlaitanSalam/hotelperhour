@@ -1,0 +1,257 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">Book Room: {{ room.room_type }}</h2>
+                        <span class="badge bg-primary fs-6">₦{{ room.price_per_hour }}/hour</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information Section -->
+                        <div class="mb-4">
+                            <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-user me-2"></i>Personal Information</h4>
+                            
+                            <!-- Name and Phone in same row -->
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="id_name" class="form-label">Full Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value|default_if_none:'' }}" required>
+                                    </div>
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_phone_number" class="form-label">Phone Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="text" name="phone_number" id="id_phone_number" class="form-control" value="{{ form.phone_number.value|default_if_none:'' }}" required>
+                                    </div>
+                                    {% if form.phone_number.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.phone_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default_if_none:'' }}" required>
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.email.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Booking Period Section -->
+                        <div class="mb-4">
+                            <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
+                            
+                            <!-- Check-in and Check-out in same row -->
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="id_check_in" class="form-label">Check-in Date and Time</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                        <input type="datetime-local" name="check_in" id="id_check_in" class="form-control" value="{{ form.check_in.value|default_if_none:''|date:'Y-m-d\TH:i' }}" required>
+                                    </div>
+                                    {% if form.check_in.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.check_in.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_check_out" class="form-label">Check-out Date and Time</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-calendar-times"></i></span>
+                                        <input type="datetime-local" name="check_out" id="id_check_out" class="form-control" value="{{ form.check_out.value|default_if_none:''|date:'Y-m-d\TH:i' }}" required>
+                                    </div>
+                                    {% if form.check_out.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.check_out.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Availability Message -->
+                            <div id="availability-message" class="alert d-none"></div>
+                        </div>
+                        
+                        <!-- Booking Summary -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-receipt me-2"></i>Booking Summary</h5>
+                                <div class="row">
+                                    <div class="col-6">Room Type:</div>
+                                    <div class="col-6 text-end fw-bold">{{ room.room_type }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">Rate per Hour:</div>
+                                    <div class="col-6 text-end fw-bold">₦{{ room.price_per_hour }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">Duration:</div>
+                                    <div class="col-6 text-end fw-bold" id="duration">-- hours</div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6 fs-5">Total Amount:</div>
+                                    <div class="col-6 text-end fs-5 fw-bold text-success" id="total-amount">₦--</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
+                                <i class="fas fa-check-circle me-2"></i>Proceed to Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Custom styles for booking form */
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    
+    .form-control {
+        border-left: none;
+    }
+    
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+    
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+    
+    /* Card styling */
+    .card {
+        border-radius: 10px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const now = new Date();
+        const minDateTime = now.toISOString().slice(0, 16);
+        const checkInInput = document.getElementById('id_check_in');
+        const checkOutInput = document.getElementById('id_check_out');
+        const submitBtn = document.getElementById('submit-btn');
+        const availabilityMessage = document.getElementById('availability-message');
+        const durationElement = document.getElementById('duration');
+        const totalAmountElement = document.getElementById('total-amount');
+        const pricePerHour = {{ room.price_per_hour }};
+
+        checkInInput.setAttribute('min', minDateTime);
+        checkOutInput.setAttribute('min', minDateTime);
+
+        function calculateDuration(checkIn, checkOut) {
+            if (!checkIn || !checkOut) return 0;
+            
+            const start = new Date(checkIn);
+            const end = new Date(checkOut);
+            const diffMs = end - start;
+            const diffHours = diffMs / (1000 * 60 * 60);
+            return Math.max(0, diffHours);
+        }
+
+        function updateSummary() {
+            const checkIn = checkInInput.value;
+            const checkOut = checkOutInput.value;
+            
+            if (checkIn && checkOut) {
+                const duration = calculateDuration(checkIn, checkOut);
+                const formattedDuration = duration.toFixed(1);
+                const totalAmount = (duration * pricePerHour).toFixed(2);
+                
+                durationElement.textContent = `${formattedDuration} hours`;
+                totalAmountElement.textContent = `₦${parseFloat(totalAmount).toLocaleString()}`;
+            }
+        }
+
+        function checkAvailability() {
+            const checkIn = checkInInput.value;
+            const checkOut = checkOutInput.value;
+            
+            if (checkIn && checkOut) {
+                // Show loading state
+                availabilityMessage.textContent = 'Checking availability...';
+                availabilityMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
+                availabilityMessage.classList.add('alert-info');
+                
+                fetch(`/bookings/room/{{ room.id }}/check_availability/?check_in=${checkIn}&check_out=${checkOut}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        availabilityMessage.classList.remove('alert-info');
+                        
+                        if (data.available) {
+                            availabilityMessage.textContent = '✓ Room is available for your selected dates!';
+                            availabilityMessage.classList.add('alert-success');
+                            checkInInput.style.color = 'black';
+                            checkOutInput.style.color = 'black';
+                            submitBtn.disabled = false;
+                        } else {
+                            availabilityMessage.textContent = '✗ Room is unavailable for this period. Please select different dates.';
+                            availabilityMessage.classList.add('alert-danger');
+                            checkInInput.style.color = 'red';
+                            checkOutInput.style.color = 'red';
+                            submitBtn.disabled = true;
+                        }
+                    });
+                
+                updateSummary();
+            }
+        }
+
+        checkInInput.addEventListener('change', checkAvailability);
+        checkOutInput.addEventListener('change', checkAvailability);
+    });
+</script>
+{% endblock %}

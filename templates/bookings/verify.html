@@ -1,0 +1,43 @@
+<!-- bookings/verify.html -->
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Verify Booking</h2>
+    
+    <!-- Display error message if present -->
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+    
+    <!-- Verification Form -->
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            <label for="reference">Booking Reference</label>
+            <input type="text" name="reference" id="reference" class="form-control" required placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000">
+        </div>
+        <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+    
+    <!-- Booking Details if Found -->
+    {% if booking %}
+        <div class="mt-4 card">
+            <div class="card-body">
+                <h4 class="card-title">Booking Details</h4>
+                <p><strong>Hotel:</strong> {{ booking.room.hotel.name }}</p>
+                <p><strong>Room:</strong> {{ booking.room.room_type }}</p>
+                <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
+                <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
+                <p><strong>Total Hours:</strong> {{ booking.total_hours }}</p>
+                <p><strong>Total Price:</strong> ₦{{ booking.total_price }}</p>
+                <p><strong>Name:</strong> {{ booking.name }}</p>
+                <p><strong>Phone:</strong> {{ booking.phone_number }}</p>
+                <p><strong>Status:</strong> {% if booking.is_paid %}Paid{% else %}Payment Pending{% endif %}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

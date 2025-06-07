@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activate Your Account - Hotel per Hour</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .welcome-icon {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto 0;
+            font-size: 40px;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .content h2 {
+            color: #007bff;
+            font-size: 32px;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+        }
+        .content p {
+            color: #495057;
+            font-size: 16px;
+            margin: 15px 0;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 4px solid #007bff;
+        }
+        .user-email {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .activation-section {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+        .activation-section h3 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 20px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 18px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+        .backup-link {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #495057;
+        }
+        .security-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            color: #856404;
+        }
+        .security-note h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+        .footer p {
+            margin: 5px 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .footer .brand {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .social-links {
+            margin: 15px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #6c757d;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 25px 15px;
+            }
+            .button {
+                padding: 15px 30px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hotel per Hour</h1>
+            <p class="subtitle">Your Trusted Hourly Booking Platform</p>
+            <div class="welcome-icon">👋</div>
+        </div>
+        
+        <div class="content">
+            <h2>Welcome!</h2>
+            <p>Thank you for joining Hotel per Hour! We're excited to have you as part of our community.</p>
+            
+            <div class="user-info">
+                <div class="user-email">{{ user.email }}</div>
+                <p style="margin: 5px 0; color: #6c757d; font-size: 14px;">Account created successfully</p>
+            </div>
+            
+            <div class="activation-section">
+                <h3>🔐 Activate Your Account</h3>
+                <p style="margin: 0; color: #495057;">
+                    To complete your registration and start using Hotel per Hour, please click the button below to activate your account.
+                </p>
+            </div>
+            
+            <a href="http://{{ domain }}{% url 'activate' uid token %}" class="button">
+                ✓ Activate My Account
+            </a>
+            
+            <p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+                If the button doesn't work, copy and paste this URL into your browser:
+            </p>
+            
+            <div class="backup-link">
+                http://{{ domain }}{% url 'activate' uid token %}
+            </div>
+            
+            <div class="security-note">
+                <h4>🛡️ Security Notice</h4>
+                <p style="margin: 0; font-size: 14px;">
+                    This activation link will expire in 24 hours for security reasons. 
+                    If you didn't create this account, please ignore this email.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p class="brand">Hotel per Hour Team</p>
+            <p>© 2025 Hotel per Hour. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#">Support</a> • 
+                <a href="#">Help Center</a> • 
+                <a href="#">Contact Us</a>
+            </div>
+            <p style="font-size: 12px; margin-top: 15px;">
+                This email was sent to activate your new account. Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

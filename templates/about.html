@@ -1,0 +1,99 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Home - Hotel Per Hour{% endblock %}
+
+{% block content %}
+
+<body>
+    <section class="py-5 mt-5">
+        <div class="container py-4 py-xl-5">
+            <div class="row gy-4 gy-md-0">
+                <div class="col-md-6 text-center text-md-start d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
+                    <div data-aos="fade" data-aos-duration="650" style="max-width: 350px;">
+                        <h1 class="display-6 fw-bold mb-4" style="text-align: center;"><strong>Book Hotels by the Hour. Stay on Your</strong>&nbsp;<span class="underline">Time</span>.</h1>
+                        <p class="my-4">We believe time is money—so why pay for a full day when you only need a few hours?</p><a class="btn btn-primary btn-lg me-2" role="button" href="{% url 'hotel_list' %}">Book now</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div><img class="rounded img-fluid w-100 fit-cover" data-aos="fade-up" data-aos-duration="1000" style="min-height: 300px;" src="{% static 'img/illustrations/77051424-41cf-4c9b-9c14-4e2e12147a3d_removalai_preview.png' %}"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container py-4 py-xl-5" data-aos="fade-left" data-aos-duration="900">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6">
+                    <h3 class="display-6 fw-bold pb-4 mb-4" style="text-align: center;">About Us</h3>
+                </div>
+                <div class="col-md-8 col-xl-6 pt-4">
+                    <p class="text-muted">We’re a startup built around one simple idea: flexibility. our platform makes it easy for you to book hotel rooms by the hour, giving you full control over your time and your budget. whether you need a quick nap between travels, a quiet space for a business call, or just a few hours to relax, we’ve got you covered.<br><br>We partner with verified hotels across major cities to offer safe, clean, and comfortable spaces—whenever you need them. no extra charges. no unnecessary overnight fees. just pay for the time you use.</p>
+                </div>
+                <div class="w-100"></div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5">
+        <div class="container text-white bg-primary border rounded border-0 p-4 p-lg-5 py-4 py-xl-5" data-aos="fade-up" data-aos-duration="1000" style="background: rgb(125,115,29);">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto" data-aos="fade-left" data-aos-duration="700">
+                    <h2 class="text-white">More Infomation</h2>
+                </div>
+            </div>
+            <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3" data-aos="fade-up-right" data-aos-duration="1000">
+                <div class="col">
+                    <div class="d-flex">
+                        <div class="bs-icon-sm bs-icon-rounded bs-icon-semi-white text-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-bell">
+                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6"></path>
+                            </svg></div>
+                        <div class="px-3">
+                            <h4 class="text-white">Our mission</h4>
+                            <p>To make hotel booking more flexible, accessible, and affordable for everyone.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex">
+                        <div class="bs-icon-sm bs-icon-rounded bs-icon-semi-white text-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-bell">
+                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6"></path>
+                            </svg></div>
+                        <div class="px-3">
+                            <h4 class="text-white">Who we serve</h4>
+                            <p>Travelers, remote workers, couples, commuters, and anyone who values time and privacy</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex">
+                        <div class="bs-icon-sm bs-icon-rounded bs-icon-semi-white text-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-bell">
+                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6"></path>
+                            </svg></div>
+                        <div class="px-3">
+                            <h4 class="text-white">Why choose us</h4>
+                            <p>Book in minutes, Only pay for what you use, 100% privacy guaranteed, Trusted hotel partners</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex"></div>
+                </div>
+            </div>
+        </div>
+        <section class="py-4 py-xl-5">
+            <div class="container h-100">
+                <div class="row h-100">
+                    <div class="col-md-10 col-xl-8 text-center d-flex d-sm-flex d-md-flex justify-content-center align-items-center mx-auto justify-content-md-start align-items-md-center justify-content-xl-center">
+                        <div>
+                            <h2 class="text-uppercase fw-bold mb-3">one more thing....</h2>
+                            <p class="mb-4">We’re not just building a service we’re changing the way people think about hotel stays. one hour at a time.</p><button class="btn btn-primary fs-5 me-2 py-2 px-4" type="button">Book us now</button><button class="btn btn-outline-primary fs-5 py-2 px-4" type="button">How it works</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+</body>
+
+</html>
+{% endblock %}

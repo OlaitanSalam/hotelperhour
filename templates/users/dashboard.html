@@ -1,0 +1,27 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Welcome, {{ user.email }}!</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    <h3>Register a Hotel</h3>
+                    <p>List your hotel on our platform.</p>
+                    <a href="{% url 'hotel_create' %}" class="btn btn-primary">Add Hotel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    <h3>Book a Room</h3>
+                    <p>Find and book a hotel room.</p>
+                    <a href="{% url 'hotel_list' %}" class="btn btn-primary">Find Hotels</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
