@@ -36,6 +36,13 @@ class CustomUserAdmin(UserAdmin):
             'classes': ('collapse',)
         }),
     )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2', 'full_name', 'phone_number', 
+                       'is_hotel_owner', 'is_active', 'is_staff', 'is_superuser')}
+        ),
+    )
     
     def hotel_count(self, obj):
         """Display count of hotels owned by this user"""
