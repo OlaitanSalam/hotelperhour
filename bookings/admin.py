@@ -1,7 +1,11 @@
 # bookings/admin.py
 from django.contrib import admin
-from .models import Booking
+from .models import Booking, BookingDuration
 
+@admin.register(BookingDuration)
+class BookingDurationAdmin(admin.ModelAdmin):
+    list_display = ('hours',)
+    ordering = ('hours',)
 
 class BookingAdmin(admin.ModelAdmin):
     """
@@ -19,7 +23,7 @@ class BookingAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'booking_reference', 'payment_reference']
     fieldsets = (
         ('Booking Details', {
-            'fields': ('room', 'user', 'check_in', 'check_out', 'total_hours', 'total_price')
+            'fields': ('room', 'user', 'check_in', 'check_out', 'total_hours', 'total_price', 'total_amount')
         }),
         ('Payment Information', {
             'fields': ('is_paid', 'payment_reference')

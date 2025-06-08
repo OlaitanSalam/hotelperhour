@@ -62,7 +62,7 @@
                                             {{ form.image }}
                                             <div class="image-preview-container mt-2">
                                                 {% if form.instance.image %}
-                                                    <img src="{{ form.instance.image.url }}" alt="Hotel Image" class="img-thumbnail room-image-preview">
+                                                    <img src="{{ form.instance.image.url }}" alt="Hotel Image" class="img-thumbnail room-image-preview" loading="lazy">
                                                     <small class="text-muted d-block mt-1">Current image</small>
                                                 {% else %}
                                                     <div class="default-image-placeholder">
@@ -110,12 +110,13 @@
                                 <div id="room-forms">
                                     {% for form in formset %}
                                         <div class="room-form-container mb-3 animate__animated animate__fadeIn">
-                                            <div class="room-form-header bg-light p-3">
+                                            <div class="room-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#room-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="room-collapse-{{ forloop.counter }}">
                                                 <h6 class="room-form-title mb-0 fw-semibold">
-                                                    <i class="fas fa-door-open me-2 text-primary"></i>Room {{ forloop.counter }}
+                                                    <i class="fas fa-door-open me-2 text-primary"></i>Room {{ forloop.counter }}: {{ form.room_type.value|default:"Unnamed" }}
                                                 </h6>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
-                                            <div class="room-form-content p-3">
+                                            <div id="room-collapse-{{ forloop.counter }}" class="room-form-content p-3 collapse">
                                                 {{ form.id }}
                                                 <!-- Room Type and Price -->
                                                 <div class="row mb-3">
@@ -144,7 +145,7 @@
                                                             {{ form.image }}
                                                             <div class="image-preview-container mt-2">
                                                                 {% if form.instance.image %}
-                                                                    <img src="{{ form.instance.image.url }}" alt="Room Image" class="img-thumbnail room-image-preview">
+                                                                    <img src="{{ form.instance.image.url }}" alt="Room Image" class="img-thumbnail room-image-preview" loading="lazy">
                                                                     <small class="text-muted d-block mt-1">Current image</small>
                                                                 {% else %}
                                                                     <div class="default-image-placeholder">
@@ -248,7 +249,7 @@
     border-radius: 8px;
     background: #ffffff;
     transition: all 0.3s ease;
-    margin-bottom: 1rem !important; /* Tight spacing */
+    margin-bottom: 1rem !important;
 }
 
 .room-form-container:hover {
@@ -259,6 +260,7 @@
 .room-form-header {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
 }
 
 .room-form-title {
@@ -304,10 +306,19 @@
 }
 
 /* Description Textarea */
-textarea[id$=description] {
+textarea[id$=-description] {
     resize: vertical;
     min-height: 60px;
     max-height: 60px;
+}
+
+/* Toggle Icon */
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.room-form-header[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
 }
 
 /* Responsive Adjustments */
@@ -380,18 +391,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Set description textarea rows
-    document.querySelectorAll('textarea[id$=description]').forEach(textarea => {
+    document.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
         textarea.setAttribute('rows', '2');
         textarea.classList.add('form-control');
     });
 
-    // Update room count
+    // Update room count and titles
     function updateRoomCount() {
         const roomCount = document.querySelectorAll('.room-form-container').length;
         document.getElementById('room-count').textContent = roomCount;
         document.getElementById('no-rooms-message').style.display = roomCount === 0 ? 'block' : 'none';
         document.querySelectorAll('.room-form-title').forEach((title, index) => {
-            title.innerHTML = `<i class="fas fa-door-open me-2 text-primary"></i>Room ${index + 1}`;
+            const roomTypeInput = title.closest('.room-form-container').querySelector('input[id$=-room_type]');
+            const roomType = roomTypeInput ? roomTypeInput.value || 'Unnamed' : 'Unnamed';
+            title.innerHTML = `<i class="fas fa-door-open me-2 text-primary"></i>Room ${index + 1}: ${roomType}`;
         });
     }
 
@@ -465,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!templateForm) return;
 
         var newForm = templateForm.cloneNode(true);
-        newForm.innerHTML = newForm.innerHTML.replace(/room-\d+-/g, `room-${formCount}-`);
+        newForm.innerHTML = newForm.innerHTML.replace(/room-\d+-/g, `room-${formCount}-`).replace(/room-collapse-\d+/g, `room-collapse-${formCount + 1}`);
         newForm.classList.add('animate__animated', 'animate__fadeIn');
 
         // Clear all input values in the new form
@@ -475,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Ensure description textarea has only 2 rows
-        newForm.querySelectorAll('textarea[id$=description]').forEach(textarea => {
+        newForm.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
             textarea.setAttribute('rows', '2');
             textarea.classList.add('form-control');
         });
@@ -493,9 +506,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Remove DELETE input for new forms
-        newForm.querySelectorAll('input[id$="-DELETE"]').forEach(input => {
+        newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
             input.parentElement.remove();
         });
+
+        // Reset collapse state
+        newForm.querySelector('.room-form-content').classList.remove('show');
 
         formset.appendChild(newForm);
         totalForms.value = formCount + 1;

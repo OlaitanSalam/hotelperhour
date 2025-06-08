@@ -25,7 +25,6 @@
                         <div class="mb-4">
                             <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-user me-2"></i>Personal Information</h4>
                             
-                            <!-- Name and Phone in same row -->
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <label for="id_name" class="form-label">Full Name</label>
@@ -53,7 +52,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Email -->
                             <div class="mb-3">
                                 <label for="id_email" class="form-label">Email Address</label>
                                 <div class="input-group">
@@ -72,35 +70,45 @@
                         <div class="mb-4">
                             <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
                             
-                            <!-- Check-in and Check-out in same row -->
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="id_check_in" class="form-label">Check-in Date and Time</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
-                                        <input type="datetime-local" name="check_in" id="id_check_in" class="form-control" value="{{ form.check_in.value|default_if_none:''|date:'Y-m-d\TH:i' }}" required>
-                                    </div>
-                                    {% if form.check_in.errors %}
+                                    <label for="id_check_in_date" class="form-label">Check-in Date</label>
+                                    <input type="date" name="check_in_date" id="id_check_in_date" class="form-control" value="{{ form.check_in_date.value|default_if_none:''|date:'Y-m-d' }}" required>
+                                    {% if form.check_in_date.errors %}
                                         <div class="text-danger small mt-1">
-                                            {{ form.check_in.errors }}
+                                            {{ form.check_in_date.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="id_check_out" class="form-label">Check-out Date and Time</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-calendar-times"></i></span>
-                                        <input type="datetime-local" name="check_out" id="id_check_out" class="form-control" value="{{ form.check_out.value|default_if_none:''|date:'Y-m-d\TH:i' }}" required>
-                                    </div>
-                                    {% if form.check_out.errors %}
+                                    <label for="id_check_in_hour" class="form-label">Check-in Time</label>
+                                    <select name="check_in_hour" id="id_check_in_hour" class="form-select" required>
+                                        {% for hour in form.check_in_hour.field.choices %}
+                                            <option value="{{ hour.0 }}" {% if hour.0|stringformat:'s' == form.check_in_hour.value|stringformat:'s' %}selected{% endif %}>{{ hour.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.check_in_hour.errors %}
                                         <div class="text-danger small mt-1">
-                                            {{ form.check_out.errors }}
+                                            {{ form.check_in_hour.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
                             </div>
                             
-                            <!-- Availability Message -->
+                            <div class="mb-3">
+                                <label for="id_duration" class="form-label">Duration</label>
+                                <select name="duration" id="id_duration" class="form-select" required>
+                                    {% for duration in form.duration.field.choices %}
+                                        <option value="{{ duration.0 }}" {% if duration.0|stringformat:'s' == form.duration.value|stringformat:'s' %}selected{% endif %}>{{ duration.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.duration.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.duration.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
                             <div id="availability-message" class="alert d-none"></div>
                         </div>
                         
@@ -120,6 +128,10 @@
                                     <div class="col-6">Duration:</div>
                                     <div class="col-6 text-end fw-bold" id="duration">-- hours</div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-6">Service Charge (5%):</div>
+                                    <div class="col-6 text-end fw-bold" id="service-charge">₦--</div>
+                                </div>
                                 <hr>
                                 <div class="row">
                                     <div class="col-6 fs-5">Total Amount:</div>
@@ -128,7 +140,6 @@
                             </div>
                         </div>
                         
-                        <!-- Submit Button -->
                         <div class="d-grid gap-2">
                             <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
                                 <i class="fas fa-check-circle me-2"></i>Proceed to Payment
@@ -144,31 +155,23 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* Custom styles for booking form */
     .input-group-text {
         background-color: #f8f9fa;
         border-right: none;
     }
-    
-    .form-control {
+    .form-control, .form-select {
         border-left: none;
     }
-    
-    .form-control:focus {
+    .form-control:focus, .form-select:focus {
         box-shadow: none;
         border-color: #ced4da;
     }
-    
     .btn-primary {
         transition: all 0.3s ease;
     }
-    
-    /* Card styling */
     .card {
         border-radius: 10px;
     }
-    
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .container {
             padding-left: 20px;
@@ -178,80 +181,71 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const now = new Date();
-        const minDateTime = now.toISOString().slice(0, 16);
-        const checkInInput = document.getElementById('id_check_in');
-        const checkOutInput = document.getElementById('id_check_out');
-        const submitBtn = document.getElementById('submit-btn');
-        const availabilityMessage = document.getElementById('availability-message');
-        const durationElement = document.getElementById('duration');
-        const totalAmountElement = document.getElementById('total-amount');
-        const pricePerHour = {{ room.price_per_hour }};
+document.addEventListener('DOMContentLoaded', function () {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const checkInDateInput = document.getElementById('id_check_in_date');
+    const checkInHourInput = document.getElementById('id_check_in_hour');
+    const durationInput = document.getElementById('id_duration');
+    const submitBtn = document.getElementById('submit-btn');
+    const availabilityMessage = document.getElementById('availability-message');
+    const durationElement = document.getElementById('duration');
+    const serviceChargeElement = document.getElementById('service-charge');
+    const totalAmountElement = document.getElementById('total-amount');
+    const pricePerHour = {{ room.price_per_hour }};
 
-        checkInInput.setAttribute('min', minDateTime);
-        checkOutInput.setAttribute('min', minDateTime);
+    checkInDateInput.setAttribute('min', today);
 
-        function calculateDuration(checkIn, checkOut) {
-            if (!checkIn || !checkOut) return 0;
-            
-            const start = new Date(checkIn);
-            const end = new Date(checkOut);
-            const diffMs = end - start;
-            const diffHours = diffMs / (1000 * 60 * 60);
-            return Math.max(0, diffHours);
+    function updateSummary() {
+        const duration = durationInput.value;
+        if (duration) {
+            const baseAmount = duration * pricePerHour;
+            const serviceCharge = baseAmount * 0.05;
+            const totalAmount = (baseAmount + serviceCharge).toFixed(2);
+            durationElement.textContent = `${duration} hours`;
+            serviceChargeElement.textContent = `₦${serviceCharge.toLocaleString()}`;
+            totalAmountElement.textContent = `₦${parseFloat(totalAmount).toLocaleString()}`;
         }
+    }
 
-        function updateSummary() {
-            const checkIn = checkInInput.value;
-            const checkOut = checkOutInput.value;
+    function checkAvailability() {
+        const checkInDate = checkInDateInput.value;
+        const checkInHour = checkInHourInput.value;
+        const duration = durationInput.value;
+        
+        if (checkInDate && checkInHour && duration) {
+            const checkIn = `${checkInDate}T${checkInHour.padStart(2, '0')}:00`;
             
-            if (checkIn && checkOut) {
-                const duration = calculateDuration(checkIn, checkOut);
-                const formattedDuration = duration.toFixed(1);
-                const totalAmount = (duration * pricePerHour).toFixed(2);
-                
-                durationElement.textContent = `${formattedDuration} hours`;
-                totalAmountElement.textContent = `₦${parseFloat(totalAmount).toLocaleString()}`;
-            }
-        }
-
-        function checkAvailability() {
-            const checkIn = checkInInput.value;
-            const checkOut = checkOutInput.value;
+            availabilityMessage.textContent = 'Checking availability...';
+            availabilityMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
+            availabilityMessage.classList.add('alert-info');
             
-            if (checkIn && checkOut) {
-                // Show loading state
-                availabilityMessage.textContent = 'Checking availability...';
-                availabilityMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
-                availabilityMessage.classList.add('alert-info');
-                
-                fetch(`/bookings/room/{{ room.id }}/check_availability/?check_in=${checkIn}&check_out=${checkOut}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        availabilityMessage.classList.remove('alert-info');
-                        
-                        if (data.available) {
-                            availabilityMessage.textContent = '✓ Room is available for your selected dates!';
-                            availabilityMessage.classList.add('alert-success');
-                            checkInInput.style.color = 'black';
-                            checkOutInput.style.color = 'black';
-                            submitBtn.disabled = false;
-                        } else {
-                            availabilityMessage.textContent = '✗ Room is unavailable for this period. Please select different dates.';
-                            availabilityMessage.classList.add('alert-danger');
-                            checkInInput.style.color = 'red';
-                            checkOutInput.style.color = 'red';
-                            submitBtn.disabled = true;
-                        }
-                    });
-                
-                updateSummary();
-            }
+            fetch(`/bookings/room/{{ room.id }}/check_availability/?check_in=${encodeURIComponent(checkIn)}&duration=${duration}`)
+                .then(response => response.json())
+                .then(data => {
+                    availabilityMessage.classList.remove('alert-info');
+                    if (data.available) {
+                        availabilityMessage.textContent = '✓ Room is available for your selected duration!';
+                        availabilityMessage.classList.add('alert-success');
+                        submitBtn.disabled = false;
+                    } else {
+                        availabilityMessage.textContent = '✗ Room is unavailable for this period.';
+                        availabilityMessage.classList.add('alert-danger');
+                        submitBtn.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    availabilityMessage.textContent = 'Error checking availability. Please try again.';
+                    availabilityMessage.classList.add('alert-danger');
+                    submitBtn.disabled = true;
+                });
+            updateSummary();
         }
+    }
 
-        checkInInput.addEventListener('change', checkAvailability);
-        checkOutInput.addEventListener('change', checkAvailability);
-    });
+    checkInDateInput.addEventListener('change', checkAvailability);
+    checkInHourInput.addEventListener('change', checkAvailability);
+    durationInput.addEventListener('change', checkAvailability);
+});
 </script>
 {% endblock %}

@@ -1,8 +1,17 @@
 from django import forms
 from .models import Hotel, Room
 from django.forms import formset_factory, inlineformset_factory
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 
 class HotelForm(forms.ModelForm):
+    image = forms.ImageField(
+        validators=[
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
+            lambda f: (f.size <= 2*1024*1024 or ValidationError("Image must be under 2MB"))
+        ],
+        required=False
+    )
     latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
     longitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
 
@@ -25,6 +34,13 @@ class HotelForm(forms.ModelForm):
         return self.cleaned_data['hotel_email'].lower()
 
 class RoomForm(forms.ModelForm):
+    image = forms.ImageField(
+        validators=[
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
+            lambda f: (f.size <= 2*1024*1024 or ValidationError("Image must be under 2MB"))
+        ],
+        required=False
+    )
     class Meta:
         model = Room
         fields = ('room_type', 'price_per_hour', 'description', 'capacity', 'image',)
@@ -40,7 +56,7 @@ RoomFormSet = inlineformset_factory(
     Hotel,
     Room,
     fields=('room_type', 'price_per_hour', 'description', 'capacity', 'image'),
-    extra=1,
+    extra=0,
     can_delete=True
 )
 class DateRangeForm(forms.Form):
