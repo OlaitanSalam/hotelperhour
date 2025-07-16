@@ -38,7 +38,7 @@ def book_room(request, room_id):
                 form.add_error(None, "This room is not available for the selected time slot.")
                 return render(request, 'bookings/book_room.html', {'form': form, 'room': room})
             booking.save()
-            
+
             # Send email to hotel owner asynchronously
             try:
                 subject = 'New Booking Notification'
@@ -47,7 +47,7 @@ def book_room(request, room_id):
             except Exception as e:
                 logger.error(f"Failed to send booking notification email for booking {booking.booking_reference}: {str(e)}")
                 # Continue with booking process even if email fails
-            
+
             return redirect('booking_confirmation', booking_reference=booking.booking_reference)
     else:
         form = BookingForm()
@@ -67,6 +67,7 @@ def initiate_payment(request, booking_reference):
         'amount': int(booking.total_amount * 100),  # Include service charge
         'reference': str(booking.booking_reference),
         'callback_url': request.build_absolute_uri(reverse('payment_callback'))
+
     }
     response = requests.post(url, json=data, headers=headers)
     if response.status_code == 200:
@@ -118,14 +119,14 @@ def is_room_available(room, check_in, check_out):
 def verify_booking(request):
     if not request.user.is_superuser and not hasattr(request.user, 'hotel'):
         return HttpResponseForbidden("Only hotel owners and superusers can verify bookings.")
-    
+
     if request.method == 'POST':
         reference = request.POST.get('reference', '').strip()
         if not reference:
             return render(request, 'bookings/verify.html', {
                 'error': 'Please enter a booking reference.'
             })
-        
+
         try:
             booking = Booking.objects.get(booking_reference=reference)
             if not request.user.is_superuser:
@@ -142,7 +143,7 @@ def verify_booking(request):
             return render(request, 'bookings/verify.html', {
                 'error': 'The booking reference format is invalid.'
             })
-    
+
     return render(request, 'bookings/verify.html')
 
 def cancel_booking(request, booking_reference):
@@ -159,7 +160,7 @@ def check_availability(request, room_id):
     check_in_str = request.GET.get('check_in')
     duration = request.GET.get('duration')
     room = get_object_or_404(Room, id=room_id)
-    
+
     if check_in_str and duration:
         try:
             check_in = timezone.datetime.strptime(check_in_str, '%Y-%m-%dT%H:%M')

@@ -26,7 +26,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['kitanwebdev.pythonanywhere.com']
 
 
 # Application definition
@@ -38,12 +38,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'users.apps.UsersConfig',  
-    'hotels.apps.HotelsConfig',  
-    'bookings.apps.BookingsConfig', 
+    'users.apps.UsersConfig',
+    'hotels.apps.HotelsConfig',
+    'bookings.apps.BookingsConfig',
     'anymail',
     'widget_tweaks',
-    
+
 ]
 AUTH_USER_MODEL = "users.CustomUser"
 
