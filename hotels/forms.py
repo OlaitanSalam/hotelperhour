@@ -1,5 +1,5 @@
 from django import forms
-from .models import Hotel, Room
+from .models import Hotel, Room, ExtraService
 from django.forms import formset_factory, inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
@@ -22,15 +22,12 @@ class HotelForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 2}),
         }
     def clean_name(self):
-        # Convert hotel name to title case (e.g., "Grand Hotel")
         return self.cleaned_data['name'].title()
 
     def clean_address(self):
-        # Convert address to title case (e.g., "123 Main St, Lagos")
         return self.cleaned_data['address'].title()
 
     def clean_hotel_email(self):
-        # Convert hotel email to lowercase (e.g., "hotel@example.com")
         return self.cleaned_data['hotel_email'].lower()
 
 class RoomForm(forms.ModelForm):
@@ -49,8 +46,12 @@ class RoomForm(forms.ModelForm):
         }
 
     def clean_room_type(self):
-        # Convert room type to title case (e.g., "Deluxe Suite")
         return self.cleaned_data['room_type'].title()
+
+class ExtraServiceForm(forms.ModelForm):
+    class Meta:
+        model = ExtraService
+        fields = ('name', 'price')
 
 RoomFormSet = inlineformset_factory(
     Hotel,
@@ -59,6 +60,16 @@ RoomFormSet = inlineformset_factory(
     extra=0,
     can_delete=True
 )
+
+ExtraServiceFormSet = inlineformset_factory(
+    Hotel,
+    ExtraService,
+    form=ExtraServiceForm,
+    fields=('name', 'price'),
+    extra=0,
+    can_delete=True
+)
+
 class DateRangeForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))

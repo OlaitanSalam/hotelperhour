@@ -18,7 +18,7 @@
                         </div>
                     {% endif %}
                     
-                    <form method="post" class="form">
+                    <form method="post" id="booking-form" class="form">
                         {% csrf_token %}
                         
                         <!-- Personal Information Section -->
@@ -66,50 +66,102 @@
                             </div>
                         </div>
                         
-                        <!-- Booking Period Section -->
+                        <!-- Fixed Booking Period Section -->
+<div class="mb-4">
+    <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
+    
+    <!-- Added container and fixed row structure -->
+    <div class="container-fluid p-0">
+        <div class="row gx-3">
+            <div class="col-md-6 mb-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fas fa-calendar-day"></i>
+                    </span>
+                    <input type="date" name="check_in_date" id="id_check_in_date" 
+                           class="form-control border-start-0" 
+                           value="{{ form.check_in_date.value|default_if_none:''|date:'Y-m-d' }}" required>
+                </div>
+                {% if form.check_in_date.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.check_in_date.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fas fa-clock"></i>
+                    </span>
+                    <select name="check_in_hour" id="id_check_in_hour" 
+                            class="form-select border-start-0" required>
+                        {% for hour in form.check_in_hour.field.choices %}
+                            <option value="{{ hour.0 }}" 
+                                {% if hour.0|stringformat:'s' == form.check_in_hour.value|stringformat:'s' %}selected{% endif %}>
+                                {{ hour.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if form.check_in_hour.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.check_in_hour.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+                <i class="fas fa-hourglass"></i>
+            </span>
+            <select name="duration" id="id_duration" 
+                    class="form-select border-start-0" required>
+                {% for duration in form.duration.field.choices %}
+                    <option value="{{ duration.0 }}" 
+                        {% if duration.0|stringformat:'s' == form.duration.value|stringformat:'s' %}selected{% endif %}>
+                        {{ duration.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if form.duration.errors %}
+            <div class="text-danger small mt-1">
+                {{ form.duration.errors }}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div id="availability-message" class="alert d-none"></div>
+</div>
+
+                        <!-- Extra Services Section -->
                         <div class="mb-4">
-                            <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="id_check_in_date" class="form-label">Check-in Date</label>
-                                    <input type="date" name="check_in_date" id="id_check_in_date" class="form-control" value="{{ form.check_in_date.value|default_if_none:''|date:'Y-m-d' }}" required>
-                                    {% if form.check_in_date.errors %}
-                                        <div class="text-danger small mt-1">
-                                            {{ form.check_in_date.errors }}
+                            <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-concierge-bell me-2"></i>Extra Services (Optional)</h4>
+                            {% if form.extras.field.queryset.exists %}
+                                <div class="row">
+                                    {% for extra in form.extras.field.queryset %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="extras" value="{{ extra.id }}" id="id_extras_{{ extra.id }}" class="form-check-input extra-checkbox" {% if extra.id in form.extras.value %}checked{% endif %}>
+                                                <label class="form-check-label" for="id_extras_{{ extra.id }}">
+                                                    {{ extra.name }} (₦{{ extra.price }})
+                                                </label>
+                                            </div>
                                         </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="id_check_in_hour" class="form-label">Check-in Time</label>
-                                    <select name="check_in_hour" id="id_check_in_hour" class="form-select" required>
-                                        {% for hour in form.check_in_hour.field.choices %}
-                                            <option value="{{ hour.0 }}" {% if hour.0|stringformat:'s' == form.check_in_hour.value|stringformat:'s' %}selected{% endif %}>{{ hour.1 }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    {% if form.check_in_hour.errors %}
-                                        <div class="text-danger small mt-1">
-                                            {{ form.check_in_hour.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="id_duration" class="form-label">Duration</label>
-                                <select name="duration" id="id_duration" class="form-select" required>
-                                    {% for duration in form.duration.field.choices %}
-                                        <option value="{{ duration.0 }}" {% if duration.0|stringformat:'s' == form.duration.value|stringformat:'s' %}selected{% endif %}>{{ duration.1 }}</option>
                                     {% endfor %}
-                                </select>
-                                {% if form.duration.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {{ form.duration.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div id="availability-message" class="alert d-none"></div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No extra services available for this hotel.</p>
+                            {% endif %}
+                            {% if form.extras.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.extras.errors }}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <!-- Booking Summary -->
@@ -129,8 +181,12 @@
                                     <div class="col-6 text-end fw-bold" id="duration">-- hours</div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-6">Service Charge (5%):</div>
+                                    <div class="col-6">Service Charge (10%):</div>
                                     <div class="col-6 text-end fw-bold" id="service-charge">₦--</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">Extras Cost:</div>
+                                    <div class="col-6 text-end fw-bold" id="extras-cost">₦0</div>
                                 </div>
                                 <hr>
                                 <div class="row">
@@ -191,19 +247,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const availabilityMessage = document.getElementById('availability-message');
     const durationElement = document.getElementById('duration');
     const serviceChargeElement = document.getElementById('service-charge');
+    const extrasCostElement = document.getElementById('extras-cost');
     const totalAmountElement = document.getElementById('total-amount');
     const pricePerHour = {{ room.price_per_hour }};
+    const extraCheckboxes = document.querySelectorAll('.extra-checkbox');
 
     checkInDateInput.setAttribute('min', today);
 
     function updateSummary() {
         const duration = durationInput.value;
+        let extrasCost = 0;
+        extraCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const extraId = checkbox.value;
+                const label = checkbox.nextElementSibling.textContent;
+                const priceMatch = label.match(/₦(\d+(\.\d+)?)/);
+                if (priceMatch) {
+                    extrasCost += parseFloat(priceMatch[1]);
+                }
+            }
+        });
+
         if (duration) {
             const baseAmount = duration * pricePerHour;
-            const serviceCharge = baseAmount * 0.05;
-            const totalAmount = (baseAmount + serviceCharge).toFixed(2);
+            const serviceCharge = baseAmount * 0.10;
+            const totalAmount = (baseAmount + serviceCharge + extrasCost).toFixed(2);
             durationElement.textContent = `${duration} hours`;
             serviceChargeElement.textContent = `₦${serviceCharge.toLocaleString()}`;
+            extrasCostElement.textContent = `₦${extrasCost.toLocaleString()}`;
             totalAmountElement.textContent = `₦${parseFloat(totalAmount).toLocaleString()}`;
         }
     }
@@ -246,6 +317,18 @@ document.addEventListener('DOMContentLoaded', function () {
     checkInDateInput.addEventListener('change', checkAvailability);
     checkInHourInput.addEventListener('change', checkAvailability);
     durationInput.addEventListener('change', checkAvailability);
+    extraCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSummary);
+    });
+
+    const bookingForm = document.getElementById('booking-form');
+    bookingForm.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    });
+
+    // Initial update
+    updateSummary();
 });
 </script>
 {% endblock %}

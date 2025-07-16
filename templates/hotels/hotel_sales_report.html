@@ -25,20 +25,24 @@
             <thead class="table-dark">
                 <tr>
                     <th>Date</th>
-                    <th>Total Sales</th>
                     <th>Number of Bookings</th>
+                    <th>Total Sales</th>
+                    <th>Commission (5%)</th>
+                    <th>Payout</th>
                 </tr>
             </thead>
             <tbody>
                 {% for data in sales_data %}
                 <tr>
                     <td>{{ data.date }}</td>
-                    <td>₦{{ data.total_sales }}</td>
                     <td>{{ data.booking_count }}</td>
+                    <td>₦{{ data.total_sales|floatformat:2 }}</td>
+                    <td>₦{{ data.commission|floatformat:2 }}</td>
+                    <td>₦{{ data.payout|floatformat:2 }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="3" class="text-center">No sales data available for the selected period.</td>
+                    <td colspan="5" class="text-center">No sales data available for the selected period.</td>
                 </tr>
                 {% endfor %}
             </tbody>

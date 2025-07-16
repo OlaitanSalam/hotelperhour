@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.views.generic import DetailView
 from geopy.distance import geodesic
 from django.conf import settings
-from .forms import HotelForm, RoomFormSet
+from .forms import HotelForm, RoomFormSet, ExtraServiceFormSet
 from .models import Hotel, Room
 from django.utils import timezone
 from django.db.models import Sum, Count
@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from urllib.parse import urlencode
+from decimal import Decimal
 
 def hotel_owner_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -37,47 +38,52 @@ def hotel_create(request):
         return redirect('hotel_dashboard')
     if request.method == 'POST':
         form = HotelForm(request.POST, request.FILES)
-        formset = RoomFormSet(request.POST, request.FILES, prefix='room')
-        if form.is_valid() and formset.is_valid():
+        room_formset = RoomFormSet(request.POST, request.FILES, prefix='room')
+        extra_formset = ExtraServiceFormSet(request.POST, prefix='extra')
+        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid():
             hotel = form.save(commit=False)
             hotel.owner = request.user
             hotel.save()
-            for room_form in formset:
-                if room_form.cleaned_data and not room_form.cleaned_data.get('DELETE', False):
-                    room = room_form.save(commit=False)
-                    room.hotel = hotel
-                    room.save()
+            room_formset.instance = hotel
+            room_formset.save()
+            extra_formset.instance = hotel
+            extra_formset.save()
             if not request.user.is_hotel_owner:
                 request.user.is_hotel_owner = True
                 request.user.save()
             return redirect('hotel_dashboard')
     else:
         form = HotelForm()
-        formset = RoomFormSet(prefix='room')
+        room_formset = RoomFormSet(prefix='room')
+        extra_formset = ExtraServiceFormSet(prefix='extra')
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
-        'formset': formset,
+        'room_formset': room_formset,
+        'extra_formset': extra_formset,
         'mapbox_access_token': settings.MAPBOX_ACCESS_TOKEN
     })
 
 @login_required
 @hotel_owner_required
 def hotel_edit(request, slug):
-    # Changed from pk to slug
     hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
     if request.method == 'POST':
         form = HotelForm(request.POST, request.FILES, instance=hotel)
-        formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room')
-        if form.is_valid() and formset.is_valid():
+        room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room')
+        extra_formset = ExtraServiceFormSet(request.POST, instance=hotel, prefix='extra')
+        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid():
             form.save()
-            formset.save()
+            room_formset.save()
+            extra_formset.save()
             return redirect('hotel_dashboard')
     else:
         form = HotelForm(instance=hotel)
-        formset = RoomFormSet(instance=hotel, prefix='room')
+        room_formset = RoomFormSet(instance=hotel, prefix='room')
+        extra_formset = ExtraServiceFormSet(instance=hotel, prefix='extra')
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
-        'formset': formset,
+        'room_formset': room_formset,
+        'extra_formset': extra_formset,
         'mapbox_access_token': settings.MAPBOX_ACCESS_TOKEN,
         'is_edit': True,
         'hotel': hotel
@@ -205,7 +211,6 @@ def toggle_room_availability(request, hotel_slug, room_id):
 @login_required
 @hotel_owner_required
 def hotel_sales_report(request, slug):
-    # Changed from hotel_id to slug
     hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
     form = DateRangeForm(request.GET or None)
     if form.is_valid():
@@ -214,11 +219,21 @@ def hotel_sales_report(request, slug):
     else:
         end_date = timezone.now().date()
         start_date = end_date - timezone.timedelta(days=30)
-    sales_data = Booking.objects.filter(room__hotel=hotel, check_in__date__range=(start_date, end_date)) \
-                               .annotate(date=TruncDate('check_in')) \
-                               .values('date') \
-                               .annotate(total_sales=Sum('total_price'), booking_count=Count('id')) \
-                               .order_by('date')
+    
+    sales_data = Booking.objects.filter(
+        room__hotel=hotel, 
+        check_in__date__range=(start_date, end_date),
+        is_paid=True  # Only paid bookings contribute to sales
+    ).annotate(date=TruncDate('check_in')).values('date').annotate(
+        total_sales=Sum('total_price'), 
+        booking_count=Count('id')
+    ).order_by('date')
+    
+    # Calculate commission and payout
+    for data in sales_data:
+        data['commission'] = data['total_sales'] * Decimal('0.05')  # 5% commission
+        data['payout'] = data['total_sales'] - data['commission']
+    
     paginator = Paginator(sales_data, 10)  # 10 days per page
     page = request.GET.get('page')
     try:
@@ -227,15 +242,41 @@ def hotel_sales_report(request, slug):
         sales_data_page = paginator.page(1)
     except EmptyPage:
         sales_data_page = paginator.page(paginator.num_pages)
+    
     query_params = request.GET.copy()
     if 'page' in query_params:
         del query_params['page']
     query_string = urlencode(query_params)
+    
     return render(request, 'hotels/hotel_sales_report.html', {
         'hotel': hotel,
         'form': form,
         'sales_data': sales_data_page,
         'query_string': query_string
+    })
+
+@login_required
+@hotel_owner_required
+def cancel_booking(request, slug, booking_id):
+    hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    booking = get_object_or_404(Booking, id=booking_id, room__hotel=hotel)
+    if booking.is_paid:
+        messages.error(request, "Cannot cancel a paid booking.")
+    else:
+        booking.delete()
+        messages.success(request, "Booking cancelled successfully.")
+    return redirect('hotel_bookings', slug=slug)
+
+@login_required
+@hotel_owner_required
+def confirm_cancel_booking(request, slug, booking_id):
+    """Show cancellation confirmation page"""
+    hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    booking = get_object_or_404(Booking, id=booking_id, room__hotel=hotel)
+    
+    return render(request, 'hotels/cancel_booking2.html', {
+        'hotel': hotel,
+        'booking': booking
     })
 
 def about(request):
