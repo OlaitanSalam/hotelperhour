@@ -26,7 +26,7 @@
                     <div class="col-md-6">
                         <h5 class="mb-3">Timing</h5>
                         <p><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y g:i A" }}</p>
-                        <p><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y g:i A" }}</p>
+<p><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y g:i A" }}</p>
                         <p><strong>Status:</strong> 
                             {% if booking.is_paid %}
                                 <span class="badge bg-success">Paid</span>
@@ -38,9 +38,11 @@
                 </div>
             </div>
             
+            
+
             <div class="row">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <form method="post" action="{% url 'cancel_booking' booking_reference=booking.booking_reference %}">
+                    <form method="post" action="{% url 'cancel_booking' slug=hotel.slug booking_id=booking.id %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger w-100">
                             <i class="bi bi-trash me-1"></i> Confirm Cancellation
@@ -48,11 +50,14 @@
                     </form>
                 </div>
                 <div class="col-12 col-md-6">
-                    <a href="{% url 'booking_confirmation' booking_reference=booking.booking_reference %}" class="btn btn-outline-secondary w-100">
+                    <a href="{% url 'hotel_bookings' slug=hotel.slug %}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left me-1"></i> Back to Bookings
                     </a>
                 </div>
             </div>
+
+
+
         </div>
     </div>
 </div>

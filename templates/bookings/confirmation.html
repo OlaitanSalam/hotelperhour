@@ -113,9 +113,23 @@
                                     <span class="label">Total Hours:</span>
                                     <span class="value">{{ booking.total_hours }}</span>
                                 </div>
+                                <div class="info-item">
+                                    <span class="label">Room Cost:</span>
+                                    <span class="value">₦{{ booking.total_price|floatformat:0 }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Service Charge:</span>
+                                    <span class="value">₦{{ booking.service_charge|floatformat:0 }}</span>
+                                </div>
+                                {% if booking.extras.exists %}
+                                    <div class="info-item">
+                                        <span class="label">Extras Cost:</span>
+                                        <span class="value">₦{{ extras_cost|floatformat:0 }}</span>
+                                    </div>
+                                {% endif %}
                                 <div class="info-item total-price">
                                     <span class="label">Total Amount:</span>
-                                    <span class="value text-success fw-bold">₦{{ booking.total_price|floatformat:0 }}</span>
+                                    <span class="value text-success fw-bold">₦{{ booking.total_amount|floatformat:0 }}</span>
                                 </div>
                             </div>
                         </div>
@@ -140,17 +154,13 @@
                     <div class="action-buttons">
                         {% if not booking.is_paid %}
                             <div class="row g-2">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <a href="{% url 'initiate_payment' booking_reference=booking.booking_reference %}" class="btn btn-success w-100">
-    <i class="fas fa-credit-card me-2"></i>Pay Now
-</a>
+                                        <i class="fas fa-credit-card me-2"></i>Pay Now
+                                    </a>
                                 </div>
-                                <div class="col-md-4">
-                                    <button class="btn btn-outline-secondary w-100">
-                                        <i class="fas fa-clock me-2"></i>Pay Later
-                                    </button>
-                                </div>
-                                <div class="col-md-4">
+                                
+                                <div class="col-md-6">
                                     <a href="{% url 'cancel_booking' booking_reference=booking.booking_reference %}" class="btn btn-outline-danger w-100">
                                         <i class="fas fa-times me-2"></i>Cancel
                                     </a>

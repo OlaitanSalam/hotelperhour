@@ -10,11 +10,12 @@
                     <h2 class="card-title text-center mb-4 fw-bold">
                         {% if is_edit %}Edit Hotel{% else %}Register a Hotel{% endif %}
                     </h2>
-                    {% if form.errors or formset.errors %}
+                    {% if form.errors or room_formset.errors or extra_formset.errors %}
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             {% for field in form %}{{ field.errors }}{% endfor %}
                             {{ form.non_field_errors }}
-                            {% for form in formset %}{{ form.errors }}{% endfor %}
+                            {% for form in room_formset %}{{ form.errors }}{% endfor %}
+                            {% for form in extra_formset %}{{ form.errors }}{% endfor %}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endif %}
@@ -27,7 +28,6 @@
                                 <h4 class="mb-0 fw-semibold"><i class="fas fa-hotel me-2"></i>Hotel Information</h4>
                             </div>
                             <div class="card-body">
-                                <!-- Name and Address -->
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_name" class="form-label fw-semibold">Hotel Name *</label>
@@ -38,7 +38,6 @@
                                         {{ form.address }}
                                     </div>
                                 </div>
-                                <!-- Email and Phone -->
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_hotel_email" class="form-label fw-semibold">Hotel Email *</label>
@@ -49,12 +48,10 @@
                                         {{ form.hotel_phone }}
                                     </div>
                                 </div>
-                                <!-- Description -->
                                 <div class="mb-3">
                                     <label for="id_description" class="form-label fw-semibold">Description</label>
                                     {{ form.description }}
                                 </div>
-                                <!-- Hotel Image -->
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="id_image" class="form-label fw-semibold">Hotel Image</label>
@@ -85,7 +82,6 @@
                                 <h4 class="mb-0 fw-semibold"><i class="fas fa-map-marker-alt me-2"></i>Location</h4>
                             </div>
                             <div class="card-body">
-                                <!-- Map Style Toggle -->
                                 <div class="mb-3">
                                     <label for="map-style" class="form-label fw-semibold">Map Style</label>
                                     <select id="map-style" class="form-select w-auto">
@@ -103,12 +99,12 @@
                         <!-- Rooms Section -->
                         <div class="card mb-4 border-0 shadow-sm">
                             <div class="card-header bg-light">
-                                <h4 class="mb-0 fw-semibold"><i class="fas fa-bed me-2"></i>Rooms (<span id="room-count">{{ formset.forms|length }}</span>)</h4>
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-bed me-2"></i>Rooms (<span id="room-count">{{ room_formset.forms|length }}</span>)</h4>
                             </div>
                             <div class="card-body">
-                                {{ formset.management_form }}
+                                {{ room_formset.management_form }}
                                 <div id="room-forms">
-                                    {% for form in formset %}
+                                    {% for form in room_formset %}
                                         <div class="room-form-container mb-3 animate__animated animate__fadeIn">
                                             <div class="room-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#room-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="room-collapse-{{ forloop.counter }}">
                                                 <h6 class="room-form-title mb-0 fw-semibold">
@@ -118,7 +114,6 @@
                                             </div>
                                             <div id="room-collapse-{{ forloop.counter }}" class="room-form-content p-3 collapse">
                                                 {{ form.id }}
-                                                <!-- Room Type and Price -->
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.room_type.id_for_label }}" class="form-label fw-semibold">Room Type *</label>
@@ -132,7 +127,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- Capacity and Image -->
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.capacity.id_for_label }}" class="form-label fw-semibold">Capacity *</label>
@@ -159,7 +153,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- Description -->
                                                 <div class="row mb-3">
                                                     <div class="col-12">
                                                         <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
@@ -167,7 +160,6 @@
                                                         <small class="form-text text-muted">Brief description of room features</small>
                                                     </div>
                                                 </div>
-                                                <!-- Delete Option -->
                                                 {% if form.DELETE %}
                                                     <div class="row">
                                                         <div class="col-12">
@@ -184,8 +176,7 @@
                                         </div>
                                     {% endfor %}
                                 </div>
-                                <!-- No Rooms Message -->
-                                <div id="no-rooms-message" class="text-center py-4" style="display: {% if formset.forms|length == 0 %}block{% else %}none{% endif %};">
+                                <div id="no-rooms-message" class="text-center py-4" style="display: {% if room_formset.forms|length == 0 %}block{% else %}none{% endif %};">
                                     <i class="fas fa-bed fa-3x text-muted mb-3"></i>
                                     <h6 class="text-muted">No rooms added yet</h6>
                                     <p class="text-muted mb-3">Add your first room to get started</p>
@@ -193,10 +184,72 @@
                                         <i class="fas fa-plus me-2"></i>Add First Room
                                     </button>
                                 </div>
-                                <!-- Add Room Button -->
                                 <div class="d-flex justify-content-end mt-3">
                                     <button type="button" id="add-room" class="btn btn-primary">
                                         <i class="fas fa-plus me-2"></i>Add Room
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Extra Services Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-concierge-bell me-2"></i>Extra Services (<span id="extra-count">{{ extra_formset.forms|length }}</span>)</h4>
+                            </div>
+                            <div class="card-body">
+                                {{ extra_formset.management_form }}
+                                <div id="extra-forms">
+                                    {% for form in extra_formset %}
+                                        <div class="extra-form-container mb-3 animate__animated animate__fadeIn">
+                                            <div class="extra-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#extra-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="extra-collapse-{{ forloop.counter }}">
+                                                <h6 class="extra-form-title mb-0 fw-semibold">
+                                                    <i class="fas fa-concierge-bell me-2 text-primary"></i>Extra Service {{ forloop.counter }}: {{ form.name.value|default:"Unnamed" }}
+                                                </h6>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
+                                            </div>
+                                            <div id="extra-collapse-{{ forloop.counter }}" class="extra-form-content p-3 collapse">
+                                                {{ form.id }}
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                        <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">Service Name *</label>
+                                                        {{ form.name }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="{{ form.price.id_for_label }}" class="form-label fw-semibold">Price *</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">₦</span>
+                                                            {{ form.price }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% if form.DELETE %}
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="form-check p-2 bg-light border border-warning rounded">
+                                                                {{ form.DELETE }}
+                                                                <label class="form-check-label fw-semibold text-danger" for="{{ form.DELETE.id_for_label }}">
+                                                                    <i class="fas fa-exclamation-triangle me-1"></i>Delete Extra Service
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div id="no-extras-message" class="text-center py-4" style="display: {% if extra_formset.forms|length == 0 %}block{% else %}none{% endif %};">
+                                    <i class="fas fa-concierge-bell fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No extra services added yet</h6>
+                                    <p class="text-muted mb-3">Add your first extra service if desired</p>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('add-extra').click()">
+                                        <i class="fas fa-plus me-2"></i>Add First Extra Service
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="add-extra" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Extra Service
                                     </button>
                                 </div>
                             </div>
@@ -215,7 +268,6 @@
     </div>
 </div>
 
-<!-- External Libraries -->
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
@@ -224,7 +276,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
 <style>
-/* Custom Styles */
 .form-control, .form-select {
     padding: 0.75rem;
     border-radius: 0.5rem;
@@ -243,8 +294,7 @@
     border-bottom: 1px solid #dee2e6;
 }
 
-/* Room Form Styling */
-.room-form-container {
+.room-form-container, .extra-form-container {
     border: 1px solid #e9ecef;
     border-radius: 8px;
     background: #ffffff;
@@ -252,27 +302,26 @@
     margin-bottom: 1rem !important;
 }
 
-.room-form-container:hover {
+.room-form-container:hover, .extra-form-container:hover {
     border-color: #007bff;
     box-shadow: 0 2px 10px rgba(0, 123, 255, 0.1);
 }
 
-.room-form-header {
+.room-form-header, .extra-form-header {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid #dee2e6;
     cursor: pointer;
 }
 
-.room-form-title {
+.room-form-title, .extra-form-title {
     color: #495057;
     font-weight: 600;
 }
 
-.room-form-content {
+.room-form-content, .extra-form-content {
     padding: 1rem;
 }
 
-/* Image Upload Styling */
 .image-upload-container {
     position: relative;
 }
@@ -305,25 +354,22 @@
     background-color: #e3f2fd;
 }
 
-/* Description Textarea */
 textarea[id$=-description] {
     resize: vertical;
     min-height: 60px;
     max-height: 60px;
 }
 
-/* Toggle Icon */
 .toggle-icon {
     transition: transform 0.3s ease;
 }
 
-.room-form-header[aria-expanded="true"] .toggle-icon {
+.room-form-header[aria-expanded="true"] .toggle-icon, .extra-form-header[aria-expanded="true"] .toggle-icon {
     transform: rotate(180deg);
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .room-form-content, .room-form-header {
+    .room-form-content, .room-form-header, .extra-form-content, .extra-form-header {
         padding: 0.75rem;
     }
     .card-body {
@@ -339,19 +385,17 @@ textarea[id$=-description] {
 }
 
 @media (max-width: 576px) {
-    .room-form-header .d-flex {
+    .room-form-header .d-flex, .extra-form-header .d-flex {
         flex-direction: column;
         gap: 0.5rem;
     }
 }
 
-/* Map Styling */
 #map {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
 }
 
-/* Button Styling */
 .btn {
     border-radius: 0.5rem;
     font-weight: 500;
@@ -362,7 +406,6 @@ textarea[id$=-description] {
     transform: translateY(-1px);
 }
 
-/* Form Validation */
 .is-invalid {
     border-color: #dc3545;
 }
@@ -370,16 +413,13 @@ textarea[id$=-description] {
     border-color: #28a745;
 }
 
-/* Delete Checkbox Styling */
 .form-check {
     padding: 0.5rem;
 }
 </style>
 
 <script>
-// Initialize form elements
 document.addEventListener('DOMContentLoaded', function() {
-    // Add form-control classes
     document.querySelectorAll('input, select, textarea').forEach(element => {
         if (!element.classList.contains('form-control') && !element.classList.contains('form-select') && !element.classList.contains('form-check-input')) {
             if (element.tagName === 'SELECT') {
@@ -390,13 +430,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Set description textarea rows
     document.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
         textarea.setAttribute('rows', '2');
         textarea.classList.add('form-control');
     });
 
-    // Update room count and titles
     function updateRoomCount() {
         const roomCount = document.querySelectorAll('.room-form-container').length;
         document.getElementById('room-count').textContent = roomCount;
@@ -408,7 +446,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize Mapbox
+    function updateExtraCount() {
+        const extraCount = document.querySelectorAll('.extra-form-container').length;
+        document.getElementById('extra-count').textContent = extraCount;
+        document.getElementById('no-extras-message').style.display = extraCount === 0 ? 'block' : 'none';
+        document.querySelectorAll('.extra-form-title').forEach((title, index) => {
+            const extraNameInput = title.closest('.extra-form-container').querySelector('input[id$=-name]');
+            const extraName = extraNameInput ? extraNameInput.value || 'Unnamed' : 'Unnamed';
+            title.innerHTML = `<i class="fas fa-concierge-bell me-2 text-primary"></i>Extra Service ${index + 1}: ${extraName}`;
+        });
+    }
+
     mapboxgl.accessToken = '{{ mapbox_access_token }}';
     var initialLat = {% if is_edit %}{{ hotel.latitude|default_if_none:8.6753 }}{% else %}8.6753{% endif %};
     var initialLng = {% if is_edit %}{{ hotel.longitude|default_if_none:9.0820 }}{% else %}9.0820{% endif %};
@@ -468,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Handle adding new rooms
     document.getElementById('add-room').addEventListener('click', function() {
         var formset = document.getElementById('room-forms');
         var totalForms = document.querySelector('#id_room-TOTAL_FORMS');
@@ -481,19 +528,16 @@ document.addEventListener('DOMContentLoaded', function() {
         newForm.innerHTML = newForm.innerHTML.replace(/room-\d+-/g, `room-${formCount}-`).replace(/room-collapse-\d+/g, `room-collapse-${formCount + 1}`);
         newForm.classList.add('animate__animated', 'animate__fadeIn');
 
-        // Clear all input values in the new form
         newForm.querySelectorAll('input, textarea, select').forEach(input => {
             input.value = '';
             if (input.type === 'checkbox') input.checked = false;
         });
 
-        // Ensure description textarea has only 2 rows
         newForm.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
             textarea.setAttribute('rows', '2');
             textarea.classList.add('form-control');
         });
 
-        // Remove any existing images
         newForm.querySelectorAll('.room-image-preview').forEach(img => {
             img.parentElement.innerHTML = `
                 <div class="default-image-placeholder">
@@ -505,12 +549,10 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         });
 
-        // Remove DELETE input for new forms
         newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
             input.parentElement.remove();
         });
 
-        // Reset collapse state
         newForm.querySelector('.room-form-content').classList.remove('show');
 
         formset.appendChild(newForm);
@@ -519,8 +561,37 @@ document.addEventListener('DOMContentLoaded', function() {
         newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
-    // Initial room count update
+    document.getElementById('add-extra').addEventListener('click', function() {
+        var formset = document.getElementById('extra-forms');
+        var totalForms = document.querySelector('#id_extra-TOTAL_FORMS');
+        var formCount = parseInt(totalForms.value);
+        var templateForm = formset.querySelector('.extra-form-container');
+
+        if (!templateForm) return;
+
+        var newForm = templateForm.cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/extra-\d+-/g, `extra-${formCount}-`).replace(/extra-collapse-\d+/g, `extra-collapse-${formCount + 1}`);
+        newForm.classList.add('animate__animated', 'animate__fadeIn');
+
+        newForm.querySelectorAll('input, textarea, select').forEach(input => {
+            input.value = '';
+            if (input.type === 'checkbox') input.checked = false;
+        });
+
+        newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
+            input.parentElement.remove();
+        });
+
+        newForm.querySelector('.extra-form-content').classList.remove('show');
+
+        formset.appendChild(newForm);
+        totalForms.value = formCount + 1;
+        updateExtraCount();
+        newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
     updateRoomCount();
+    updateExtraCount();
 });
 </script>
 {% endblock %}

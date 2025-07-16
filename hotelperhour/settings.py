@@ -142,13 +142,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # File system path for uploads
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+##EMAIL_HOST = 'smtp.mailersend.net'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+#EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+#DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mailersend.net'
+EMAIL_HOST = 'smtp.titan.email'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_HOST_USER = 'no-reply@hotelsperhour.com'
+EMAIL_HOST_PASSWORD = 'antroJan50b@'
+DEFAULT_FROM_EMAIL = 'Hotel Per Hour<no-reply@hotelsperhour.com>'
 
 MAPBOX_ACCESS_TOKEN = config('MAPBOX_ACCESS_TOKEN')
 

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Booking, BookingDuration
+from hotels.models import ExtraService
 from django.utils import timezone
 
 class BookingForm(forms.ModelForm):
@@ -16,10 +17,21 @@ class BookingForm(forms.ModelForm):
     name = forms.CharField(max_length=100, label="Full Name")
     email = forms.EmailField(label="Email Address")
     phone_number = forms.CharField(max_length=15, label="Phone Number")
+    extras = forms.ModelMultipleChoiceField(
+        queryset=ExtraService.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
 
     class Meta:
         model = Booking
-        fields = ['check_in_date', 'check_in_hour', 'duration', 'name', 'email', 'phone_number']
+        fields = ['check_in_date', 'check_in_hour', 'duration', 'name', 'email', 'phone_number', 'extras']
+
+    def __init__(self, *args, **kwargs):
+        room = kwargs.pop('room', None)
+        super().__init__(*args, **kwargs)
+        if room:
+            self.fields['extras'].queryset = ExtraService.objects.filter(hotel=room.hotel)
 
     def clean_name(self):
         return self.cleaned_data['name'].title()

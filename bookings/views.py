@@ -15,6 +15,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 import logging
 from django.utils import timezone
+from decimal import Decimal
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -22,13 +23,26 @@ logger = logging.getLogger(__name__)
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
     if request.method == 'POST':
-        form = BookingForm(request.POST)
+        form = BookingForm(request.POST, room=room)
         if form.is_valid():
+            check_in = form.cleaned_data['check_in']
+            check_out = form.cleaned_data['check_out']
+            duration = form.cleaned_data['duration']
+            extras = form.cleaned_data['extras']
+
+            # Calculate costs
+            total_hours = duration
+            room_cost = room.price_per_hour * Decimal(str(total_hours))
+            service_charge = room_cost * Decimal('0.10')
+            extras_cost = sum(extra.price for extra in extras)
+
             booking = form.save(commit=False)
-            booking.check_in = form.cleaned_data['check_in']
-            booking.check_out = form.cleaned_data['check_out']
-            booking.duration = form.cleaned_data['duration']
             booking.room = room
+            booking.check_in = check_in
+            booking.check_out = check_out
+            booking.total_hours = total_hours
+            booking.total_price = room_cost
+            booking.service_charge = service_charge
             booking.name = form.cleaned_data['name']
             booking.phone_number = form.cleaned_data['phone_number']
             booking.email = form.cleaned_data['email']
@@ -37,20 +51,22 @@ def book_room(request, room_id):
             if not is_room_available(room, booking.check_in, booking.check_out):
                 form.add_error(None, "This room is not available for the selected time slot.")
                 return render(request, 'bookings/book_room.html', {'form': form, 'room': room})
-            booking.save()
-            
-            # Send email to hotel owner asynchronously
+            booking.save(update_total_amount=True)  # First save: sets total_amount to total_price + service_charge
+            form.save_m2m()  # Save the many-to-many extras
+            # Update total_amount including extras
+            booking.total_amount = room_cost + service_charge + extras_cost
+            booking.save(update_total_amount=False)  # Second save: preserves total_amount with extras
+
             try:
                 subject = 'New Booking Notification'
                 message = render_to_string('bookings/booking_notification.html', {'booking': booking})
                 send_mail(subject, '', None, [booking.room.hotel.owner.email], html_message=message)
             except Exception as e:
                 logger.error(f"Failed to send booking notification email for booking {booking.booking_reference}: {str(e)}")
-                # Continue with booking process even if email fails
-            
+
             return redirect('booking_confirmation', booking_reference=booking.booking_reference)
     else:
-        form = BookingForm()
+        form = BookingForm(room=room)
     return render(request, 'bookings/book_room.html', {'form': form, 'room': room})
 
 def initiate_payment(request, booking_reference):
@@ -81,7 +97,7 @@ def payment_callback(request):
         if verify_payment(reference):
             booking.is_paid = True
             booking.payment_reference = reference
-            booking.save()
+            booking.save(update_total_amount=False)  # Prevent recalculation of total_amount
         return redirect('booking_confirmation', booking_reference=booking.booking_reference)
 
 @csrf_exempt
@@ -93,7 +109,7 @@ def paystack_webhook(request):
             booking = Booking.objects.get(booking_reference=reference)
             booking.is_paid = True
             booking.payment_reference = reference
-            booking.save()
+            booking.save(update_total_amount=False)  # Prevent recalculation of total_amount
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
 
@@ -105,7 +121,12 @@ def verify_payment(reference):
 
 def booking_confirmation(request, booking_reference):
     booking = get_object_or_404(Booking, booking_reference=booking_reference)
-    return render(request, 'bookings/confirmation.html', {'booking': booking})
+    extras_cost = sum(extra.price for extra in booking.extras.all())
+    context = {
+        'booking': booking,
+        'extras_cost': extras_cost,
+    }
+    return render(request, 'bookings/confirmation.html', context)
 
 def is_room_available(room, check_in, check_out):
     return not Booking.objects.filter(

@@ -19,13 +19,119 @@
                 <a href="{% url 'hotel_list' %}" class="btn btn-primary" type="button">Book&nbsp; A Room</a>
             </div>
             <div class="col-12 col-lg-10 mx-auto">
-                <div class="text-center position-relative"></div>
+                <div class="text-center position-relative">
+                    <!-- Hotel Images Carousel Section - Static (No AOS) -->
+                    <div class="mt-5">
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h3 class="fw-bold mb-2">Discover Amazing Hotels</h3>
+                                <p class="text-muted">Premium accommodations for your hourly stays</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Carousel -->
+                        <div id="hotelCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                            </div>
+                            
+                            <div class="carousel-inner rounded-4 shadow-lg">
+                                <!-- Slide 1 - Luxury Suite -->
+                                <div class="carousel-item active">
+                                    <div class="row g-0">
+                                        <div class="col-md-8">
+                                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                                 class="d-block w-100 carousel-image" alt="Luxury Hotel Suite">
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-center">
+                                            <div class="carousel-content p-4 p-md-5">
+                                                <h4 class="fw-bold text-primary mb-3">Luxury Suites</h4>
+                                                <p class="text-muted mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service for your short-term stays.</p>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-2"></i>
+                                                    <small class="text-muted">5.0 Rating</small>
+                                                </div>
+                                                <p class="text-primary fw-bold mb-0">Starting from ₦15,000/hour</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Slide 2 - Business Hotel -->
+                                <div class="carousel-item">
+                                    <div class="row g-0">
+                                        <div class="col-md-8">
+                                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                                 class="d-block w-100 carousel-image" alt="Business Hotel">
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-center">
+                                            <div class="carousel-content p-4 p-md-5">
+                                                <h4 class="fw-bold text-primary mb-3">Business Hotels</h4>
+                                                <p class="text-muted mb-3">Perfect for business travelers and meetings. Our business hotels offer professional environments with high-speed WiFi and meeting facilities.</p>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star-half-alt text-warning me-2"></i>
+                                                    <small class="text-muted">4.5 Rating</small>
+                                                </div>
+                                                <p class="text-primary fw-bold mb-0">Starting from ₦8,000/hour</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Slide 3 - Boutique Hotel -->
+                                <div class="carousel-item">
+                                    <div class="row g-0">
+                                        <div class="col-md-8">
+                                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                                 class="d-block w-100 carousel-image" alt="Boutique Hotel">
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-center">
+                                            <div class="carousel-content p-4 p-md-5">
+                                                <h4 class="fw-bold text-primary mb-3">Boutique Hotels</h4>
+                                                <p class="text-muted mb-3">Unique and stylish accommodations with personalized service. Each boutique hotel offers distinctive character and memorable experiences.</p>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <i class="fas fa-star text-warning me-2"></i>
+                                                    <small class="text-muted">4.8 Rating</small>
+                                                </div>
+                                                <p class="text-primary fw-bold mb-0">Starting from ₦12,000/hour</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Carousel Controls -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </header>
 
-<section>
+<section id="how-it-works">
     <div class="container py-4 py-xl-5">
         <div class="row">
             <div class="col-md-6">
@@ -241,4 +347,151 @@
         </div>
     </div>
 </section>
+
+<style>
+/* Carousel Custom Styles */
+.carousel-image {
+    height: 400px;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.carousel-content {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    height: 400px; /* Fixed height to match image */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.carousel-inner {
+    overflow: hidden;
+}
+
+.carousel-item .row {
+    height: 400px; /* Consistent card height */
+}
+
+.carousel-indicators {
+    bottom: -50px;
+}
+
+.carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+    background-color: transparent;
+}
+
+.carousel-indicators button.active {
+    background-color: #007bff;
+}
+
+/* Brand Color Controls - Hidden by default */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.carousel:hover .carousel-control-prev,
+.carousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+
+
+.carousel-control-prev-icon:hover,
+.carousel-control-next-icon:hover {
+     /* Darker brand color on hover */
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .carousel-image {
+        height: 280px;
+    }
+    
+    .carousel-content {
+        height: 280px; /* Match image height */
+        padding: 1.5rem !important;
+    }
+    
+    .carousel-item .row {
+        height: 280px;
+    }
+    
+    .carousel-inner .row {
+        flex-direction: column;
+    }
+    
+    .carousel-content h4 {
+        font-size: 1.1rem;
+    }
+    
+    .carousel-content p {
+        font-size: 0.9rem;
+    }
+    
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+@media (max-width: 576px) {
+    .carousel-image {
+        height: 220px;
+    }
+    
+    .carousel-content {
+        height: 220px; /* Match image height */
+        padding: 1rem !important;
+    }
+    
+    .carousel-item .row {
+        height: 220px;
+    }
+    
+    .carousel-content h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .carousel-content p {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .carousel-indicators {
+        bottom: -30px;
+    }
+    
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* Smooth transitions */
+.carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+/* FontAwesome icons */
+.fas {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+</style>
+
+<!-- FontAwesome for star ratings -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
