@@ -16,7 +16,9 @@
                         Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere
                     </p>
                 </div>
-                <a href="{% url 'hotel_list' %}" class="btn btn-primary" type="button">Book&nbsp; A Room</a>
+                <div class="text-center">
+                    <a href="{% url 'hotel_list' %}" class="btn btn-primary" type="button">Book A Room</a>
+                </div>
             </div>
             <div class="col-12 col-lg-10 mx-auto">
                 <div class="text-center position-relative">
@@ -132,76 +134,64 @@
 </header>
 
 <section id="how-it-works">
-    <div class="container py-4 py-xl-5">
+    <div class="container py-4 py-xl-5" data-aos="fade-up" data-aos-duration="950">
         <div class="row">
-            <div class="col-md-6">
-                <h3 class="display-6 fw-bold pb-md-4" data-aos="fade-up" data-aos-duration="950" style="text-align: center;font-weight: bold;font-size: 29.4px;">
+            <div class="col-md-12 text-center">
+                <h3 class="display-6 fw-bold pb-md-4"  style="font-weight: bold; font-size: 29.4px;">
                     How It Works
                 </h3>
             </div>
-            <div class="col-md-6 pt-4">
-                <p class="text-muted mb-4" data-aos="fade-left" data-aos-duration="1000" style="text-align: center;font-weight: bold;">
-                    Simple. Fast. Flexible
-                </p>
-            </div>
         </div>
-        <div class="row gy-4 gy-md-0">
-            <div class="col-md-6 d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
-                <div>
-                    <div class="row gy-2 row-cols-1 row-cols-sm-2">
-                        <div class="col text-center text-md-start">
-                            <div class="d-flex justify-content-center align-items-center justify-content-md-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-location fs-3 text-primary bg-secondary" style="font-size: 27px;">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"></path>
-                                </svg>
-                                <h5 class="fw-bold mb-0 ms-2"><span style="color: rgba(18, 22, 67, 0.75);">Choose Your Location&nbsp;</span></h5>
-                            </div>
-                            <p class="text-muted my-3">Search by city or nearby hotels.</p>
+        <div class="row gy-4 justify-content-center">
+            <div class="col-md-8 d-flex flex-column align-items-center">
+                <div class="row gy-2 row-cols-1 row-cols-sm-2">
+                    <div class="col text-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-location fs-3 text-primary bg-secondary" style="font-size: 27px;">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"></path>
+                            </svg>
+                            <h5 class="fw-bold mb-0 ms-2"><span style="color: rgba(18, 22, 67, 0.75);">Choose Your Location</span></h5>
                         </div>
-                        <div class="col text-center text-md-start">
-                            <div class="d-flex justify-content-center align-items-center justify-content-md-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-time fs-3 text-primary bg-secondary" style="font-size: 27px;">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4"></path>
-                                    <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                                    <path d="M15 3v4"></path>
-                                    <path d="M7 3v4"></path>
-                                    <path d="M3 11h16"></path>
-                                    <path d="M18 16.496v1.504l1 1"></path>
-                                </svg>
-                                <h5 class="fw-bold mb-0 ms-2">Pick your Hours</h5>
-                            </div>
-                            <p class="text-muted my-3">Pick Your Hours – Select how long you want to stay (2, 4, 6 hours, etc.).</p>
-                        </div>
-                        <div class="col text-center text-md-start">
-                            <div class="d-flex justify-content-center align-items-center justify-content-md-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-clipboard-check fs-3 text-primary bg-secondary">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"></path>
-                                    <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
-                                    <path d="M9 14l2 2l4 -4"></path>
-                                </svg>
-                                <h5 class="fw-bold mb-0 ms-2">Book instantly</h5>
-                            </div>
-                            <p class="text-muted my-3">Book Instantly – Pay online or at the hotel. No hidden charges.</p>
-                        </div>
-                        <div class="col text-center text-md-start">
-                            <div class="d-flex justify-content-center align-items-center justify-content-md-start" style="font-weight: bold;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-circle-check-filled fs-3 text-primary bg-secondary" style="font-size: 27px;">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" stroke-width="0" fill="currentColor"></path>
-                                </svg>
-                                <h5 class="fw-bold mb-0 ms-2"><span style="color: rgba(18, 22, 67, 0.75);">Check In &amp; Relax</span></h5>
-                            </div>
-                            <p class="text-muted my-3">Check In &amp; Relax – Arrive, check in, and enjoy your stay.</p>
-                        </div>
+                        <p class="text-muted my-3">Search by city or nearby hotels.</p>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-6 order-first order-md-last">
-                <div>
-                    <img class="rounded img-fluid w-100 fit-cover" data-aos="fade-up" data-aos-duration="1100" style="min-height: 300px;" src="{% static 'img/illustrations/77051424-41cf-4c9b-9c14-4e2e12147a3d_removalai_preview.png' %}">
+                    <div class="col text-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-time fs-3 text-primary bg-secondary" style="font-size: 27px;">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4"></path>
+                                <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                <path d="M15 3v4"></path>
+                                <path d="M7 3v4"></path>
+                                <path d="M3 11h16"></path>
+                                <path d="M18 16.496v1.504l1 1"></path>
+                            </svg>
+                            <h5 class="fw-bold mb-0 ms-2">Pick your Hours</h5>
+                        </div>
+                        <p class="text-muted my-3">Select how long you want to stay (2, 4, 6 hours, etc.).</p>
+                    </div>
+                    <div class="col text-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-clipboard-check fs-3 text-primary bg-secondary">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"></path>
+                                <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                                <path d="M9 14l2 2l4 -4"></path>
+                            </svg>
+                            <h5 class="fw-bold mb-0 ms-2">Book instantly</h5>
+                        </div>
+                        <p class="text-muted my-3">Pay online or at the hotel. No hidden charges.</p>
+                    </div>
+                    <div class="col text-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-circle-check-filled fs-3 text-primary bg-secondary" style="font-size: 27px;">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" stroke-width="0" fill="currentColor"></path>
+                            </svg>
+                            <h5 class="fw-bold mb-0 ms-2"><span style="color: rgba(18, 22, 67, 0.75);">Check In & Relax</span></h5>
+                        </div>
+                        <p class="text-muted my-3">Arrive, check in, and enjoy your stay.</p>
+                    </div>
                 </div>
             </div>
         </div>

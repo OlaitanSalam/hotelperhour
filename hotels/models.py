@@ -16,6 +16,9 @@ class Hotel(models.Model):
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
+    account_number = models.CharField(max_length=20, null=True, blank=True)  # Bank account number (Nigerian standard: 10 digits)
+    account_name = models.CharField(max_length=255, null=True, blank=True)  # Name on the bank account
+    bank_name = models.CharField(max_length=255, null=True, blank=True)  # Name of the bank (e.g., GTBank, First Bank)
 
     def save(self, *args, **kwargs):
         # Generate slug from name if not provided

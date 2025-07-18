@@ -73,7 +73,16 @@
                                     <small class="text-muted">{{ booking.check_out|time }}</small>
                                 </div>
                             </td>
-                            <td class="text-end fw-medium">₦{{ booking.total_price }}</td>
+                            <td class="text-end">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-medium">₦{{ booking.hotel_revenue }}</span>
+                                    {% if booking.extras.exists %}
+                                        <small class="text-muted">
+                                            Extras: {% for extra in booking.extras.all %}{{ extra.name }} (₦{{ extra.price }}){% if not forloop.last %}, {% endif %}{% endfor %}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </td>
                             <td>
                                 {% if booking.is_paid %}
                                 <span class="badge bg-success bg-opacity-10 text-success">
@@ -88,7 +97,7 @@
                             <td class="text-center">
                                 {% if not booking.is_paid %}
                                 <a href="{% url 'confirm_cancel_booking' slug=hotel.slug booking_id=booking.id %}" 
-       class="btn btn-danger btn-sm">
+                                   class="btn btn-danger btn-sm">
                                     Cancel
                                 </a>
                                 {% else %}
@@ -115,7 +124,6 @@
         </div>
     </div>
 
-    <!-- Pagination -->
     {% if bookings %}
     <div class="mt-4">
         {% include 'pagination.html' with page_obj=bookings query_string=query_string %}

@@ -44,7 +44,13 @@ class Booking(models.Model):
             if update_total_amount:
                 self.total_amount = self.total_price + self.service_charge
         super().save(*args, **kwargs)
-    
+
+
+    @property
+    def hotel_revenue(self):
+        """Amount excluding service charge"""
+        extras_cost = sum(extra.price for extra in self.extras.all())
+        return self.total_price + extras_cost
 
     @staticmethod
     def generate_booking_reference():

@@ -14,7 +14,7 @@ class BookingAdmin(admin.ModelAdmin):
     - Filters and searches for efficient data retrieval.
     - Includes a method to check if the booking user is a hotel owner.
     """
-    list_display = ['id', 'room', 'user', 'is_hotel_owner', 'booking_reference',
+    list_display = ['booking_reference', 'room', 'user', 'is_hotel_owner',
                     'check_in', 'check_out', 'is_paid', 'name', 'email', 'phone_number']
     list_filter = ['is_paid', 'room__hotel']
     search_fields = ['name', 'email', 'phone_number', 'room__hotel__name', 'booking_reference']

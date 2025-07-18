@@ -32,7 +32,15 @@
                 <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
                 <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
                 <p><strong>Total Hours:</strong> {{ booking.total_hours }}</p>
-                <p><strong>Total Price:</strong> ₦{{ booking.total_price }}</p>
+                <p><strong>Total Price:</strong> ₦{{ booking.hotel_revenue }}</p>
+                {% if booking.extras.exists %}
+                 <p><strong>Extras:</strong></p>
+                 <ul>
+                     {% for extra in booking.extras.all %}
+                         <li>{{ extra.name }} - ₦{{ extra.price }}</li>
+                     {% endfor %}
+                 </ul>
+                {% endif %}
                 <p><strong>Name:</strong> {{ booking.name }}</p>
                 <p><strong>Phone:</strong> {{ booking.phone_number }}</p>
                 <p><strong>Status:</strong> {% if booking.is_paid %}Paid{% else %}Payment Pending{% endif %}</p>

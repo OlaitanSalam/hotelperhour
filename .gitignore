@@ -1,5 +1,19 @@
+# Django
+*.log
+*.pot
+*.pyc
+
+
 .env
 __pycache__/
 *.pyc
 staticfiles/
 db.sqlite3
+media/
+ # IDEs
+.idea/
+.vscode/
+
+# Other
+*.py[cod]
+*$py.class

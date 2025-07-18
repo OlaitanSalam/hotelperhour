@@ -75,6 +75,33 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Bank Details Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-university me-2"></i>Bank Details</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="id_account_number" class="form-label fw-semibold">Account Number</label>
+                                        {{ form.account_number }}
+                                        <small class="text-muted">Enter your 10-digit Nigerian bank account number</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="id_account_name" class="form-label fw-semibold">Account Name</label>
+                                        {{ form.account_name }}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="id_bank_name" class="form-label fw-semibold">Bank Name</label>
+                                        {{ form.bank_name }}
+                                        <small class="text-muted">e.g., GTBank, First Bank, Zenith Bank</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Location Section -->
                         <div class="card mb-4 border-0 shadow-sm">

@@ -7,6 +7,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 from bookings.models import Booking
+from django.forms import Textarea
+from django.db import models
 
 class RoomInline(admin.TabularInline):
     model = Room
@@ -34,6 +36,10 @@ class HotelAdmin(admin.ModelAdmin):
             'fields': ('latitude', 'longitude'),
             'classes': ('collapse',)
         }),
+        ('Bank Details', {
+            'fields': ('account_number', 'account_name', 'bank_name'),
+            'classes': ('collapse',)
+        }),
         ('Images', {
             'fields': ('image',),
             'classes': ('collapse',)
@@ -42,6 +48,13 @@ class HotelAdmin(admin.ModelAdmin):
             'fields': ('created_at',)
         }),
     )
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={
+            'rows': 10,  # Height in rows
+            'cols': 30,  # Width in columns
+            'style': 'width: 40%; height: 80px;'  # CSS for more precise control
+        })},
+    }
 
     def send_approval_email(self, hotel):
         """Send an approval email to the hotel owner."""
@@ -111,6 +124,13 @@ class RoomAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={
+            'rows': 10,  # Height in rows
+            'cols': 30,  # Width in columns
+            'style': 'width: 40%; height: 80px;'  # CSS for more precise control
+        })},
+    }
 
     def is_currently_booked(self, obj):
         """

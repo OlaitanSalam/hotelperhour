@@ -17,7 +17,7 @@ class HotelForm(forms.ModelForm):
 
     class Meta:
         model = Hotel
-        fields = ('name', 'address', 'hotel_phone', 'hotel_email', 'description', 'latitude', 'longitude', 'image',)
+        fields = ('name', 'address', 'hotel_phone', 'hotel_email', 'description', 'latitude', 'longitude', 'image', 'account_number', 'account_name', 'bank_name')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2}),
         }
@@ -57,7 +57,7 @@ RoomFormSet = inlineformset_factory(
     Hotel,
     Room,
     fields=('room_type', 'price_per_hour', 'description', 'capacity', 'image'),
-    extra=0,
+    extra=1,
     can_delete=True
 )
 
@@ -66,7 +66,7 @@ ExtraServiceFormSet = inlineformset_factory(
     ExtraService,
     form=ExtraServiceForm,
     fields=('name', 'price'),
-    extra=0,
+    extra=1,
     can_delete=True
 )
 

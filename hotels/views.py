@@ -5,7 +5,7 @@ from django.views.generic import DetailView
 from geopy.distance import geodesic
 from django.conf import settings
 from .forms import HotelForm, RoomFormSet, ExtraServiceFormSet
-from .models import Hotel, Room
+from .models import Hotel, Room, ExtraService
 from django.utils import timezone
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -225,7 +225,7 @@ def hotel_sales_report(request, slug):
         check_in__date__range=(start_date, end_date),
         is_paid=True  # Only paid bookings contribute to sales
     ).annotate(date=TruncDate('check_in')).values('date').annotate(
-        total_sales=Sum('total_price'), 
+        total_sales=Sum('total_amount') - Sum('service_charge'),
         booking_count=Count('id')
     ).order_by('date')
     
