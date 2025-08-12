@@ -1,0 +1,9 @@
+{% extends 'base2.html' %}
+{% block title %}Thank You{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="display-4 fw-bold mb-3">Thank You!</h1>
+    <p class="lead text-muted">Your review has been submitted.</p>
+    <a href="{% url 'contacts' %}" class="btn btn-primary mt-3">Back</a>
+</div>
+{% endblock %}

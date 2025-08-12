@@ -5,7 +5,7 @@ from django.views.generic import DetailView
 from geopy.distance import geodesic
 from django.conf import settings
 from .forms import HotelForm, RoomFormSet, ExtraServiceFormSet
-from .models import Hotel, Room, ExtraService
+from .models import Hotel, Room, ExtraService, Review
 from django.utils import timezone
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -23,6 +23,7 @@ def hotel_owner_required(view_func):
             return redirect('dashboard')
         return view_func(request, *args, **kwargs)
     return wrapper
+
 
 @login_required
 @hotel_owner_required
@@ -282,5 +283,18 @@ def confirm_cancel_booking(request, slug, booking_id):
 def about(request):
     return render(request, 'about.html')
 
+
+
 def contacts(request):
+    if request.method == 'POST':
+        Review.objects.create(
+            name=request.POST.get('name'),
+            email=request.POST.get('email'),
+            rating=request.POST.get('rating'),
+            review_text=request.POST.get('review_text')
+        )
+        return redirect('contact_success')
     return render(request, 'contacts.html')
+
+def contact_success(request):
+    return render(request, 'hotels/contact_success.html')

@@ -2,6 +2,7 @@ from django import forms
 from .models import Booking, BookingDuration
 from hotels.models import ExtraService
 from django.utils import timezone
+from customers.models import Customer, LoyaltyRule
 
 class BookingForm(forms.ModelForm):
     check_in_date = forms.DateField(label="Check-in Date", widget=forms.DateInput(attrs={'type': 'date'}))
@@ -22,16 +23,23 @@ class BookingForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+    use_points = forms.BooleanField(required=False, label="Use loyalty points for discount")
 
     class Meta:
         model = Booking
         fields = ['check_in_date', 'check_in_hour', 'duration', 'name', 'email', 'phone_number', 'extras']
 
     def __init__(self, *args, **kwargs):
-        room = kwargs.pop('room', None)
+        self.user = kwargs.pop('user', None)
+        self.room = kwargs.pop('room', None)
         super().__init__(*args, **kwargs)
-        if room:
-            self.fields['extras'].queryset = ExtraService.objects.filter(hotel=room.hotel)
+        if self.room:
+            self.fields['extras'].queryset = ExtraService.objects.filter(hotel=self.room.hotel)
+        if self.user and self.user.is_authenticated and isinstance(self.user, Customer):
+            self.fields['name'].initial = self.user.full_name
+            self.fields['email'].initial = self.user.email
+            self.fields['phone_number'].initial = self.user.phone_number
+            self.fields['use_points'].help_text = f"You have {self.user.loyalty_points} points available."
 
     def clean_name(self):
         return self.cleaned_data['name'].title()
@@ -58,4 +66,16 @@ class BookingForm(forms.ModelForm):
             cleaned_data['check_in'] = check_in
             cleaned_data['check_out'] = check_out
             cleaned_data['duration'] = duration
+
+        if self.user and self.user.is_authenticated and isinstance(self.user, Customer) and cleaned_data.get('use_points'):
+            rule = LoyaltyRule.objects.filter(active=True).first()
+            if rule and self.user.loyalty_points >= rule.min_points_to_use:
+                points_available = self.user.loyalty_points
+                points_for_max_discount = int(rule.max_discount_percentage * rule.points_per_percent)
+                points_to_use = min(points_available, points_for_max_discount)
+                discount_percentage = min(points_to_use / rule.points_per_percent, float(rule.max_discount_percentage))
+                cleaned_data['discount'] = discount_percentage
+                cleaned_data['points_to_use'] = points_to_use
+            else:
+                self.add_error('use_points', "You don't have enough points for a discount.")
         return cleaned_data

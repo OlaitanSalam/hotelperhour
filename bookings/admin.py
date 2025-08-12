@@ -20,7 +20,7 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ['name', 'email', 'phone_number', 'room__hotel__name', 'booking_reference']
     list_per_page = 20  # Pagination: 20 bookings per page
     ordering = ['-created_at']  # Order by most recent bookings first
-    readonly_fields = ['created_at', 'booking_reference', 'payment_reference']
+    readonly_fields = ['created_at', 'booking_reference', 'payment_reference','content_type', 'object_id']
     fieldsets = (
         ('Booking Details', {
             'fields': ('room', 'user', 'check_in', 'check_out', 'total_hours', 'total_price', 'total_amount')

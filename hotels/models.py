@@ -2,6 +2,7 @@ from django.db import models
 from users.models import CustomUser
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 class Hotel(models.Model):
     name = models.CharField(max_length=255)
@@ -54,3 +55,13 @@ class ExtraService(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.hotel.name}"
+    
+class Review(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    review_text = models.TextField()
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Review by {self.name} - {self.rating}/5"

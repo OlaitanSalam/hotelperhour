@@ -1,4 +1,5 @@
 {% extends 'base2.html' %}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,10 +9,17 @@
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h2 class="mb-0">Book Room: {{ room.room_type }}</h2>
-                        <span class="badge bg-primary fs-6">₦{{ room.price_per_hour }}/hour</span>
+                        <span class="badge bg-primary fs-6">₦{{ room.price_per_hour|floatformat:2|intcomma }}/hour</span>
                     </div>
                 </div>
                 <div class="card-body p-4">
+                    {% if not request.user.is_authenticated %}
+                        <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span>Login or register to earn loyalty points and get discounts on your next reservation.</span>
+                        </div>
+                    {% endif %}
+
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger">
                             {{ form.non_field_errors }}
@@ -24,20 +32,17 @@
                         <!-- Personal Information Section -->
                         <div class="mb-4">
                             <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-user me-2"></i>Personal Information</h4>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="id_name" class="form-label">Full Name</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                        <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value|default_if_none:'' }}" required>
-                                    </div>
-                                    {% if form.name.errors %}
-                                        <div class="text-danger small mt-1">
-                                            {{ form.name.errors }}
-                                        </div>
-                                    {% endif %}
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label">Full Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value|default_if_none:'' }}" required>
                                 </div>
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="id_phone_number" class="form-label">Phone Number</label>
                                     <div class="input-group">
@@ -45,75 +50,56 @@
                                         <input type="text" name="phone_number" id="id_phone_number" class="form-control" value="{{ form.phone_number.value|default_if_none:'' }}" required>
                                     </div>
                                     {% if form.phone_number.errors %}
-                                        <div class="text-danger small mt-1">
-                                            {{ form.phone_number.errors }}
-                                        </div>
+                                        <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="id_email" class="form-label">Email Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default_if_none:'' }}" required>
+                                    </div>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="id_email" class="form-label">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default_if_none:'' }}" required>
-                                </div>
-                                {% if form.email.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {{ form.email.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
                         </div>
                         
-                        <!-- Fixed Booking Period Section -->
-<div class="mb-4">
-    <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
-    
-    <!-- Added container and fixed row structure -->
-    <div class="container-fluid p-0">
-        <div class="row gx-3">
-            <div class="col-md-6 mb-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0">
-                        <i class="fas fa-calendar-day"></i>
-                    </span>
-                    <input type="date" name="check_in_date" id="id_check_in_date" 
-                           class="form-control border-start-0" 
-                           value="{{ form.check_in_date.value|default_if_none:''|date:'Y-m-d' }}" required>
-                </div>
-                {% if form.check_in_date.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.check_in_date.errors }}
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0">
-                        <i class="fas fa-clock"></i>
-                    </span>
-                    <select name="check_in_hour" id="id_check_in_hour" 
-                            class="form-select border-start-0" required>
-                        {% for hour in form.check_in_hour.field.choices %}
-                            <option value="{{ hour.0 }}" 
-                                {% if hour.0|stringformat:'s' == form.check_in_hour.value|stringformat:'s' %}selected{% endif %}>
-                                {{ hour.1 }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% if form.check_in_hour.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.check_in_hour.errors }}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="mb-3">
+                        <!-- Booking Period Section -->
+                        <div class="mb-4">
+                            <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-calendar-alt me-2"></i>Booking Period</h4>
+                            <div class="container-fluid p-0">
+                                <div class="row gx-3">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="fas fa-calendar-day"></i>
+                                            </span>
+                                            <input type="date" name="check_in_date" id="id_check_in_date" class="form-control" value="{{ form.check_in_date.value|default_if_none:'' }}" required>
+                                        </div>
+                                        {% if form.check_in_date.errors %}
+                                            <div class="text-danger small mt-1">{{ form.check_in_date.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="fas fa-clock"></i>
+                                            </span>
+                                            <select name="check_in_hour" id="id_check_in_hour" class="form-select" required>
+                                                {% for choice in form.check_in_hour.field.choices %}
+                                                    <option value="{{ choice.0 }}" {% if choice.0 == form.check_in_hour.value %}selected{% endif %}>{{ choice.1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% if form.check_in_hour.errors %}
+                                            <div class="text-danger small mt-1">{{ form.check_in_hour.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
         <div class="input-group">
             <span class="input-group-text bg-light border-end-0">
                 <i class="fas fa-hourglass"></i>
@@ -136,7 +122,25 @@
     </div>
     
     <div id="availability-message" class="alert d-none"></div>
-</div>
+
+                        </div>
+
+                        <!-- Loyalty Points Section -->
+                        {% if is_customer %}
+                            <div class="mb-4">
+                                <h4 class="mb-3 pb-2 border-bottom"><i class="fas fa-gift me-2"></i>Loyalty Points</h4>
+                                <div class="form-check">
+                                    <input type="checkbox" name="use_points" id="id_use_points" class="form-check-input" {% if form.use_points.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="id_use_points">{{ form.use_points.label }}</label>
+                                    <small class="form-text text-muted" id="points-help-text">{{ form.use_points.help_text }}</small>
+                                    <small class="form-text text-danger">Note: Your loyalty points will be deducted immediately upon booking, regardless of payment status.</small>
+                                </div>
+                                {% if form.use_points.errors %}
+                                    <div class="text-danger small mt-1">{{ form.use_points.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                        {% endif %}
 
                         <!-- Extra Services Section -->
                         <div class="mb-4">
@@ -146,10 +150,8 @@
                                     {% for extra in form.extras.field.queryset %}
                                         <div class="col-md-6 mb-3">
                                             <div class="form-check">
-                                                <input type="checkbox" name="extras" value="{{ extra.id }}" id="id_extras_{{ extra.id }}" class="form-check-input extra-checkbox" {% if extra.id in form.extras.value %}checked{% endif %}>
-                                                <label class="form-check-label" for="id_extras_{{ extra.id }}">
-                                                    {{ extra.name }} (₦{{ extra.price }})
-                                                </label>
+                                                <input type="checkbox" name="extras" value="{{ extra.id }}" id="id_extras_{{ extra.id }}" class="form-check-input extra-checkbox" data-price="{{ extra.price }}" {% if extra.id in form.extras.value %}checked{% endif %}>
+                                                <label class="form-check-label" for="id_extras_{{ extra.id }}">{{ extra.name }} (₦{{ extra.price|floatformat:2|intcomma }})</label>
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -158,9 +160,7 @@
                                 <p class="text-muted">No extra services available for this hotel.</p>
                             {% endif %}
                             {% if form.extras.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.extras.errors }}
-                                </div>
+                                <div class="text-danger small mt-1">{{ form.extras.errors }}</div>
                             {% endif %}
                         </div>
                         
@@ -174,7 +174,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-6">Rate per Hour:</div>
-                                    <div class="col-6 text-end fw-bold">₦{{ room.price_per_hour }}</div>
+                                    <div class="col-6 text-end fw-bold">₦{{ room.price_per_hour|floatformat:2|intcomma }}</div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6">Duration:</div>
@@ -188,18 +188,42 @@
                                     <div class="col-6">Extras Cost:</div>
                                     <div class="col-6 text-end fw-bold" id="extras-cost">₦0</div>
                                 </div>
+                                {% if is_customer %}
+                                    <div class="row">
+                                        <div class="col-6">Loyalty Discount:</div>
+                                        <div class="col-6 text-end fw-bold text-success" id="discount-amount">₦0</div>
+                                    </div>
+                                {% endif %}
                                 <hr>
                                 <div class="row">
-                                    <div class="col-6 fs-5">Total Amount:</div>
-                                    <div class="col-6 text-end fs-5 fw-bold text-success" id="total-amount">₦--</div>
+                                    <div class="col-6 fs-5">Original Total:</div>
+                                    <div class="col-6 text-end fs-5 fw-bold" id="original-total">₦--</div>
                                 </div>
+                                {% if is_customer %}
+                                    <div class="row">
+                                        <div class="col-6 fs-5">Discounted Total:</div>
+                                        <div class="col-6 text-end fs-5 fw-bold text-success" id="total-amount">₦--</div>
+                                    </div>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col-6 fs-5">Total Amount:</div>
+                                        <div class="col-6 text-end fs-5 fw-bold text-success" id="total-amount">₦--</div>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                         
                         <div class="d-grid gap-2">
                             <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
-                                <i class="fas fa-check-circle me-2"></i>Proceed to Payment
+                                <i class="fas fa-check-circle me-2"></i>
+                                {% if request.user.is_authenticated %}Proceed to Payment{% else %}Continue without Account{% endif %}
                             </button>
+                            {% if not request.user.is_authenticated %}
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'customer_login' %}" class="btn btn-outline-primary me-2">Login</a>
+                                    <a href="{% url 'customer_register' %}" class="btn btn-outline-primary">Register</a>
+                                </div>
+                            {% endif %}
                         </div>
                     </form>
                 </div>
@@ -222,7 +246,10 @@
         box-shadow: none;
         border-color: #ced4da;
     }
-    .btn-primary {
+    #id_duration {
+        border-left: none;
+    }
+    .btn-primary, .btn-outline-primary {
         transition: all 0.3s ease;
     }
     .card {
@@ -249,33 +276,81 @@ document.addEventListener('DOMContentLoaded', function () {
     const serviceChargeElement = document.getElementById('service-charge');
     const extrasCostElement = document.getElementById('extras-cost');
     const totalAmountElement = document.getElementById('total-amount');
+    const originalTotalElement = document.getElementById('original-total');
+    const discountAmountElement = document.getElementById('discount-amount');
+    const usePointsCheckbox = document.getElementById('id_use_points');
     const pricePerHour = {{ room.price_per_hour }};
     const extraCheckboxes = document.querySelectorAll('.extra-checkbox');
 
     checkInDateInput.setAttribute('min', today);
 
     function updateSummary() {
-        const duration = durationInput.value;
+        const duration = parseInt(durationInput.value) || 0;
         let extrasCost = 0;
         extraCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                const extraId = checkbox.value;
-                const label = checkbox.nextElementSibling.textContent;
-                const priceMatch = label.match(/₦(\d+(\.\d+)?)/);
-                if (priceMatch) {
-                    extrasCost += parseFloat(priceMatch[1]);
-                }
+                extrasCost += parseFloat(checkbox.dataset.price);
             }
         });
 
         if (duration) {
             const baseAmount = duration * pricePerHour;
             const serviceCharge = baseAmount * 0.10;
-            const totalAmount = (baseAmount + serviceCharge + extrasCost).toFixed(2);
+            let originalTotal = baseAmount + serviceCharge + extrasCost;
+            let discountAmount = 0;
+            let totalAmount = originalTotal;
+
             durationElement.textContent = `${duration} hours`;
-            serviceChargeElement.textContent = `₦${serviceCharge.toLocaleString()}`;
-            extrasCostElement.textContent = `₦${extrasCost.toLocaleString()}`;
-            totalAmountElement.textContent = `₦${parseFloat(totalAmount).toLocaleString()}`;
+            serviceChargeElement.textContent = `₦${serviceCharge.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            extrasCostElement.textContent = `₦${extrasCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            originalTotalElement.textContent = `₦${originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            {% if is_customer %}
+                fetch('{% url 'get_loyalty_discount' %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const discountPercentage = data.discount || 0;
+                        const minPoints = data.min_points || 0;
+                        if (discountPercentage > 0) {
+                            usePointsCheckbox.disabled = false;
+                            document.getElementById('points-help-text').textContent = `You have {{ request.user.loyalty_points }} points. Use them for a ${discountPercentage}% discount.`;
+                        } else {
+                            usePointsCheckbox.disabled = true;
+                            document.getElementById('points-help-text').textContent = `You need at least ${minPoints} points to qualify for a discount.`;
+                        }
+
+                        if (usePointsCheckbox && usePointsCheckbox.checked && discountPercentage > 0) {
+                            discountAmount = baseAmount * (discountPercentage / 100);
+                            totalAmount = Math.max(originalTotal - discountAmount, 0);
+                            if (discountAmountElement) {
+                                discountAmountElement.textContent = `₦${discountAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            }
+                            originalTotalElement.style.color = 'red';
+                            originalTotalElement.style.textDecoration = 'line-through';
+                        } else {
+                            if (discountAmountElement) {
+                                discountAmountElement.textContent = '₦0';
+                            }
+                            originalTotalElement.style.color = '';
+                            originalTotalElement.style.textDecoration = 'none';
+                        }
+                        totalAmountElement.textContent = `₦${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching discount:', error);
+                        usePointsCheckbox.disabled = true;
+                        if (discountAmountElement) {
+                            discountAmountElement.textContent = '₦0';
+                        }
+                        totalAmountElement.textContent = `₦${originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        originalTotalElement.style.color = '';
+                        originalTotalElement.style.textDecoration = 'none';
+                    });
+            {% else %}
+                totalAmountElement.textContent = `₦${originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                originalTotalElement.style.color = '';
+                originalTotalElement.style.textDecoration = 'none';
+            {% endif %}
         }
     }
 
@@ -320,6 +395,9 @@ document.addEventListener('DOMContentLoaded', function () {
     extraCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateSummary);
     });
+    if (usePointsCheckbox) {
+        usePointsCheckbox.addEventListener('change', updateSummary);
+    }
 
     const bookingForm = document.getElementById('booking-form');
     bookingForm.addEventListener('submit', function() {

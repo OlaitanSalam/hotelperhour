@@ -17,3 +17,4 @@ media/
 # Other
 *.py[cod]
 *$py.class
+test_email.py

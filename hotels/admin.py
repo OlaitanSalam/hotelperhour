@@ -145,3 +145,20 @@ class RoomAdmin(admin.ModelAdmin):
         ).exists()
     is_currently_booked.boolean = True  # Display as a boolean icon in admin
     is_currently_booked.short_description = 'Currently Booked'
+
+
+
+from .models import Review
+
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'rating', 'review_text_short', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('name', 'email', 'review_text')
+    ordering = ('-created_at',)
+    readonly_fields = ('rating', 'created_at')
+
+    def review_text_short(self, obj):
+        return obj.review_text[:50] + '...' if len(obj.review_text) > 50 else obj.review_text
+    review_text_short.short_description = 'Review Text'
+
+admin.site.register(Review, ReviewAdmin)

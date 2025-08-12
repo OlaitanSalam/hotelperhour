@@ -8,61 +8,45 @@
     <!-- Header Section -->
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold mb-3">Get In Touch</h1>
-        <p class="lead text-muted">We're here to help with any questions about our hotel booking service</p>
+        <p class="lead text-muted">We’re here to help with any questions about our hotel booking service</p>
     </div>
 
     <div class="row justify-content-center">
-        <!-- Contact Information -->
+        <!-- Contact Information (unchanged) -->
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-body p-4">
                     <h4 class="card-title mb-4 text-center">Contact Information</h4>
-                    
-                    <!-- Phone -->
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
-                            <div class="contact-icon-wrapper me-3">
-                                <i class="fas fa-phone text-white"></i>
-                            </div>
+                            <div class="contact-icon-wrapper me-3"><i class="fas fa-phone text-white"></i></div>
                             <div>
                                 <h6 class="mb-1 fw-bold">Phone</h6>
                                 <a href="tel:+2349154304099" class="text-decoration-none text-muted">+234 915 430 4099</a>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Email -->
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
-                            <div class="contact-icon-wrapper me-3">
-                                <i class="fas fa-envelope text-white"></i>
-                            </div>
+                            <div class="contact-icon-wrapper me-3"><i class="fas fa-envelope text-white"></i></div>
                             <div>
                                 <h6 class="mb-1 fw-bold">Email</h6>
-                                <a href="mailto:info@hospitalitaltd.com" class="text-decoration-none text-muted">info@inovacaong.com</a>
+                                <a href="mailto:info@inovacaong.com" class="text-decoration-none text-muted">info@inovacaong.com</a>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Location -->
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
-                            <div class="contact-icon-wrapper me-3">
-                                <i class="fas fa-map-marker-alt text-white"></i>
-                            </div>
+                            <div class="contact-icon-wrapper me-3"><i class="fas fa-map-marker-alt text-white"></i></div>
                             <div>
                                 <h6 class="mb-1 fw-bold">Location</h6>
                                 <span class="text-muted">Lagos, Nigeria</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Business Hours -->
                     <div class="contact-item">
                         <div class="d-flex align-items-center">
-                            <div class="contact-icon-wrapper me-3">
-                                <i class="fas fa-clock text-white"></i>
-                            </div>
+                            <div class="contact-icon-wrapper me-3"><i class="fas fa-clock text-white"></i></div>
                             <div>
                                 <h6 class="mb-1 fw-bold">Business Hours</h6>
                                 <span class="text-muted">24/7 Customer Support</span>
@@ -72,52 +56,42 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Contact Form -->
+
+        <!-- Enhanced Review Form -->
         <div class="col-lg-6 col-md-8">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h4 class="card-title mb-4 text-center">Send us a Message</h4>
-                    
+                    <h4 class="card-title mb-4 text-center">Drop a Review</h4>
                     <form method="post" class="contact-form">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Full Name</label>
+                        
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-bold">Full Name</label>
                                 <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email Address</label>
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-bold">Email Address</label>
                                 <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
                             </div>
-                        </div>
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+234 800 000 0000">
+                        <div class="mb-4 text-center">
+                            <label class="form-label fw-bold">Rating</label>
+                            <div class="star-rating d-flex justify-content-center align-items-center">
+                                <i class="fas fa-star" data-value="1"></i>
+                                <i class="fas fa-star" data-value="2"></i>
+                                <i class="fas fa-star" data-value="3"></i>
+                                <i class="fas fa-star" data-value="4"></i>
+                                <i class="fas fa-star" data-value="5"></i>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="subject" class="form-label">Subject</label>
-                                <select class="form-select" id="subject" name="subject" required>
-                                    <option value="">Select a subject</option>
-                                    <option value="booking">Booking Inquiry</option>
-                                    <option value="support">Customer Support</option>
-                                    <option value="partnership">Hotel Partnership</option>
-                                    <option value="feedback">Feedback</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
+                            <input type="hidden" name="rating" id="rating" required>
                         </div>
-                        
                         <div class="mb-4">
-                            <label for="message" class="form-label">Message</label>
-                            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Tell us how we can help you..." required></textarea>
+                            <label for="review_text" class="form-label fw-bold">Review</label>
+                            <textarea class="form-control" id="review_text" name="review_text" rows="5" placeholder="Tell us about your experience..." required></textarea>
                         </div>
-                        
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
                             </button>
                         </div>
                     </form>
@@ -126,30 +100,28 @@
         </div>
     </div>
     
-    <!-- FAQ Section -->
+    <!-- FAQ Section (unchanged) -->
     <div class="row mt-5">
         <div class="col-12">
             <div class="text-center mb-4">
                 <h2 class="fw-bold">Frequently Asked Questions</h2>
                 <p class="text-muted">Quick answers to common questions</p>
             </div>
-            
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="accordion" id="faqAccordion">
                         <div class="accordion-item">
                             <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
                                     How does hourly hotel booking work?
                                 </button>
                             </h2>
-                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
                                     You choose a hotel, select the number of hours you want to stay, pick your check-in time, and confirm your booking. It's fast, flexible, and affordable.
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
@@ -162,7 +134,6 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
@@ -175,7 +146,6 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
@@ -209,75 +179,112 @@
         justify-content: center;
         flex-shrink: 0;
     }
-    
     .contact-item {
         padding: 1rem 0;
         border-bottom: 1px solid #f1f3f4;
     }
-    
     .contact-item:last-child {
         border-bottom: none;
     }
-    
     /* Form styling */
     .contact-form .form-control:focus,
-    .contact-form .form-select:focus {
+    .contact-form textarea:focus {
         border-color: #007bff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
-    
+    .contact-form .form-control,
+    .contact-form textarea {
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .contact-form .btn {
+        border-radius: 8px;
+    }
     /* Card styling */
     .card {
         border-radius: 15px;
         transition: transform 0.3s ease;
     }
-    
     .card:hover {
         transform: translateY(-5px);
     }
-    
     /* Accordion styling */
     .accordion-button:not(.collapsed) {
         background-color: #f8f9fa;
         color: #007bff;
     }
-    
     .accordion-button:focus {
         box-shadow: none;
         border-color: #007bff;
     }
-    
+    /* Enhanced Star Rating */
+    .star-rating {
+        display: flex;
+        justify-content: center;
+        gap: 10px; /* Spacing between stars */
+    }
+    .star-rating i {
+        font-size: 2rem; /* Larger stars */
+        color: #ddd; /* Default color */
+        cursor: pointer;
+        transition: color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+    }
+    .star-rating i:hover {
+        color: #ffc107; /* Yellow on hover */
+        transform: scale(1.2); /* Slight enlargement */
+    }
+    .star-rating i.active {
+        color: #ffc107; /* Yellow when selected */
+        transform: scale(1.1); /* Slightly larger when active */
+    }
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .contact-icon-wrapper {
             width: 40px;
             height: 40px;
         }
-        
         .display-4 {
             font-size: 2.5rem;
+        }
+        .star-rating i {
+            font-size: 1.5rem; /* Smaller stars on mobile */
         }
     }
 </style>
 
 <script>
-    // Form submission handling
-    document.querySelector('.contact-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-        submitBtn.disabled = true;
-        
-        // Simulate form submission (replace with actual form handling)
-        setTimeout(() => {
-            alert('Thank you for your message! We\'ll get back to you soon.');
-            this.reset();
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }, 2000);
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('.star-rating i');
+        const ratingInput = document.getElementById('rating');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                stars.forEach(s => {
+                    s.classList.toggle('active', s.getAttribute('data-value') <= value);
+                });
+            });
+            star.addEventListener('mouseover', function() {
+                const value = this.getAttribute('data-value');
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= value) {
+                        s.classList.add('hover');
+                    } else {
+                        s.classList.remove('hover');
+                    }
+                });
+            });
+            star.addEventListener('mouseout', function() {
+                stars.forEach(s => s.classList.remove('hover'));
+            });
+        });
+
+        document.querySelector('.contact-form').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            submitBtn.disabled = true;
+        });
     });
 </script>
 {% endblock %}

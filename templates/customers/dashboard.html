@@ -1,0 +1,55 @@
+{% extends 'base2.html' %}
+{% block content %}
+<div class="container mt-5 mb-5 pb-5">
+    <h1 class="mb-4">Welcome, {{ user.full_name|default:user.email }}</h1>
+    <div class="row">
+        <div class="col-12 col-md-4 mb-4 mb-md-0">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Loyalty Points</h5>
+                    <p class="card-text display-4">{{ loyalty_points }}</p>
+                    <small class="text-muted">Earn more by booking!</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8">
+            {% if user.is_hotel_owner %}
+            <div class="mb-4">
+                <a href="{% url 'hotel_dashboard' %}" class="btn btn-primary">Manage Your Hotel</a>
+            </div>
+            {% endif %}
+            <h3>Your Reservations</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Room</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Total</th>
+                            <th>Points Used</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.booking_reference }}</td>
+                            <td>{{ booking.room }}</td>
+                            <td>{{ booking.check_in }}</td>
+                            <td>{{ booking.check_out }}</td>
+                            <td>₦{{ booking.total_amount }}</td>
+                            <td>{{ booking.points_used|default:0 }}</td>
+                            <td>{{ booking.is_paid|yesno:"Paid,Pending" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7">No bookings yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

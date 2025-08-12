@@ -65,10 +65,11 @@ class CustomLoginView(LoginView):
     template_name = 'users/login.html'
 
     def get_success_url(self):
-        redirect_to = self.request.GET.get('next', '')
-        if redirect_to:
-            return redirect_to  # Honors 'next' parameter (e.g., from hotel_create)
-        return reverse('hotel_dashboard')
+        if self.request.user.is_hotel_owner:
+            return reverse('hotel_dashboard')
+        elif self.request.user.is_customer:
+            return reverse('customer_dashboard')
+        return reverse('home')
 
 
 def dashboard(request):
@@ -78,7 +79,11 @@ def dashboard(request):
     
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
+
+def unified_logout(request):
+    logout(request)
+    return redirect('home')
 
 
 def home(request):

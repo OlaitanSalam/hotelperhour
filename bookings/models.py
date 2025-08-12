@@ -1,9 +1,13 @@
 import uuid
 from django.db import models
-from hotels.models import Room, ExtraService
+from hotels.models import Room, ExtraService, Hotel
 from users.models import CustomUser
 from decimal import Decimal
 from django.utils.crypto import get_random_string
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from customers.models import Customer
+
 
 class BookingDuration(models.Model):
     hours = models.PositiveIntegerField(unique=True, help_text="Duration in hours (e.g., 3, 6, 9)")
@@ -15,7 +19,9 @@ class BookingDuration(models.Model):
         ordering = ['hours']
 
 class Booking(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    user = GenericForeignKey('content_type', 'object_id')
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     check_in = models.DateTimeField()
     check_out = models.DateTimeField()
@@ -31,20 +37,19 @@ class Booking(models.Model):
     service_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     extras = models.ManyToManyField(ExtraService, blank=True)
+    discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    points_used = models.IntegerField(default=0)
+
+
 
     def save(self, *args, **kwargs):
-        update_total_amount = kwargs.pop('update_total_amount', True)
         if not self.booking_reference:
             self.booking_reference = self.generate_booking_reference()
-        if self.check_in and self.check_out:
-            duration = self.check_out - self.check_in
-            self.total_hours = duration.total_seconds() / 3600
-            self.total_price = self.room.price_per_hour * Decimal(str(self.total_hours))
-            self.service_charge = self.total_price * Decimal('0.10')
-            if update_total_amount:
-                self.total_amount = self.total_price + self.service_charge
         super().save(*args, **kwargs)
-
+        if self.is_paid and self.user and isinstance(self.user, Customer):
+            points_earned = int(self.total_hours * 10)  # 10 points per hour
+            self.user.loyalty_points += points_earned
+            self.user.save()
 
     @property
     def hotel_revenue(self):

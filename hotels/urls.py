@@ -9,6 +9,8 @@ urlpatterns = [
     path('nearby/', views.nearby_hotels, name='nearby_hotels'),  # Moved before <slug:slug>/
     path('about/', views.about, name='about'),
     path('contacts/', views.contacts, name='contacts'),
+    
+    path('success/', views.contact_success, name='contact_success'),
     path('<slug:slug>/', views.HotelDetailView.as_view(), name='hotel_detail'),  # Moved after specific paths
     path('<slug:slug>/edit/', views.hotel_edit, name='hotel_edit'),
     path('<slug:slug>/delete/', views.hotel_delete, name='hotel_delete'),

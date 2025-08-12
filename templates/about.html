@@ -8,15 +8,18 @@
 <body>
     <section class="py-5 mt-5">
         <div class="container py-4 py-xl-5">
-            <div class="row gy-4 gy-md-0">
-                <div class="col-md-6 text-center text-md-start d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
-                    <div data-aos="fade" data-aos-duration="650" style="max-width: 350px;">
-                        <h1 class="display-6 fw-bold mb-4" style="text-align: center;"><strong>Book Hotels by the Hour. Stay on Your</strong>&nbsp;<span class="underline">Time</span>.</h1>
-                        <p class="my-4">We believe time is money—so why pay for a full day when you only need a few hours?</p><a class="btn btn-primary btn-lg me-2" role="button" href="{% url 'hotel_list' %}">Book now</a>
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <div data-aos="fade" data-aos-duration="650">
+                        <h1 class="display-6 fw-bold mb-4">
+                            <strong>Book Hotels by the Hour. Stay on Your</strong>&nbsp;<span class="underline">Time</span>.
+                        </h1>
+                        <p class="my-4">We believe time is money—so why pay for a full day when you only need a few hours?</p>
+                        <!-- Centered button -->
+                        <div class="d-flex justify-content-center">
+                            <a class="btn btn-primary btn-lg" role="button" href="{% url 'hotel_list' %}">Book now</a>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div><img class="rounded img-fluid w-100 fit-cover" data-aos="fade-up" data-aos-duration="1000" style="min-height: 300px;" src="{% static 'img/illustrations/77051424-41cf-4c9b-9c14-4e2e12147a3d_removalai_preview.png' %}"></div>
                 </div>
             </div>
         </div>

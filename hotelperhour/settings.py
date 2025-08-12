@@ -41,11 +41,23 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'hotels.apps.HotelsConfig',
     'bookings.apps.BookingsConfig',
+    'customers.apps.CustomersConfig',
     'anymail',
     'widget_tweaks',
+    'django.contrib.humanize',
+
 
 ]
-AUTH_USER_MODEL = "users.CustomUser"
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',      # For admin/CustomUser
+    'customers.auth_backends.CustomerBackend',        # For Customer
+]
+
+AUTH_USER_MODEL = 'users.CustomUser'  # Keep this for hotel owners
+
+# Prevent customers from accessing admin
+ADMIN_LOGIN_REDIRECT_URL = '/admin/'
+CUSTOMER_LOGIN_REDIRECT_URL = '/customer/dashboard/'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,6 +67,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'customers.middleware.RestrictAdminAccessMiddleware',
+    'customers.middleware.RoleBasedRedirectMiddleware',
 ]
 
 ROOT_URLCONF = "hotelperhour.urls"
@@ -141,7 +155,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # File system path for uploads
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
+'''
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.titan.email'
 EMAIL_PORT = 587
@@ -149,6 +163,17 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+'''
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yournotify.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+YOURNOTIFY_API_KEY = config('YOURNOTIFY_API_KEY')
+YOURNOTIFY_SENDER_ID = config('YOURNOTIFY_SENDER_ID')
 
 
 MAPBOX_ACCESS_TOKEN = config('MAPBOX_ACCESS_TOKEN')

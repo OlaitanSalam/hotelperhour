@@ -114,7 +114,17 @@
                                     <span class="value">{{ booking.total_hours }}</span>
                                 </div>
                                 <div class="info-item">
-                                    <span class="label">Room Cost:</span>
+                                    <span class="label">Original Room Cost:</span>
+                                    <span class="value">₦{{ original_room_cost|floatformat:0 }}</span>
+                                </div>
+                                {% if booking.discount_applied > 0 %}
+                                <div class="info-item">
+                                    <span class="label">Discount Applied:</span>
+                                    <span class="value text-success">₦{{ booking.discount_applied|floatformat:0 }} ({{ discount_percentage|floatformat:2 }}% discount)</span>
+                                </div>
+                                {% endif %}
+                                <div class="info-item">
+                                    <span class="label">Room Cost (after discount):</span>
                                     <span class="value">₦{{ booking.total_price|floatformat:0 }}</span>
                                 </div>
                                 <div class="info-item">
@@ -190,29 +200,12 @@
                         <li>Your booking reference is required for check-in</li>
                         <li>Check-in is available 15 minutes before your scheduled time</li>
                         <li>Late arrivals may result in reduced booking time</li>
-                        <li>For any changes or inquiries, contact the hotel directly</li>
+                        
                     </ul>
                 </div>
             </div>
             
-            <!-- Contact Information -->
-            {% if booking.room.hotel.hotel_phone or booking.room.hotel.hotel_email %}
-            <div class="text-center mt-4">
-                <h6>Need Help?</h6>
-                <div class="d-flex justify-content-center gap-3">
-                    {% if booking.room.hotel.hotel_phone %}
-                    <a href="tel:{{ booking.room.hotel.hotel_phone }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-phone me-1"></i>Call Hotel
-                    </a>
-                    {% endif %}
-                    {% if booking.room.hotel.hotel_email %}
-                    <a href="mailto:{{ booking.room.hotel.hotel_email }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-envelope me-1"></i>Email Hotel
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
+        
         </div>
     </div>
 </div>

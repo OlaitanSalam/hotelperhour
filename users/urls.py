@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from . import views
 from .views import CustomLoginView
+from users.views import unified_logout
 
 urlpatterns = [
        path('', views.home, name='home'),
@@ -17,4 +18,5 @@ urlpatterns = [
        path('reset/done/', PasswordResetCompleteView.as_view(template_name='users/password_reset_complete.html'), name='password_reset_complete'),
        path('dashboard/', views.dashboard, name='dashboard'),
        path('logout/', views.logout_view, name='logout'),
+       path('logout/', unified_logout, name='unified_logout'),
 ]

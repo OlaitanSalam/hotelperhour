@@ -37,7 +37,7 @@ class CustomUserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
-        user.is_hotel_owner = True  # Automatically set
+        user.is_hotel_owner = self.cleaned_data['is_hotel_owner']  # Respect checkbox
         if commit:
             user.save()
         return user

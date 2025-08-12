@@ -19,20 +19,6 @@
                 <i class="fas fa-map-marker-alt me-2"></i>
                 <span>{{ hotel.address }}</span>
             </div>
-            <div class="d-flex flex-wrap gap-3 text-white">
-                {% if hotel.hotel_phone %}
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-phone me-2"></i>
-                    <a href="tel:{{ hotel.hotel_phone }}" class="text-white text-decoration-none">{{ hotel.hotel_phone }}</a>
-                </div>
-                {% endif %}
-                {% if hotel.hotel_email %}
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-envelope me-2"></i>
-                    <a href="mailto:{{ hotel.hotel_email }}" class="text-white text-decoration-none">{{ hotel.hotel_email }}</a>
-                </div>
-                {% endif %}
-            </div>
         </div>
     </div>
 </div>
@@ -55,32 +41,10 @@
                                     <i class="fas fa-map-marker-alt text-danger me-2"></i>
                                     <span>{{ hotel.address }}</span>
                                 </div>
-                                {% if hotel.hotel_phone %}
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-phone text-success me-2"></i>
-                                    <a href="tel:{{ hotel.hotel_phone }}" class="text-decoration-none">{{ hotel.hotel_phone }}</a>
-                                </div>
-                                {% endif %}
-                                {% if hotel.hotel_email %}
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-envelope text-primary me-2"></i>
-                                    <a href="mailto:{{ hotel.hotel_email }}" class="text-decoration-none">{{ hotel.hotel_email }}</a>
-                                </div>
-                                {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex gap-2">
-                                {% if hotel.hotel_phone %}
-                                <a href="tel:{{ hotel.hotel_phone }}" class="btn btn-outline-success btn-sm">
-                                    <i class="fas fa-phone me-1"></i>Call
-                                </a>
-                                {% endif %}
-                                {% if hotel.hotel_email %}
-                                <a href="mailto:{{ hotel.hotel_email }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-envelope me-1"></i>Email
-                                </a>
-                                {% endif %}
                                 <button class="btn btn-outline-info btn-sm" onclick="shareHotel()">
                                     <i class="fas fa-share-alt me-1"></i>Share
                                 </button>
@@ -273,7 +237,7 @@
                             <div class="alert alert-info text-center">
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>No rooms available</strong><br>
-                                <small>Please check back later or contact the hotel directly.</small>
+                                <small>Please check back later.</small>
                             </div>
                         </div>
                     {% endfor %}

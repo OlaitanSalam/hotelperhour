@@ -10,19 +10,19 @@
             <div class="col-md-8 text-center text-md-start mx-auto" data-aos="zoom-in">
                 <div class="text-center">
                     <h1 class="display-4 fw-bold mb-5" data-aos="fade-up" data-aos-duration="1000">
-                        Book Hotels by the Hour. Stay on Your&nbsp;&nbsp;<span class="underline">Time</span>.
+                        Book Hotels by the Hour. Stay on Your <span class="underline">Time</span>.
                     </h1>
                     <p class="fs-5 text-muted mb-5" data-aos="zoom-in" data-aos-duration="1000">
-                        Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere
+                        Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere.
                     </p>
                 </div>
                 <div class="text-center">
-                    <a href="{% url 'hotel_list' %}" class="btn btn-primary" type="button">Book A Room</a>
+                    <a href="{% url 'hotel_list' %}" class="btn btn-primary btn-lg" type="button">Book A Room</a>
                 </div>
             </div>
+            <!-- Hotel Images Carousel Section -->
             <div class="col-12 col-lg-10 mx-auto">
                 <div class="text-center position-relative">
-                    <!-- Hotel Images Carousel Section - Static (No AOS) -->
                     <div class="mt-5">
                         <div class="row mb-4">
                             <div class="col-12 text-center">
@@ -30,27 +30,23 @@
                                 <p class="text-muted">Premium accommodations for your hourly stays</p>
                             </div>
                         </div>
-                        
-                        <!-- Carousel -->
                         <div id="hotelCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
                             <div class="carousel-indicators">
                                 <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                                 <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
                                 <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
                             </div>
-                            
                             <div class="carousel-inner rounded-4 shadow-lg">
-                                <!-- Slide 1 - Luxury Suite -->
                                 <div class="carousel-item active">
                                     <div class="row g-0">
                                         <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                                                  class="d-block w-100 carousel-image" alt="Luxury Hotel Suite">
                                         </div>
                                         <div class="col-md-4 d-flex align-items-center">
                                             <div class="carousel-content p-4 p-md-5">
                                                 <h4 class="fw-bold text-primary mb-3">Luxury Suites</h4>
-                                                <p class="text-muted mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service for your short-term stays.</p>
+                                                <p class="text-muted mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service.</p>
                                                 <div class="d-flex align-items-center mb-2">
                                                     <i class="fas fa-star text-warning me-1"></i>
                                                     <i class="fas fa-star text-warning me-1"></i>
@@ -64,18 +60,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Slide 2 - Business Hotel -->
                                 <div class="carousel-item">
                                     <div class="row g-0">
                                         <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                                                  class="d-block w-100 carousel-image" alt="Business Hotel">
                                         </div>
                                         <div class="col-md-4 d-flex align-items-center">
                                             <div class="carousel-content p-4 p-md-5">
                                                 <h4 class="fw-bold text-primary mb-3">Business Hotels</h4>
-                                                <p class="text-muted mb-3">Perfect for business travelers and meetings. Our business hotels offer professional environments with high-speed WiFi and meeting facilities.</p>
+                                                <p class="text-muted mb-3">Perfect for business travelers with high-speed WiFi and meeting facilities.</p>
                                                 <div class="d-flex align-items-center mb-2">
                                                     <i class="fas fa-star text-warning me-1"></i>
                                                     <i class="fas fa-star text-warning me-1"></i>
@@ -89,18 +83,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Slide 3 - Boutique Hotel -->
                                 <div class="carousel-item">
                                     <div class="row g-0">
                                         <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                                                  class="d-block w-100 carousel-image" alt="Boutique Hotel">
                                         </div>
                                         <div class="col-md-4 d-flex align-items-center">
                                             <div class="carousel-content p-4 p-md-5">
                                                 <h4 class="fw-bold text-primary mb-3">Boutique Hotels</h4>
-                                                <p class="text-muted mb-3">Unique and stylish accommodations with personalized service. Each boutique hotel offers distinctive character and memorable experiences.</p>
+                                                <p class="text-muted mb-3">Unique and stylish accommodations with personalized service.</p>
                                                 <div class="d-flex align-items-center mb-2">
                                                     <i class="fas fa-star text-warning me-1"></i>
                                                     <i class="fas fa-star text-warning me-1"></i>
@@ -115,8 +107,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Carousel Controls -->
                             <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Previous</span>
@@ -133,13 +123,328 @@
     </div>
 </header>
 
-<section id="how-it-works">
+<!-- Why Choose Us Section -->
+<section id="why-choose-us" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Why Choose Hotel Per Hour?</h2>
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Flexible Booking</h5>
+                        <p class="text-muted">Book for just the hours you need, from 3 to 8 hours.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Affordable Rates</h5>
+                        <p class="text-muted">Pay only for your stay, with no hidden charges.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <i class="fas fa-lock fa-2x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Discreet & Private</h5>
+                        <p class="text-muted">Your privacy is our priority with confidential bookings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Loyalty Rewards Program Section -->
+<section id="loyalty-program" class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="text-center text-lg-start">
+                    <span class="badge bg-primary mb-3">NEW FEATURE</span>
+                    <h2 class="fw-bold mb-4">Earn Rewards with Every Stay</h2>
+                    <p class="lead mb-4">Our loyalty program gives you discounts on every booking. The more you stay, the more you save!</p>
+                    
+                    <div class="d-flex flex-wrap gap-3 mb-5">
+                        <div class="loyalty-benefit">
+                            <div class="icon-circle bg-primary mb-3">
+                                <i class="fas fa-star fa-2x text-white"></i>
+                            </div>
+                            <h5>Points Per Stay</h5>
+                            <p class="mb-0">Earn points for every booking</p>
+                        </div>
+                        
+                        <div class="loyalty-benefit">
+                            <div class="icon-circle bg-success mb-3">
+                                <i class="fas fa-percent fa-2x text-white"></i>
+                            </div>
+                            <h5>Discount Redemption</h5>
+                            <p class="mb-0">Redeem points for discounts</p>
+                        </div>
+                        
+                        <div class="loyalty-benefit">
+                            <div class="icon-circle bg-warning mb-3">
+                                <i class="fas fa-gift fa-2x text-white"></i>
+                            </div>
+                            <h5>Exclusive Offers</h5>
+                            <p class="mb-0">Special deals for loyal customers</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-3 d-md-flex">
+                        <a href="{% url 'customer_register' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-crown me-2"></i>Join Program
+                        </a>
+                        <a href="#how-loyalty-works" class="btn btn-outline-primary btn-lg px-4">
+                            How It Works
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="loyalty-card-container position-relative">
+                    <div class="loyalty-card shadow-lg">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="Logo" width="50">
+                                <h4 class="mb-0">Premium Member</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-4">
+                                <div>
+                                    <h6 class="text-muted">CURRENT POINTS</h6>
+                                    <h2 class="fw-bold text-primary">1,250</h2>
+                                </div>
+                                <div class="text-end">
+                                    <h6 class="text-muted">NEXT REWARD</h6>
+                                    <h2 class="fw-bold text-success">15% OFF</h2>
+                                </div>
+                            </div>
+                            
+                            <div class="progress mb-4" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" 
+                                     aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+                                    <span class="progress-text">65% to next reward</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <small class="text-muted">POINTS REQUIRED</small>
+                                    <h5 class="fw-bold">100 points = 1% discount</h5>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">MAX DISCOUNT</small>
+                                    <h5 class="fw-bold">Up to 50% OFF</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <span>Member Since: 2023</span>
+                                <span>Expires: Never</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="loyalty-badge position-absolute">
+                        <div class="badge-content bg-warning text-dark p-3 rounded-circle shadow">
+                            <i class="fas fa-crown fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How Loyalty Works Section -->
+<section id="how-loyalty-works" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">How Our Loyalty Program Works</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                            1
+                        </div>
+                        <h5 class="fw-bold">Book a Room</h5>
+                        <p class="text-muted">Make any booking through our platform</p>
+                        <div class="mt-3">
+                            <i class="fas fa-hotel fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                            2
+                        </div>
+                        <h5 class="fw-bold">Earn Points</h5>
+                        <p class="text-muted">Get points based on your booking value</p>
+                        <div class="mt-3">
+                            <i class="fas fa-coins fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                            3
+                        </div>
+                        <h5 class="fw-bold">Redeem Discounts</h5>
+                        <p class="text-muted">Use points to get discounts on future stays</p>
+                        <div class="mt-3">
+                            <i class="fas fa-percent fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                            4
+                        </div>
+                        <h5 class="fw-bold">Enjoy Benefits</h5>
+                        <p class="text-muted">Get exclusive offers and special treatment</p>
+                        <div class="mt-3">
+                            <i class="fas fa-gift fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <div class="d-inline-block bg-primary text-white p-3 rounded">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>100 points = 1% discount · Minimum 1000 points to redeem</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Scrollable Customer Reviews Section -->
+<section id="testimonials" class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">What Our Customers Say</h2>
+        <div class="reviews-container d-flex flex-nowrap overflow-auto pb-3">
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Chinedu O.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text text-muted">Perfect for a quick rest during my business trips. Booking was seamless, and the hotel was top-notch!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Aisha M.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p class="card-text text-muted">Loved the flexibility of hourly bookings. It’s affordable and discreet. Highly recommend!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Tunde A.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text text-muted">The app made it so easy to find a hotel for a few hours. Great service!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Ngozi E.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="card-text text-muted">Ideal for a short stay during a layover. Clean rooms and excellent customer support.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Emeka J.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text text-muted">Fantastic experience! Booking by the hour saved me money and time.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-2">Fatima K.</h5>
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p class="card-text text-muted">Very convenient for a quick getaway. The process was smooth and private.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'contacts' %}" class="btn btn-outline-primary">Leave Your Feedback</a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5 bg-light">
     <div class="container py-4 py-xl-5" data-aos="fade-up" data-aos-duration="950">
         <div class="row">
             <div class="col-md-12 text-center">
-                <h3 class="display-6 fw-bold pb-md-4"  style="font-weight: bold; font-size: 29.4px;">
-                    How It Works
-                </h3>
+                <h3 class="display-6 fw-bold pb-md-4" style="font-size: 29.4px;">How It Works</h3>
             </div>
         </div>
         <div class="row gy-4 justify-content-center">
@@ -166,9 +471,9 @@
                                 <path d="M3 11h16"></path>
                                 <path d="M18 16.496v1.504l1 1"></path>
                             </svg>
-                            <h5 class="fw-bold mb-0 ms-2">Pick your Hours</h5>
+                            <h5 class="fw-bold mb-0 ms-2">Pick Your Hours</h5>
                         </div>
-                        <p class="text-muted my-3">Select how long you want to stay (2, 4, 6 hours, etc.).</p>
+                        <p class="text-muted my-3">Select how long you want to stay (3, 6, 8 hours, etc.).</p>
                     </div>
                     <div class="col text-center">
                         <div class="d-flex justify-content-center align-items-center">
@@ -178,7 +483,7 @@
                                 <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
                                 <path d="M9 14l2 2l4 -4"></path>
                             </svg>
-                            <h5 class="fw-bold mb-0 ms-2">Book instantly</h5>
+                            <h5 class="fw-bold mb-0 ms-2">Book Instantly</h5>
                         </div>
                         <p class="text-muted my-3">Pay online or at the hotel. No hidden charges.</p>
                     </div>
@@ -196,8 +501,27 @@
             </div>
         </div>
     </div>
-    
-    <div class="container py-4 py-xl-5">
+</section>
+
+<!-- App Store Badges Section -->
+<section id="app-download" class="py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Get the App</h2>
+        <p class="text-muted mb-4">Book hotels on the go with our mobile app</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="https://www.apple.com/app-store/" target="_blank">
+                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" style="height: 50px;">
+            </a>
+            <a href="https://play.google.com/store" target="_blank">
+                <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height: 50px;">
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Designed for You Section -->
+<section class="py-4 py-xl-5">
+    <div class="container">
         <div class="row mb-5">
             <div class="col-md-8 col-xl-6 text-center mx-auto">
                 <h2><strong>Designed for You</strong></h2>
@@ -213,8 +537,8 @@
                         </svg>
                     </div>
                     <div class="px-3">
-                        <h4>Business Travelers&nbsp;</h4>
-                        <p>&nbsp;Need a space between meetings?</p>
+                        <h4>Business Travelers</h4>
+                        <p>Need a space between meetings?</p>
                     </div>
                 </div>
             </div>
@@ -241,7 +565,7 @@
                     </div>
                     <div class="px-3">
                         <h4><strong>Long Layovers</strong></h4>
-                        <p>&nbsp;Rest and recharge without staying overnight</p>
+                        <p>Rest and recharge without staying overnight</p>
                     </div>
                 </div>
             </div>
@@ -249,6 +573,7 @@
     </div>
 </section>
 
+<!-- CTA Section -->
 <section class="py-4 py-xl-5">
     <div class="container">
         <div class="bg-primary border rounded border-0 border-primary overflow-hidden">
@@ -259,7 +584,7 @@
                         <p class="mb-4">Search now and find a hotel near you, only for the time you need.</p>
                         <div class="my-3">
                             <a class="btn btn-secondary me-2 mt-2" role="button" href="{% url 'hotel_list' %}">Start Booking</a>
-                            <a class="btn btn-light mt-2" role="button" href="#how-it-works">How it works</a>
+                            <a class="btn btn-light mt-2" role="button" href="#how-it-works">How It Works</a>
                         </div>
                     </div>
                 </div>
@@ -271,12 +596,13 @@
     </div>
 </section>
 
+<!-- Expanded FAQ Section -->
 <section class="py-4 py-xl-5 mb-5">
     <div class="container">
         <div class="row mb-2">
             <div class="col-md-8 col-xl-6 text-center mx-auto" data-aos="fade-up" data-aos-duration="1150">
                 <h2 class="display-6 fw-bold mb-5"><span class="pb-3 underline">FAQ<br></span></h2>
-                <p class="text-muted mb-5"></p>
+                <p class="text-muted mb-5">Answers to common questions about hourly hotel bookings</p>
             </div>
         </div>
         <div class="row mb-2">
@@ -290,19 +616,19 @@
                         </h2>
                         <div class="accordion-collapse collapse item-1" role="tabpanel" data-bs-parent="#accordion-1">
                             <div class="accordion-body">
-                                <p>You choose a hotel, select the number of hours you want to stay, pick your check-in time, and confirm your booking. it's fast, flexible, and affordable.</p>
+                                <p>You choose a hotel, select the number of hours you want to stay, pick your check-in time, and confirm your booking. It's fast, flexible, and affordable.</p>
                             </div>
                         </div>
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header" role="tab">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-2" aria-expanded="false" aria-controls="accordion-1 .item-2">
-                                How many hours can i book for?
+                                How many hours can I book for?
                             </button>
                         </h2>
                         <div class="accordion-collapse collapse item-2" role="tabpanel" data-bs-parent="#accordion-1">
                             <div class="accordion-body">
-                                <p class="mb-0">You can typically book for 3, 4, 6, or 8 hours. .The minimum is 3hours.&nbsp;</p>
+                                <p class="mb-0">You can book for 3, 4, 6, or 8 hours, with a minimum of 3 hours. Some hotels may offer additional durations.</p>
                             </div>
                         </div>
                     </div>
@@ -312,9 +638,45 @@
                                 Is hourly booking private and discreet?
                             </button>
                         </h2>
-                        <div class="accordion-collapse collapse show item-3" role="tabpanel" data-bs-parent="#accordion-1">
+                        <div class="accordion-collapse collapse item-3" role="tabpanel" data-bs-parent="#accordion-1">
                             <div class="accordion-body">
-                                <p class="mb-0">Yes. all bookings are confidential. our hotel partners respect your privacy and treat each guest professionally.</p>
+                                <p class="mb-0">Yes, all bookings are confidential. Our hotel partners prioritize your privacy and ensure professional service.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-4" aria-expanded="false" aria-controls="accordion-1 .item-4">
+                                Can I cancel or modify my booking?
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-4" role="tabpanel" data-bs-parent="#accordion-1">
+                            <div class="accordion-body">
+                                <p class="mb-0">Yes, you can cancel or modify your booking up to 2 hours before check-in, subject to the hotel’s cancellation policy.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-5" aria-expanded="false" aria-controls="accordion-1 .item-5">
+                                Are there additional fees for hourly bookings?
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-5" role="tabpanel" data-bs-parent="#accordion-1">
+                            <div class="accordion-body">
+                                <p class="mb-0">No hidden fees! You only pay for the hours you book, plus any optional extras you select.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-6" aria-expanded="false" aria-controls="accordion-1 .item-6">
+                                Can I book on the mobile app?
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-6" role="tabpanel" data-bs-parent="#accordion-1">
+                            <div class="accordion-body">
+                                <p class="mb-0">Yes, our mobile app on the App Store and Google Play offers the same seamless booking experience as our website.</p>
                             </div>
                         </div>
                     </div>
@@ -324,49 +686,45 @@
     </div>
 </section>
 
+<!-- Contact CTA Section -->
 <section class="py-4 py-xl-5">
     <div class="container">
         <div class="text-white bg-primary border rounded border-0 border-primary d-flex flex-column justify-content-between flex-lg-row p-4 p-md-5">
             <div class="pb-2 pb-lg-1">
-                <h2 class="fw-bold text-secondary mb-2">Need assistance?</h2>
+                <h2 class="fw-bold text-secondary mb-2">Need Assistance?</h2>
                 <p class="mb-0">We are here to help</p>
             </div>
             <div class="my-2">
-                <a class="btn btn-light fs-5 py-2 px-4" role="button" href="{% url 'contacts' %}">Click here</a>
+                <a class="btn btn-light fs-5 py-2 px-4" role="button" href="{% url 'contacts' %}">Click Here</a>
             </div>
         </div>
     </div>
 </section>
 
 <style>
-/* Carousel Custom Styles */
+/* Carousel Styles */
 .carousel-image {
     height: 400px;
     width: 100%;
     object-fit: cover;
     object-position: center;
 }
-
 .carousel-content {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    height: 400px; /* Fixed height to match image */
+    height: 400px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
-
 .carousel-inner {
     overflow: hidden;
 }
-
 .carousel-item .row {
-    height: 400px; /* Consistent card height */
+    height: 400px;
 }
-
 .carousel-indicators {
     bottom: -50px;
 }
-
 .carousel-indicators button {
     width: 12px;
     height: 12px;
@@ -374,114 +732,271 @@
     border: 2px solid #007bff;
     background-color: transparent;
 }
-
 .carousel-indicators button.active {
     background-color: #007bff;
 }
-
-/* Brand Color Controls - Hidden by default */
 .carousel-control-prev,
 .carousel-control-next {
     width: 5%;
     opacity: 0;
     transition: opacity 0.5s ease;
 }
-
 .carousel:hover .carousel-control-prev,
 .carousel:hover .carousel-control-next {
     opacity: 1;
 }
-
-
-
 .carousel-control-prev-icon:hover,
 .carousel-control-next-icon:hover {
-     /* Darker brand color on hover */
     transform: scale(1.1);
     transition: all 0.2s ease;
 }
 
+/* Scrollable Reviews Section */
+.reviews-container {
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+.reviews-container::-webkit-scrollbar {
+    height: 8px;
+}
+.reviews-container::-webkit-scrollbar-thumb {
+    background-color: #007bff;
+    border-radius: 10px;
+}
+.reviews-container::-webkit-scrollbar-track {
+    background: #f1f3f4;
+}
+.review-card {
+    flex: 0 0 300px;
+    margin-right: 20px;
+    scroll-snap-align: start;
+}
+.review-card .card {
+    height: 220px;
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+.review-card .card:hover {
+    transform: translateY(-5px);
+}
+.review-card .card-body {
+    padding: 1.5rem;
+}
+.review-card p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* Why Choose Us Section */
+#why-choose-us .card {
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+#why-choose-us .card:hover {
+    transform: translateY(-5px);
+}
+
+/* App Download Section */
+#app-download img {
+    transition: transform 0.3s ease;
+}
+#app-download img:hover {
+    transform: scale(1.05);
+}
+/* Loyalty Program Styles */
+#loyalty-program {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.loyalty-card {
+    background: linear-gradient(135deg, #121643 0%, #0e123a 100%);
+    color: white;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.loyalty-card .card-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loyalty-card .card-body {
+    padding: 2rem;
+}
+
+.loyalty-card .card-footer {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loyalty-card-container {
+    perspective: 1000px;
+}
+
+.loyalty-card {
+    transform: rotateY(-5deg) rotateX(5deg);
+    transition: transform 0.5s ease;
+}
+
+.loyalty-card-container:hover .loyalty-card {
+    transform: rotateY(0) rotateX(0);
+}
+
+.loyalty-badge {
+    top: -20px;
+    right: -20px;
+    z-index: 2;
+}
+
+.badge-content {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.loyalty-benefit {
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+    padding: 15px;
+}
+
+/* How Loyalty Works */
+.step-number {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#how-loyalty-works .card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+}
+
+#how-loyalty-works .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: visible;
+    position: relative;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
-    .carousel-image {
-        height: 280px;
-    }
-    
-    .carousel-content {
-        height: 280px; /* Match image height */
-        padding: 1.5rem !important;
-    }
-    
-    .carousel-item .row {
-        height: 280px;
-    }
-    
-    .carousel-inner .row {
-        flex-direction: column;
-    }
-    
-    .carousel-content h4 {
-        font-size: 1.1rem;
-    }
-    
-    .carousel-content p {
-        font-size: 0.9rem;
-    }
-    
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        width: 35px;
-        height: 35px;
+@media (max-width: 992px) {
+    .loyalty-benefit {
+        min-width: 120px;
     }
 }
 
-@media (max-width: 576px) {
-    .carousel-image {
-        height: 220px;
+@media (max-width: 768px) {
+    .loyalty-card {
+        transform: none;
     }
     
+    .loyalty-badge {
+        top: -15px;
+        right: -15px;
+    }
+    
+    .badge-content {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .carousel-image, .carousel-content, .carousel-item .row {
+        height: 280px;
+    }
     .carousel-content {
-        height: 220px; /* Match image height */
+        padding: 1.5rem !important;
+    }
+    .carousel-content h4 {
+        font-size: 1.1rem;
+    }
+    .carousel-content p {
+        font-size: 0.9rem;
+    }
+    .review-card {
+        flex: 0 0 250px;
+    }
+    .review-card .card {
+        height: 200px;
+    }
+}
+@media (max-width: 576px) {
+    .carousel-image, .carousel-content, .carousel-item .row {
+        height: 220px;
+    }
+    .carousel-content {
         padding: 1rem !important;
     }
-    
-    .carousel-item .row {
-        height: 220px;
-    }
-    
     .carousel-content h4 {
         font-size: 1rem;
         margin-bottom: 0.5rem !important;
     }
-    
     .carousel-content p {
         font-size: 0.85rem;
         margin-bottom: 0.5rem !important;
     }
-    
     .carousel-indicators {
         bottom: -30px;
     }
-    
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        width: 30px;
-        height: 30px;
+    .review-card {
+        flex: 0 0 200px;
     }
-}
-
-/* Smooth transitions */
-.carousel-item {
-    transition: transform 0.6s ease-in-out;
-}
-
-/* FontAwesome icons */
-.fas {
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
+    .review-card .card {
+        height: 180px;
+    }
+    .review-card p {
+        font-size: 0.85rem;
+    }
 }
 </style>
 
-<!-- FontAwesome for star ratings -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}

@@ -1,105 +1,670 @@
 {% load static %}
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>{% block title %}Hotelperhour{% endblock %}</title>
-    <link rel="icon" href="{% static 'img/illustrations/hotelperhourlogo.jpg' %}" type="image/png">
+    <link rel="icon" href="{% static 'img/illustrations/hotellogo2.jpg' %}" type="image/png">
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&display=swap">
     <link rel="stylesheet" href="{% static 'css/aos.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/Features-Centered-Icons-icons.css' %}">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body {
-            padding-top: 70px; /* Adjust based on navbar height */
+        :root {
+            --primary: #121643;
+            --primary-dark: #0e123a;
+            --accent: #ffd700; /* Yellow color */
+            --light: #f8f9fa;
+            --gray-bg: #f5f7fa; /* Light gray background */
+            --transition: all 0.3s ease;
         }
+        
+        body {
+            padding-top: 80px;
+            font-family: 'Raleway', sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header & Navbar */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.97);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 0.75rem 0;
+            transition: var(--transition);
+        }
+        
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 30px; /* Added more space */
+        }
+        
+        .navbar-brand img {
+            height: 42px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+        
+        .navbar-brand span {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 0.2px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+        
+        .navbar-nav .nav-item {
+            margin: 0 6px; /* Optimized margin */
+        }
+        
+        .navbar-nav .nav-link {
+            font-weight: 600;
+            color: var(--primary);
+            padding: 8px 12px; /* Slightly reduced padding */
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+            font-size: 0.95rem; /* Slightly smaller font */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+        
+        .navbar-nav .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 5px;
+            left: 12px;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .navbar-nav .nav-link:hover:after,
+        .navbar-nav .nav-link.active:after {
+            width: calc(100% - 24px);
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .navbar-nav .nav-link.active {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* Offcanvas Menu */
+        .offcanvas {
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+        }
+        
+        .offcanvas-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+        
+        .offcanvas-title {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .offcanvas-body .nav-link {
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .offcanvas-body .nav-link i {
+            margin-right: 10px;
+            width: 24px;
+            text-align: center;
+            color: var(--primary);
+        }
+        
+        .offcanvas-body .btn {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 600;
+            padding: 8px 20px;
+            transition: var(--transition);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(18, 22, 67, 0.2);
+        }
+        
+        /* Reservation Check Button */
+        .reservation-check {
+            position: relative;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .reservation-check .btn {
+            position: relative;
+            z-index: 2;
+            background-color: var(--accent); /* Yellow color */
+            color: var(--primary);
+            border: none;
+            font-weight: 600;
+            padding: 8px 12px; /* Slightly increased padding */
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 45px; /* Fixed height for consistency */
+            text-align: center;
+            white-space: normal; /* Allow text wrapping */
+            line-height: 1.2;
+        }
+        
+        .reservation-check .btn i {
+            margin-bottom: 2px;
+        }
+        
+        .reservation-check .btn:hover {
+            background-color: #e6c200; /* Slightly darker yellow on hover */
+        }
+        
+        .reservation-check .pulse {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 215, 0, 0.2); /* Yellow pulse */
+            border-radius: 8px;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.1);
+                opacity: 0;
+            }
+        }
+        
+        /* Content Area */
+        .content-wrapper {
+            flex: 1;
+            background-color: #ffffff;
+        }
+        
+        /* Footer */
         footer {
+            background-color: var(--gray-bg); /* Light gray background */
+            padding-top: 40px; /* Reduced top padding */
+            position: relative;
+            margin-top: auto;
+            border-top: 1px solid #e0e6ed;
+        }
+        
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .footer-brand img {
+            height: 48px;
+            border-radius: 8px;
+            margin-right: 12px;
+        }
+        
+        .footer-brand span {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 0.2px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+        
+        .hotelier-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-hotelier {
+            background-color: var(--light);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .btn-hotelier:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(18, 22, 67, 0.2);
+        }
+        
+        .footer-links h5 {
+            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .footer-links h5:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary); 
+            border-radius: 3px;
+        }
+        
+        .footer-links ul {
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #5a6575;
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+        
+        .footer-links a i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+            color: var(--primary);
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(18, 22, 67, 0.05);
+            color: var(--primary);
+            border-radius: 50%;
+            margin-left: 8px;
+            transition: var(--transition);
+        }
+        
+        .social-icons a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        /* User dropdown */
+        .user-dropdown .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-dropdown .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 10px 0;
+            min-width: 200px;
+        }
+        
+        .user-dropdown .dropdown-item {
+            padding: 8px 20px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-dropdown .dropdown-item i {
+            width: 20px;
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .user-dropdown .dropdown-item:hover {
+            background-color: rgba(18, 22, 67, 0.05);
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .navbar-nav .nav-item {
+                margin: 0 4px;
+            }
             
-            padding-top: 70px;
+            .navbar-nav .nav-link {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .navbar-nav .nav-link {
+                padding: 8px 10px;
+            }
+            
+            .reservation-check {
+                margin-right: 10px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .reservation-check {
+                display: none;
+            }
+            
+            body {
+                padding-top: 70px;
+            }
+            
+            .hotelier-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-hotelier {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
-
 <body>
-    <nav class="navbar navbar-expand-md fixed-top navbar-shrink py-3" id="mainNav">
+    <!-- Navbar with Offcanvas Menu -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href=""><span>Hotelperhour</span></a>
-            <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
-                <span class="visually-hidden">Toggle navigation</span>
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="HotelPerHour Logo">
+                <span>HotelPerHour</span>
+            </a>
+            
+            <!-- Offcanvas Toggler -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
+            <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><strong>Home</strong></a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'about' %}"><strong>About Us</strong></a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'hotel_list' %}"><strong>Book hotel</strong></a></li>
-                    <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'contacts' %}"><strong>Contacts</strong></a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><strong>Home</strong></a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}"><strong>About Us</strong></a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'hotel_list' %}active{% endif %}" href="{% url 'hotel_list' %}"><strong>Book Hotel</strong></a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><strong>Contacts</strong></a></li>
+                </ul>
+                
+                <!-- Reservation Check Button - Desktop -->
+                <div class="reservation-check d-none d-md-block">
+                    <div class="pulse"></div>
+                    <a class="btn" href="{% url 'verify_booking' %}">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Check<br>Reservation</span>
+                    </a>
+                </div>
+                
+                <!-- User Actions - Desktop -->
+                <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'hotel_dashboard' %}"><strong>Dashboard</strong></a>
-                    </li>
-                    </ul>
-                     <a class="btn btn-primary shadow" role="button" href="{% url 'logout' %}">Logout</a>
-                {% else %}
-                    
-            
-                <a class="btn btn-primary shadow" role="button" href="{% url 'login' %}">Register a Hotel</a>
-                {% endif %}
+                        <!-- User Dropdown -->
+                        <div class="dropdown user-dropdown ms-2">
+                            <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-2"></i>
+                                {% if user.username %}{{ user.username }}{% else %}My Account{% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                {% if user.is_customer %}
+                                    <li><a class="dropdown-item" href="{% url 'customer_profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'customer_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                {% elif user.is_hotel_owner %}
+                                    <li><a class="dropdown-item" href="{% url 'hotel_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'unified_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a class="btn btn-primary shadow" role="button" href="{% url 'customer_login' %}">Login</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
 
-    {% block content %}
-    {% endblock %}
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+            <div class="d-flex align-items-center">
+                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="HotelPerHour Logo" height="36">
+                <h5 class="offcanvas-title ms-2" id="offcanvasNavbarLabel">HOTELPERHOUR</h5>
+            </div>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><i class="fas fa-home"></i><strong>Home</strong></a></li>
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}"><i class="fas fa-info-circle"></i><strong>About Us</strong></a></li>
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'hotel_list' %}active{% endif %}" href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i><strong>Book Hotel</strong></a></li>
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><i class="fas fa-address-book"></i><strong>Contacts</strong></a></li>
+                {% if user.is_authenticated and user.is_customer %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'customer_profile' %}"><i class="fas fa-user"></i><strong>Profile</strong></a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <div class="mt-4">
+                <!-- Fixed: Now uses URL directly -->
+                <a class="btn w-100 mb-3" href="{% url 'verify_booking' %}" style="background-color: var(--accent); color: var(--primary);">
+                    <i class="fas fa-calendar-check me-2"></i>Check Reservation
+                </a>
+                
+                {% if user.is_authenticated %}
+                    <a class="btn btn-primary w-100" role="button" href="{% url 'unified_logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                {% else %}
+                    <a class="btn btn-primary w-100" role="button" href="{% url 'customer_login' %}">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="mt-5 text-center">
+                <p class="text-muted small">Join our community</p>
+                <div class="social-icons d-flex justify-content-center">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        {% block content %}
+        <!-- Content will be injected here from child templates -->
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
     <footer>
         <div class="container py-4 py-lg-5">
-            <div class="row row-cols-2 row-cols-md-4">
-                <div class="col-12 col-md-3">
-                    <div class="fw-bold d-flex align-items-center mb-2"><span>Hotelperhour</span></div>
-                    <p class="text-muted"><strong><span style="color: rgb(18, 22, 67);">Book Hotels by the Hour. Stay on Your Time.</span></strong></p>
+            <div class="row justify-content-center">
+                <!-- Brand Column with Hotelier Buttons -->
+                <div class="col-12 col-md-4 text-center mb-5 mb-md-0">
+                    <div class="footer-brand">
+                        <img src="{% static 'img/illustrations/navbar2.png' %}" alt="HotelPerHour Logo">
+                        <span>HotelPerHour</span>
+                    </div>
+                    
+                    <p class="text-muted mt-3">Are you a hotelier? Join our network to reach more customers with flexible hourly bookings.</p>
+                    
+                    <div class="hotelier-buttons">
+                        <a href="{% url 'register' %}" class="btn-hotelier">Join Our Network</a>
+                        <a href="{% url 'login' %}" class="btn-hotelier">Portal Login</a>
+                    </div>
                 </div>
-                <div class="col-sm-4 col-md-3 text-lg-start d-flex flex-column">
-                    <h3 class="fs-6 fw-bold">We make booking:</h3>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Simple</a></li>
-                        <li><a href="#">Fast</a></li>
-                        <li><a href="#">Simple</a></li>
+                
+                <!-- We make booking column -->
+                <div class="col-sm-6 col-md-4 mb-4 mb-sm-0 footer-links">
+                    <h5>We make booking</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-check-circle"></i> Simple</a></li>
+                        <li><a href="#"><i class="fas fa-bolt"></i> Fast</a></li>
+                        <li><a href="#"><i class="fas fa-sync-alt"></i> Flexible</a></li>
+                        <li><a href="#"><i class="fas fa-lock"></i> Secure</a></li>
                     </ul>
                 </div>
-                <div class="col-sm-4 col-md-3 text-lg-start d-flex flex-column">
-                    <h3 class="fs-6 fw-bold">About</h3>
-                    <ul class="list-unstyled">
-                        <li><a href="{% url 'contacts' %}"><strong>Contact us</strong></a></li>
-                        <li><a href="{% url 'hotel_list' %}"><strong>Book hotel</strong></a></li>
-                        <li><a href="{% url 'login' %}"><strong>Signup/login</strong></a></li>
+                
+                <!-- About column -->
+                <div class="col-sm-6 col-md-4 footer-links">
+                    <h5>Quick Links</h5>
+                    <ul>
+                        <li><a href="{% url 'contacts' %}"><i class="fas fa-phone-alt"></i> Contact Us</a></li>
+                        <li><a href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i> Book Hotel</a></li>
+                        <li><a href="{% url 'verify_booking' %}"><i class="fas fa-qrcode"></i> Verify Booking</a></li>
+                        {% if user.is_authenticated %}
+                            {% if user.is_customer %}
+                                <li><a href="{% url 'customer_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                                <li><a href="{% url 'customer_profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+                            {% elif user.is_hotel_owner %}
+                                <li><a href="{% url 'hotel_dashboard' %}"><i class="fas fa-building"></i> Dashboard</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li><a href="{% url 'customer_login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
-            <hr>
-            <div class="text-muted d-flex justify-content-between align-items-center pt-3">
-                <p class="mb-0">Copyright © 2025 Hotelperhour</p>
-                <ul class="list-inline mb-0">
-                    <li class="list-inline-item"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-facebook">
-                            <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"></path>
-                        </svg></li>
-                    <li class="list-inline-item"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-twitter">
-                            <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15"></path>
-                        </svg></li>
-                    <li class="list-inline-item"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-instagram">
-                            <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"></path>
-                        </svg></li>
-                </ul>
+            
+            <hr class="my-5">
+            
+            <!-- Footer bottom with copyright and social icons -->
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0">Copyright © 2025 HotelPerHour. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- Tawk.to Script -->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    {% if user.is_authenticated %}
+    Tawk_API.visitor = {
+        name: '{{ user.full_name }}',
+        email: '{{ user.email }}'
+    };
+    {% endif %}
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/6899b26ed866aa19294cd3b8/1j2c620ri';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/aos.min.js' %}"></script>
     <script src="{% static 'js/bs-init.js' %}"></script>
     <script src="{% static 'js/startup-modern.js' %}"></script>
+    
+    <script>
+        // Initialize AOS for scroll animations
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Add pulse animation to reservation button
+        setInterval(() => {
+            const pulse = document.querySelector('.pulse');
+            if (pulse) {
+                pulse.style.animation = 'none';
+                setTimeout(() => {
+                    pulse.style.animation = 'pulse 2s infinite';
+                }, 10);
+            }
+        }, 5000);
+    </script>
 </body>
 </html>
