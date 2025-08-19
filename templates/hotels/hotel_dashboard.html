@@ -4,8 +4,10 @@
 {% block title %}Hotel Owner Dashboard{% endblock %}
 
 {% block content %}
+<!-- ...existing code... -->
+ 
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Hotel Owner Dashboard</h2>
+    <h2 class="mb-4 text-center" data-aos="fade-up" data-aos-duration="800">Hotel Owner Dashboard</h2>
     <div class="row mb-4">
         <div class="col-12 col-md-4 mb-3 mb-md-0">
             <a href="{% url 'hotel_create' %}" class="btn btn-primary w-100">Add New Hotel</a>
@@ -36,17 +38,19 @@
                     <td>{{ hotel.address }}</td>
                     <td>{{ hotel.is_approved|yesno:"Approved,Pending" }}</td>
                     <td>
-                        <div class="dropdown position-static">
-                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Actions
+                        <!-- Animated dropdown with icons -->
+                        <div class="dropdown position-static dropdown-animated">
+                            <button class="btn btn-secondary dropdown-toggle btn-sm d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="btn-icon"><i class="fas fa-ellipsis-v"></i></span>
+                                <span class="ms-2">Actions</span>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'hotel_detail' hotel.slug %}">View</a></li>
-                                <li><a class="dropdown-item" href="{% url 'hotel_edit' hotel.slug %}">Edit</a></li>
-                                <li><a class="dropdown-item" href="{% url 'hotel_bookings' hotel.slug %}">Bookings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'hotel_rooms' hotel.slug %}">Rooms</a></li>
-                                <li><a class="dropdown-item" href="{% url 'hotel_sales_report' hotel.slug %}">Sales Report</a></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'hotel_delete' hotel.slug %}">Delete Hotel</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_detail' hotel.slug %}"><i class="fas fa-eye me-2"></i>View</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_edit' hotel.slug %}"><i class="fas fa-pen me-2"></i>Edit</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_bookings' hotel.slug %}"><i class="fas fa-calendar-check me-2"></i>Bookings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_rooms' hotel.slug %}"><i class="fas fa-door-open me-2"></i>Rooms</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_sales_report' hotel.slug %}"><i class="fas fa-chart-line me-2"></i>Sales Report</a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'hotel_delete' hotel.slug %}"><i class="fas fa-trash-alt me-2 text-danger"></i>Delete Hotel</a></li>
                             </ul>
                         </div>
                     </td>
@@ -60,4 +64,34 @@
         </table>
     </div>
 </div>
+
+<script>
+/* close dropdowns when clicking outside and keep menu in viewport */
+document.addEventListener('click', function(event) {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (!menu.parentElement.contains(event.target)) menu.classList.remove('show');
+    });
+});
+
+document.querySelectorAll('.dropdown').forEach(dropdown => {
+    dropdown.addEventListener('show.bs.dropdown', function () {
+        const menu = this.querySelector('.dropdown-menu');
+        if (!menu) return;
+        const rect = menu.getBoundingClientRect();
+        const vh = window.innerHeight;
+        if (rect.bottom > vh) {
+            menu.style.transform = 'translateY(-100%)';
+            menu.style.top = 'auto';
+            menu.style.bottom = '100%';
+        } else {
+            menu.style.transform = 'translateY(5px)';
+            menu.style.top = '100%';
+            menu.style.bottom = 'auto';
+        }
+    });
+});
+</script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}

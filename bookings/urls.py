@@ -9,7 +9,7 @@ urlpatterns = [
     path('payment/<str:booking_reference>/', views.initiate_payment, name='initiate_payment'),
     
     path('webhook/', views.paystack_webhook, name='paystack_webhook'),
-    path('verify/', views.verify_booking, name='verify_booking'),
+    path('verify/', views.verify_booking, name='verify_bookings'),
     path('cancel/<str:booking_reference>/', views.cancel_booking, name='cancel_booking'),
     path('room/<int:room_id>/check_availability/', views.check_availability, name='check_availability'),
     

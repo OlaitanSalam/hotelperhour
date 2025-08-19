@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
@@ -10,8 +11,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&display=swap">
     <link rel="stylesheet" href="{% static 'css/aos.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/Features-Centered-Icons-icons.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-E1iPUe9AvAvH5nVJieBrB4sADlOSWnqwFa4KHrW3fZ6r5H3uKUrulrR8v3kfm2X5r56cY0x2f07QeK0r4+4yudQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+     <style>
         :root {
             --primary: #121643;
             --primary-dark: #0e123a;
@@ -53,7 +54,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-right: 30px; /* Added more space */
+            margin-right: 30px;
         }
         
         .navbar-brand img {
@@ -68,21 +69,23 @@
             letter-spacing: 0.2px;
             color: var(--primary);
             text-transform: uppercase;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .navbar-nav .nav-item {
-            margin: 0 6px; /* Optimized margin */
+            margin: 0 6px;
         }
         
         .navbar-nav .nav-link {
             font-weight: 600;
             color: var(--primary);
-            padding: 8px 12px; /* Slightly reduced padding */
+            padding: 8px 12px;
             border-radius: 8px;
             transition: var(--transition);
             position: relative;
-            font-size: 0.95rem; /* Slightly smaller font */
-            white-space: nowrap; /* Prevent wrapping */
+            font-size: 0.95rem;
+            white-space: nowrap;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .navbar-nav .nav-link:after {
@@ -125,6 +128,7 @@
             font-weight: 700;
             color: var(--primary);
             font-size: 1.5rem;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .offcanvas-body .nav-link {
@@ -133,6 +137,7 @@
             margin: 5px 0;
             display: flex;
             align-items: center;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .offcanvas-body .nav-link i {
@@ -145,6 +150,7 @@
         .offcanvas-body .btn {
             width: 100%;
             margin: 10px 0;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         /* Buttons */
@@ -154,6 +160,7 @@
             font-weight: 600;
             padding: 8px 20px;
             transition: var(--transition);
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .btn-primary:hover {
@@ -174,21 +181,22 @@
         .reservation-check .btn {
             position: relative;
             z-index: 2;
-            background-color: var(--accent); /* Yellow color */
+            background-color: var(--accent);
             color: var(--primary);
             border: none;
             font-weight: 600;
-            padding: 8px 12px; /* Slightly increased padding */
+            padding: 8px 12px;
             font-size: 0.85rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            min-height: 45px; /* Fixed height for consistency */
+            min-height: 45px;
             text-align: center;
-            white-space: normal; /* Allow text wrapping */
+            white-space: normal;
             line-height: 1.2;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .reservation-check .btn i {
@@ -196,7 +204,7 @@
         }
         
         .reservation-check .btn:hover {
-            background-color: #e6c200; /* Slightly darker yellow on hover */
+            background-color: #e6c200;
         }
         
         .reservation-check .pulse {
@@ -205,7 +213,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 215, 0, 0.2); /* Yellow pulse */
+            background: rgba(255, 215, 0, 0.2);
             border-radius: 8px;
             z-index: 1;
             animation: pulse 2s infinite;
@@ -226,15 +234,16 @@
         .content-wrapper {
             flex: 1;
             background-color: #ffffff;
+            padding-bottom: 60px;
         }
         
         /* Footer */
         footer {
-            background-color: var(--gray-bg); /* Light gray background */
-            padding-top: 40px; /* Reduced top padding */
+            background-color: var(--gray-bg);
+            padding-top: 20px;
             position: relative;
-            margin-top: auto;
             border-top: 1px solid #e0e6ed;
+            margin-top: 20px;
         }
         
         .footer-brand {
@@ -256,6 +265,7 @@
             letter-spacing: 0.2px;
             color: var(--primary);
             text-transform: uppercase;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .hotelier-buttons {
@@ -277,11 +287,29 @@
             flex: 1;
             min-width: 180px;
             text-align: center;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .btn-hotelier:hover {
             background-color: var(--primary);
             color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(18, 22, 67, 0.2);
+        }
+        
+        .btn-hotelier.join-network {
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            font-size: 1.1rem;
+            padding: 10px 24px;
+            font-weight: 700;
+            font-family: 'Raleway', sans-serif !important;
+        }
+        
+        .btn-hotelier.join-network:hover {
+            background-color: #e6c200;
+            color: var(--primary);
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(18, 22, 67, 0.2);
         }
@@ -292,6 +320,7 @@
             margin-bottom: 20px;
             font-weight: 700;
             color: var(--primary);
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .footer-links h5:after {
@@ -301,7 +330,7 @@
             left: 0;
             width: 50px;
             height: 3px;
-            background: var(--primary); 
+            background: var(--primary);
             border-radius: 3px;
         }
         
@@ -320,6 +349,7 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .footer-links a i {
@@ -345,6 +375,7 @@
             border-radius: 50%;
             margin-left: 8px;
             transition: var(--transition);
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .social-icons a:hover {
@@ -371,6 +402,7 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
+            font-family: 'Raleway', sans-serif !important;
         }
         
         .user-dropdown .dropdown-item i {
@@ -382,6 +414,48 @@
         .user-dropdown .dropdown-item:hover {
             background-color: rgba(18, 22, 67, 0.05);
         }
+        /* WhatsApp Icon Styles */
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 2px 2px 3px #999;
+    z-index: 1000;
+    animation: bounce 1s ease infinite alternate;
+}
+
+.whatsapp-float:hover {
+    animation-play-state: paused;
+}
+
+.whatsapp-float i {
+    margin-top: 15px;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+@media screen and (max-width: 500px) {
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        bottom: 30px;
+        right: 30px;
+        font-size: 25px;
+    }
+    .whatsapp-float i {
+        margin-top: 12px;
+    }
+}
         
         /* Responsive Adjustments */
         @media (max-width: 1200px) {
@@ -444,7 +518,7 @@
                     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><strong>Home</strong></a></li>
                     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}"><strong>About Us</strong></a></li>
                     <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'hotel_list' %}active{% endif %}" href="{% url 'hotel_list' %}"><strong>Book Hotel</strong></a></li>
-                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><strong>Contacts</strong></a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><strong>Contact Us</strong></a></li>
                 </ul>
                 
                 <!-- Reservation Check Button - Desktop -->
@@ -498,16 +572,23 @@
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><i class="fas fa-home"></i><strong>Home</strong></a></li>
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}"><i class="fas fa-info-circle"></i><strong>About Us</strong></a></li>
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'hotel_list' %}active{% endif %}" href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i><strong>Book Hotel</strong></a></li>
-                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><i class="fas fa-address-book"></i><strong>Contacts</strong></a></li>
-                {% if user.is_authenticated and user.is_customer %}
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><i class="fas fa-address-book"></i><strong>Contact Us</strong></a></li>
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'customer_profile' %}"><i class="fas fa-user"></i><strong>Profile</strong></a>
+                    <a class="nav-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}" href="
+                        {% if user.is_customer %}
+                            {% url 'customer_dashboard' %}
+                        {% elif user.is_hotel_owner %}
+                            {% url 'hotel_dashboard' %}
+                        {% else %}
+                            {% url 'home' %}
+                        {% endif %}
+                    "><i class="fas fa-tachometer-alt"></i><strong>Dashboard</strong></a>
                 </li>
                 {% endif %}
             </ul>
             
             <div class="mt-4">
-                <!-- Fixed: Now uses URL directly -->
                 <a class="btn w-100 mb-3" href="{% url 'verify_booking' %}" style="background-color: var(--accent); color: var(--primary);">
                     <i class="fas fa-calendar-check me-2"></i>Check Reservation
                 </a>
@@ -527,7 +608,7 @@
                 <p class="text-muted small">Join our community</p>
                 <div class="social-icons d-flex justify-content-center">
                     <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
                     <a href="#"><i class="fab fa-instagram"></i></a>
                     <a href="#"><i class="fab fa-linkedin-in"></i></a>
                 </div>
@@ -553,11 +634,11 @@
                         <span>HotelPerHour</span>
                     </div>
                     
-                    <p class="text-muted mt-3">Are you a hotelier? Join our network to reach more customers with flexible hourly bookings.</p>
+                    <p class="text-muted mt-3">Are you a hotelier? Register your hotel to reach more customers with flexible hourly bookings.</p>
                     
                     <div class="hotelier-buttons">
-                        <a href="{% url 'register' %}" class="btn-hotelier">Join Our Network</a>
-                        <a href="{% url 'login' %}" class="btn-hotelier">Portal Login</a>
+                        <a href="{% url 'register' %}" class="btn-hotelier join-network">Register Your Hotel</a>
+                        <a href="{% url 'login' %}" class="btn-hotelier">Hotel Portal Login</a>
                     </div>
                 </div>
                 
@@ -603,7 +684,7 @@
                 <div class="col-md-6 text-center text-md-end">
                     <div class="social-icons">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
@@ -611,30 +692,19 @@
             </div>
         </div>
     </footer>
+    <!-- WhatsApp Icon -->
+<a href="https://wa.me/2349154304099?text=Hello%20HotelPerHour,%20I%20have%20a%20question" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+    <i class="fab fa-whatsapp"></i>
+</a>
 
-    <!-- Tawk.to Script -->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    {% if user.is_authenticated %}
-    Tawk_API.visitor = {
-        name: '{{ user.full_name }}',
-        email: '{{ user.email }}'
-    };
-    {% endif %}
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/6899b26ed866aa19294cd3b8/1j2c620ri';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
+    
+    
 
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/aos.min.js' %}"></script>
     <script src="{% static 'js/bs-init.js' %}"></script>
     <script src="{% static 'js/startup-modern.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     
     <script>
         // Initialize AOS for scroll animations

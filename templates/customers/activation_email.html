@@ -194,7 +194,7 @@
                 </p>
             </div>
             
-            <a href="http://{{ domain }}{% url 'activate' uid token %}" class="button">
+            <a href="http://{{ domain }}{% url 'customer_activate' uid token %}" class="button">
                 ✓ Activate My Account
             </a>
             
@@ -203,7 +203,7 @@
             </p>
             
             <div class="backup-link">
-                http://{{ domain }}{% url 'activate' uid token %}
+                http://{{ domain }}{% url 'customer_activate' uid token %}
             </div>
             
             <div class="security-note">

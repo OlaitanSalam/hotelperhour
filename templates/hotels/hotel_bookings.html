@@ -6,9 +6,7 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Bookings for {{ hotel.name }}</h2>
-        <a href="{% url 'hotel_dashboard' %}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-        </a>
+        
     </div>
 
     {% if messages %}
@@ -129,5 +127,6 @@
         {% include 'pagination.html' with page_obj=bookings query_string=query_string %}
     </div>
     {% endif %}
+    <a href="{% url 'hotel_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
 </div>
 {% endblock %}

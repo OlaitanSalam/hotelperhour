@@ -77,9 +77,7 @@ def dashboard(request):
         return redirect('hotel_dashboard')
     return render(request, 'users/dashboard.html')
     
-def logout_view(request):
-    logout(request)
-    return redirect('home')
+
 
 def unified_logout(request):
     logout(request)

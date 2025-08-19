@@ -61,19 +61,17 @@
         <div class="col-lg-6 col-md-8">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h4 class="card-title mb-4 text-center">Drop a Review</h4>
+                    <h4 class="card-title mb-4 text-center">Drop a Feedback</h4>
                     <form method="post" class="contact-form">
                         {% csrf_token %}
-                        
-                            <div class="mb-3">
-                                <label for="name" class="form-label fw-bold">Full Name</label>
-                                <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label fw-bold">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
-                            </div>
-                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-bold">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                        </div>
                         <div class="mb-4 text-center">
                             <label class="form-label fw-bold">Rating</label>
                             <div class="star-rating d-flex justify-content-center align-items-center">
@@ -84,14 +82,15 @@
                                 <i class="fas fa-star" data-value="5"></i>
                             </div>
                             <input type="hidden" name="rating" id="rating" required>
+                            <div id="rating-error" class="text-danger mt-2" style="display: none;">Please select a rating.</div>
                         </div>
                         <div class="mb-4">
-                            <label for="review_text" class="form-label fw-bold">Review</label>
+                            <label for="review_text" class="form-label fw-bold">Feedback</label>
                             <textarea class="form-control" id="review_text" name="review_text" rows="5" placeholder="Tell us about your experience..." required></textarea>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                                <i class="fas fa-paper-plane me-2"></i>Submit Feedback
                             </button>
                         </div>
                     </form>
@@ -221,21 +220,21 @@
     .star-rating {
         display: flex;
         justify-content: center;
-        gap: 10px; /* Spacing between stars */
+        gap: 10px;
     }
     .star-rating i {
-        font-size: 2rem; /* Larger stars */
-        color: #ddd; /* Default color */
+        font-size: 2rem;
+        color: #ddd;
         cursor: pointer;
-        transition: color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+        transition: color 0.3s ease, transform 0.3s ease;
     }
     .star-rating i:hover {
-        color: #ffc107; /* Yellow on hover */
-        transform: scale(1.2); /* Slight enlargement */
+        color: #ffc107;
+        transform: scale(1.2);
     }
     .star-rating i.active {
-        color: #ffc107; /* Yellow when selected */
-        transform: scale(1.1); /* Slightly larger when active */
+        color: #ffc107;
+        transform: scale(1.1);
     }
     /* Responsive adjustments */
     @media (max-width: 768px) {
@@ -247,7 +246,7 @@
             font-size: 2.5rem;
         }
         .star-rating i {
-            font-size: 1.5rem; /* Smaller stars on mobile */
+            font-size: 1.5rem;
         }
     }
 </style>
@@ -256,11 +255,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         const stars = document.querySelectorAll('.star-rating i');
         const ratingInput = document.getElementById('rating');
+        const ratingError = document.getElementById('rating-error');
+        const form = document.querySelector('.contact-form');
+        const submitBtn = form.querySelector('button[type="submit"]');
 
         stars.forEach(star => {
             star.addEventListener('click', function() {
                 const value = this.getAttribute('data-value');
                 ratingInput.value = value;
+                ratingError.style.display = 'none';
                 stars.forEach(s => {
                     s.classList.toggle('active', s.getAttribute('data-value') <= value);
                 });
@@ -280,10 +283,16 @@
             });
         });
 
-        document.querySelector('.contact-form').addEventListener('submit', function() {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-            submitBtn.disabled = true;
+        form.addEventListener('submit', function(e) {
+            if (!ratingInput.value) {
+                e.preventDefault();
+                ratingError.style.display = 'block';
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Review';
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                submitBtn.disabled = true;
+            }
         });
     });
 </script>

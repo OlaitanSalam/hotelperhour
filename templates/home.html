@@ -4,257 +4,242 @@
 {% block title %}Home - Hotel Per Hour{% endblock %}
 
 {% block content %}
-<header class="pt-5">
-    <div class="container pt-4 pt-xl-5">
-        <div class="row pt-5">
-            <div class="col-md-8 text-center text-md-start mx-auto" data-aos="zoom-in">
-                <div class="text-center">
-                    <h1 class="display-4 fw-bold mb-5" data-aos="fade-up" data-aos-duration="1000">
-                        Book Hotels by the Hour. Stay on Your <span class="underline">Time</span>.
-                    </h1>
-                    <p class="fs-5 text-muted mb-5" data-aos="zoom-in" data-aos-duration="1000">
-                        Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere.
-                    </p>
-                </div>
-                <div class="text-center">
-                    <a href="{% url 'hotel_list' %}" class="btn btn-primary btn-lg" type="button">Book A Room</a>
-                </div>
-            </div>
-            <!-- Hotel Images Carousel Section -->
-            <div class="col-12 col-lg-10 mx-auto">
-                <div class="text-center position-relative">
-                    <div class="mt-5">
-                        <div class="row mb-4">
-                            <div class="col-12 text-center">
-                                <h3 class="fw-bold mb-2">Discover Amazing Hotels</h3>
-                                <p class="text-muted">Premium accommodations for your hourly stays</p>
-                            </div>
-                        </div>
-                        <div id="hotelCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
-                            <div class="carousel-indicators">
-                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-                            </div>
-                            <div class="carousel-inner rounded-4 shadow-lg">
-                                <div class="carousel-item active">
-                                    <div class="row g-0">
-                                        <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                                                 class="d-block w-100 carousel-image" alt="Luxury Hotel Suite">
-                                        </div>
-                                        <div class="col-md-4 d-flex align-items-center">
-                                            <div class="carousel-content p-4 p-md-5">
-                                                <h4 class="fw-bold text-primary mb-3">Luxury Suites</h4>
-                                                <p class="text-muted mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service.</p>
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-2"></i>
-                                                    <small class="text-muted">5.0 Rating</small>
-                                                </div>
-                                                <p class="text-primary fw-bold mb-0">Starting from ₦15,000/hour</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="carousel-item">
-                                    <div class="row g-0">
-                                        <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                                                 class="d-block w-100 carousel-image" alt="Business Hotel">
-                                        </div>
-                                        <div class="col-md-4 d-flex align-items-center">
-                                            <div class="carousel-content p-4 p-md-5">
-                                                <h4 class="fw-bold text-primary mb-3">Business Hotels</h4>
-                                                <p class="text-muted mb-3">Perfect for business travelers with high-speed WiFi and meeting facilities.</p>
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star-half-alt text-warning me-2"></i>
-                                                    <small class="text-muted">4.5 Rating</small>
-                                                </div>
-                                                <p class="text-primary fw-bold mb-0">Starting from ₦8,000/hour</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="carousel-item">
-                                    <div class="row g-0">
-                                        <div class="col-md-8">
-                                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                                                 class="d-block w-100 carousel-image" alt="Boutique Hotel">
-                                        </div>
-                                        <div class="col-md-4 d-flex align-items-center">
-                                            <div class="carousel-content p-4 p-md-5">
-                                                <h4 class="fw-bold text-primary mb-3">Boutique Hotels</h4>
-                                                <p class="text-muted mb-3">Unique and stylish accommodations with personalized service.</p>
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                    <i class="fas fa-star text-warning me-2"></i>
-                                                    <small class="text-muted">4.8 Rating</small>
-                                                </div>
-                                                <p class="text-primary fw-bold mb-0">Starting from ₦12,000/hour</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </button>
+<header class="pt-2">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-slides" aria-hidden="true">
+            <div class="hero-slide" style="background-image: url({% static 'images/hero-1200.webp' %});"></div>
+            <div class="hero-slide" style="background-image: url({% static 'images/hero4.webp' %});"></div>
+            <div class="hero-slide" style="background-image: url({% static 'images/hero5.webp' %});"></div>
+            <div class="hero-slide" style="background-image: url({% static 'images/hero6.webp' %});"></div>
+            <div class="hero-slide" style="background-image: url({% static 'images/hero7.webp' %});"></div>
+        </div>
+        <div class="container h-100">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-text" data-aos="fade-right">
+                        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
+                            Book Hotels by the Hour. Stay on Your <span>Time</span>.
+                        </h1>
+                        <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+                            Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere.
+                        </p>
+                        <div class="text-center text-md-start" data-aos="fade-up" data-aos-delay="300">
+                            <a href="{% url 'hotel_list' %}" class="btn hero-cta" type="button">
+                                Book A Room
+                            </a>
                         </div>
                     </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block"></div>
+            </div>
+        </div>
+    </section>
+</header>
+
+<!-- Why Choose Us Section -->
+<section id="why-choose-us" class="benefits-section py-5 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4>Flexible Booking</h4>
+                    <p>Book for just the hours you need, from 3 to 8 hours.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h4>Higher Revenue with Hotels</h4>
+                    <p>Maximize earnings with flexible hourly bookings.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h4>Wider Exposure</h4>
+                    <p>Reach more customers through our platform.</p>
                 </div>
             </div>
         </div>
     </div>
-</header>
+</section>
 
-<!-- Why Choose Us Section -->
-<section id="why-choose-us" class="py-5 bg-light">
+<!-- Discover Amazing Hotels Section -->
+<section class="discover-section">
     <div class="container">
-        <h2 class="text-center fw-bold mb-5">Why Choose Hotel Per Hour?</h2>
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body">
-                        <i class="fas fa-clock fa-2x text-primary mb-3"></i>
-                        <h5 class="fw-bold">Flexible Booking</h5>
-                        <p class="text-muted">Book for just the hours you need, from 3 to 8 hours.</p>
+        <div class="section-title" data-aos="fade-up">
+            <h2>Discover Amazing Hotels</h2>
+            <p class="text-muted mb-3">Premium accommodations for your hourly stays</p>
+            <div class="divider"></div>
+        </div>
+        
+        <div class="hotels-grid">
+            <!-- Hotel 1 -->
+            <div class="hotel-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="hotel-image-container">
+                    <picture>
+                        <source type="image/webp" srcset="{% static 'images/hotel1-400.webp' %} 400w, {% static 'images/hotel1-800.webp' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <source type="image/jpeg" srcset="{% static 'images/hotel1-400.jpg' %} 400w, {% static 'images/hotel1-800.jpg' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <img src="{% static 'images/hotel1-800.jpg' %}" alt="Luxury Suites" class="hotel-image" loading="lazy" decoding="async">
+                    </picture>
+                    <div class="hotel-overlay">
+                        <h4 class="fw-bold mb-3">Luxury Suites</h4>
+                        <p class="mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service.</p>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-2"></i>
+                            <small class="text-muted">5.0 Rating</small>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 text-center">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body">
-                        <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
-                        <h5 class="fw-bold">Affordable Rates</h5>
-                        <p class="text-muted">Pay only for your stay, with no hidden charges.</p>
+            
+            <!-- Hotel 2 -->
+            <div class="hotel-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="hotel-image-container">
+                    <picture>
+                        <source type="image/webp" srcset="{% static 'images/hotel2-400.webp' %} 400w, {% static 'images/hotel2-800.webp' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <source type="image/jpeg" srcset="{% static 'images/hotel2-400.jpg' %} 400w, {% static 'images/hotel2-800.jpg' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <img src="{% static 'images/hotel2-800.jpg' %}" alt="Business Hotels" class="hotel-image" loading="lazy" decoding="async">
+                    </picture>
+                    <div class="hotel-overlay">
+                        <h4 class="fw-bold mb-3">Business Hotels</h4>
+                        <p class="mb-3">Perfect for business travelers with high-speed WiFi and meeting facilities.</p>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star-half-alt text-warning me-2"></i>
+                            <small class="text-muted">4.5 Rating</small>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 text-center">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body">
-                        <i class="fas fa-lock fa-2x text-primary mb-3"></i>
-                        <h5 class="fw-bold">Discreet & Private</h5>
-                        <p class="text-muted">Your privacy is our priority with confidential bookings.</p>
+            
+            <!-- Hotel 3 -->
+            <div class="hotel-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="hotel-image-container">
+                    <picture>
+                        <source type="image/webp" srcset="{% static 'images/hotel3-400.webp' %} 400w, {% static 'images/hotel3-800.webp' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <source type="image/jpeg" srcset="{% static 'images/hotel3-400.jpg' %} 400w, {% static 'images/hotel3-800.jpg' %} 800w" sizes="(max-width:576px) 100vw, 300px">
+                        <img src="{% static 'images/hotel3-800.jpg' %}" alt="Boutique Hotels" class="hotel-image" loading="lazy" decoding="async">
+                    </picture>
+                    <div class="hotel-overlay">
+                        <h4 class="fw-bold mb-3">Boutique Hotels</h4>
+                        <p class="mb-3">Unique and stylish accommodations with personalized service.</p>
+                        <div class="d-flex align-items mb-2">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-2"></i>
+                            <small class="text-muted">4.8 Rating</small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 <!-- Loyalty Rewards Program Section -->
-<section id="loyalty-program" class="py-5">
+<section id="loyalty-program" class="py-4">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-5 mb-lg-0">
+            <div class="col-lg-6 mb-4 mb-lg-0">
                 <div class="text-center text-lg-start">
-                    <span class="badge bg-primary mb-3">NEW FEATURE</span>
-                    <h2 class="fw-bold mb-4">Earn Rewards with Every Stay</h2>
-                    <p class="lead mb-4">Our loyalty program gives you discounts on every booking. The more you stay, the more you save!</p>
-                    
-                    <div class="d-flex flex-wrap gap-3 mb-5">
+                    <span class="badge bg-primary mb-2">NEW FEATURE</span>
+                    <h2 class="fw-bold mb-3">Earn Rewards with Every Stay</h2>
+                    <p class="lead mb-3">Our loyalty program offers discounts with every booking. Stay more, save more!</p>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
                         <div class="loyalty-benefit">
-                            <div class="icon-circle bg-primary mb-3">
-                                <i class="fas fa-star fa-2x text-white"></i>
+                            <div class="icon-circle bg-primary mb-2">
+                                <i class="fas fa-star fa-lg text-white"></i>
                             </div>
-                            <h5>Points Per Stay</h5>
-                            <p class="mb-0">Earn points for every booking</p>
+                            <h6 class="fw-bold">Points Per Stay</h6>
+                            <p class="mb-0 small">Earn points for every booking</p>
                         </div>
-                        
                         <div class="loyalty-benefit">
-                            <div class="icon-circle bg-success mb-3">
-                                <i class="fas fa-percent fa-2x text-white"></i>
+                            <div class="icon-circle bg-success mb-2">
+                                <i class="fas fa-percent fa-lg text-white"></i>
                             </div>
-                            <h5>Discount Redemption</h5>
-                            <p class="mb-0">Redeem points for discounts</p>
+                            <h6 class="fw-bold">Discount Redemption</h6>
+                            <p class="mb-0 small">Redeem points for discounts</p>
                         </div>
-                        
                         <div class="loyalty-benefit">
-                            <div class="icon-circle bg-warning mb-3">
-                                <i class="fas fa-gift fa-2x text-white"></i>
+                            <div class="icon-circle bg-warning mb-2">
+                                <i class="fas fa-gift fa-lg text-white"></i>
                             </div>
-                            <h5>Exclusive Offers</h5>
-                            <p class="mb-0">Special deals for loyal customers</p>
+                            <h6 class="fw-bold">Exclusive Offers</h6>
+                            <p class="mb-0 small">Special deals for loyal customers</p>
                         </div>
                     </div>
-                    
-                    <div class="d-grid gap-3 d-md-flex">
-                        <a href="{% url 'customer_register' %}" class="btn btn-primary btn-lg px-4">
-                            <i class="fas fa-crown me-2"></i>Join Program
-                        </a>
-                        <a href="#how-loyalty-works" class="btn btn-outline-primary btn-lg px-4">
-                            How It Works
+                    <div class="text-center">
+                        <a href="#how-loyalty-works" class="btn btn-primary btn-md px-4 loyalty-btn">
+                            Learn How It Works
                         </a>
                     </div>
                 </div>
             </div>
-            
             <div class="col-lg-6">
                 <div class="loyalty-card-container position-relative">
                     <div class="loyalty-card shadow-lg">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="Logo" width="50">
-                                <h4 class="mb-0">Premium Member</h4>
+                                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="Logo" width="30">
+                                <h5 class="mb-0">Premium Member</h5>
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex justify-content-between mb-4">
+                            <div class="d-flex justify-content-between mb-2">
                                 <div>
-                                    <h6 class="text-muted">CURRENT POINTS</h6>
-                                    <h2 class="fw-bold text-primary">1,250</h2>
+                                    <h6 class="text-muted small">CURRENT POINTS</h6>
+                                    <h3 class="fw-bold text-primary">1,250</h3>
                                 </div>
                                 <div class="text-end">
-                                    <h6 class="text-muted">NEXT REWARD</h6>
-                                    <h2 class="fw-bold text-success">15% OFF</h2>
+                                    <h6 class="text-muted small">NEXT REWARD</h6>
+                                    <h3 class="fw-bold text-success">15% OFF</h3>
                                 </div>
                             </div>
-                            
-                            <div class="progress mb-4" style="height: 20px;">
+                            <div class="progress mb-2" style="height: 12px;">
                                 <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" 
                                      aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
                                     <span class="progress-text">65% to next reward</span>
                                 </div>
                             </div>
-                            
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex justify-content-between small">
                                 <div>
                                     <small class="text-muted">POINTS REQUIRED</small>
-                                    <h5 class="fw-bold">100 points = 1% discount</h5>
+                                    <h6 class="fw-bold">100 points = 1% discount</h6>
                                 </div>
                                 <div class="text-end">
                                     <small class="text-muted">MAX DISCOUNT</small>
-                                    <h5 class="fw-bold">Up to 50% OFF</h5>
+                                    <h6 class="fw-bold">Up to 50% OFF</h6>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex justify-content-between small">
                                 <span>Member Since: 2023</span>
                                 <span>Expires: Never</span>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="loyalty-badge position-absolute">
-                        <div class="badge-content bg-warning text-dark p-3 rounded-circle shadow">
-                            <i class="fas fa-crown fa-2x"></i>
+                        <div class="badge-content bg-warning text-dark p-2 rounded-circle shadow">
+                            <i class="fas fa-crown fa-md"></i>
                         </div>
                     </div>
                 </div>
@@ -282,7 +267,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-md-6 col-lg-3">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
@@ -297,7 +281,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-md-6 col-lg-3">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
@@ -312,7 +295,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-md-6 col-lg-3">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
@@ -328,7 +310,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="text-center mt-5">
             <div class="d-inline-block bg-primary text-white p-3 rounded">
                 <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>100 points = 1% discount · Minimum 1000 points to redeem</h4>
@@ -503,100 +484,7 @@
     </div>
 </section>
 
-<!-- App Store Badges Section -->
-<section id="app-download" class="py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Get the App</h2>
-        <p class="text-muted mb-4">Book hotels on the go with our mobile app</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="https://www.apple.com/app-store/" target="_blank">
-                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" style="height: 50px;">
-            </a>
-            <a href="https://play.google.com/store" target="_blank">
-                <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height: 50px;">
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Designed for You Section -->
-<section class="py-4 py-xl-5">
-    <div class="container">
-        <div class="row mb-5">
-            <div class="col-md-8 col-xl-6 text-center mx-auto">
-                <h2><strong>Designed for You</strong></h2>
-                <p class="w-lg-50">Whether you're on a quick trip or need a space for just a few hours, we've got you covered.</p>
-            </div>
-        </div>
-        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
-            <div class="col">
-                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
-                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-airplane">
-                            <path d="M6.428 1.151C6.708.591 7.213 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.918-.375 2.253 1.318 1.318A.5.5 0 0 1 10.5 16h-5a.5.5 0 0 1-.354-.854l1.319-1.318-.376-2.253-5.507.918A.5.5 0 0 1 0 12v-1.382a1.5 1.5 0 0 1 .83-1.342L6 6.691V3c0-.568.14-1.271.428-1.849m.894.448C7.111 2.02 7 2.569 7 3v4a.5.5 0 0 1-.276.447l-5.448 2.724a.5.5 0 0 0-.276.447v.792l5.418-.903a.5.5 0 0 1 .575.41l.5 3a.5.5 0 0 1-.14.437L6.708 15h2.586l-.647-.646a.5.5 0 0 1-.14-.436l.5-3a.5.5 0 0 1 .576-.411L15 11.41v-.792a.5.5 0 0 0-.276-.447L9.276 7.447A.5.5 0 0 1 9 7V3c0-.432-.11-.979-.322-1.401C8.458 1.159 8.213 1 8 1c-.213 0-.458.158-.678.599"></path>
-                        </svg>
-                    </div>
-                    <div class="px-3">
-                        <h4>Business Travelers</h4>
-                        <p>Need a space between meetings?</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
-                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-people" style="font-size: 31px;">
-                            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"></path>
-                        </svg>
-                    </div>
-                    <div class="px-3">
-                        <h4><strong>Couples</strong></h4>
-                        <p>Enjoy privacy, even if just for a moment.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
-                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" width="1em" fill="currentColor" style="font-size: 32px;">
-                            <path d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path>
-                        </svg>
-                    </div>
-                    <div class="px-3">
-                        <h4><strong>Long Layovers</strong></h4>
-                        <p>Rest and recharge without staying overnight</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="py-4 py-xl-5">
-    <div class="container">
-        <div class="bg-primary border rounded border-0 border-primary overflow-hidden">
-            <div class="row g-0">
-                <div class="col-md-6 d-flex flex-column justify-content-center">
-                    <div class="text-white p-4 p-md-5">
-                        <h2 class="fw-bold mb-3">Ready to Book by the Hour?</h2>
-                        <p class="mb-4">Search now and find a hotel near you, only for the time you need.</p>
-                        <div class="my-3">
-                            <a class="btn btn-secondary me-2 mt-2" role="button" href="{% url 'hotel_list' %}">Start Booking</a>
-                            <a class="btn btn-light mt-2" role="button" href="#how-it-works">How It Works</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 order-first order-md-last" style="min-height: 250px;">
-                    <img class="w-100 h-100 fit-contain pt-5 pt-md-0" src="{% static 'img/illustrations/web-development.svg' %}">
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Expanded FAQ Section -->
+<!-- FAQ Section -->
 <section class="py-4 py-xl-5 mb-5">
     <div class="container">
         <div class="row mb-2">
@@ -686,16 +574,78 @@
     </div>
 </section>
 
-<!-- Contact CTA Section -->
+<!-- Ready to Book? Section -->
 <section class="py-4 py-xl-5">
     <div class="container">
-        <div class="text-white bg-primary border rounded border-0 border-primary d-flex flex-column justify-content-between flex-lg-row p-4 p-md-5">
-            <div class="pb-2 pb-lg-1">
-                <h2 class="fw-bold text-secondary mb-2">Need Assistance?</h2>
-                <p class="mb-0">We are here to help</p>
+        <div class="bg-primary border rounded border-0 border-primary overflow-hidden">
+            <div class="row g-0">
+                <div class="col-md-6 d-flex flex-column justify-content-center">
+                    <div class="text-white p-4 p-md-5">
+                        <h2 class="fw-bold mb-3">Ready to Book by the Hour?</h2>
+                        <p class="mb-4">Search now and find a hotel near you, only for the time you need.</p>
+                        <div class="my-3">
+                            <a class="btn btn-secondary me-2 mt-2" role="button" href="{% url 'hotel_list' %}">Start Booking</a>
+                            <a class="btn btn-light mt-2" role="button" href="#how-it-works">How It Works</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 order-first order-md-last" style="min-height: 250px;">
+                    <img class="w-100 h-100 fit-contain pt-5 pt-md-0" src="{% static 'img/illustrations/web-development.svg' %}">
+                </div>
             </div>
-            <div class="my-2">
-                <a class="btn btn-light fs-5 py-2 px-4" role="button" href="{% url 'contacts' %}">Click Here</a>
+        </div>
+    </div>
+</section>
+
+<!-- Designed for You Section -->
+<section class="py-4 py-xl-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2><strong>Designed for You</strong></h2>
+                <p class="w-lg-50">Whether you're on a quick trip or need a space for just a few hours, we've got you covered.</p>
+            </div>
+        </div>
+        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
+            <div class="col">
+                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
+                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-airplane">
+                            <path d="M6.428 1.151C6.708.591 7.213 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.918-.375 2.253 1.318 1.318A.5.5 0 0 1 10.5 16h-5a.5.5 0 0 1-.354-.854l1.319-1.318-.376-2.253-5.507.918A.5.5 0 0 1 0 12v-1.382a1.5 1.5 0 0 1 .83-1.342L6 6.691V3c0-.568.14-1.271.428-1.849m.894.448C7.111 2.02 7 2.569 7 3v4a.5.5 0 0 1-.276.447l-5.448 2.724a.5.5 0 0 0-.276.447v.792l5.418-.903a.5.5 0 0 1 .575.41l.5 3a.5.5 0 0 1-.14.437L6.708 15h2.586l-.647-.646a.5.5 0 0 1-.14-.436l.5-3a.5.5 0 0 1 .576-.411L15 11.41v-.792a.5.5 0 0 0-.276-.447L9.276 7.447A.5.5 0 0 1 9 7V3c0-.432-.11-.979-.322-1.401C8.458 1.159 8.213 1 8 1c-.213 0-.458.158-.678.599"></path>
+                        </svg>
+                    </div>
+                    <div class="px-3">
+                        <h4>Business Travelers</h4>
+                        <p>Need a space between meetings?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
+                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-people" style="font-size: 31px;">
+                            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"></path>
+                        </svg>
+                    </div>
+                    <div class="px-3">
+                        <h4><strong>Couples</strong></h4>
+                        <p>Enjoy privacy, even if just for a moment.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-center d-flex flex-column align-items-center align-items-xl-center">
+                    <div class="bs-icon-lg bs-icon-rounded bs-icon-primary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block mb-3 bs-icon lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" width="1em" fill="currentColor" style="font-size: 32px;">
+                            <path d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="px-3">
+                        <h4><strong>Long Layovers</strong></h4>
+                        <p>Rest and recharge without staying overnight</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -789,6 +739,7 @@
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
 }
 
@@ -801,119 +752,109 @@
     transform: translateY(-5px);
 }
 
-/* App Download Section */
-#app-download img {
-    transition: transform 0.3s ease;
-}
-#app-download img:hover {
-    transform: scale(1.05);
-}
 /* Loyalty Program Styles */
 #loyalty-program {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
-
 .loyalty-card {
     background: linear-gradient(135deg, #121643 0%, #0e123a 100%);
     color: white;
-    border-radius: 20px;
+    border-radius: 15px;
     overflow: hidden;
     position: relative;
     z-index: 1;
+    max-width: 400px;
+    margin: 0 auto;
 }
-
 .loyalty-card .card-header {
     background: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
+    padding: 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 .loyalty-card .card-body {
-    padding: 2rem;
+    padding: 1.25rem;
 }
-
+.loyalty-card h3 {
+    font-size: 1.75rem;
+}
+.loyalty-card h5 {
+    font-size: 1.2rem;
+}
 .loyalty-card .card-footer {
     background: rgba(255, 255, 255, 0.1);
-    padding: 1rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 .loyalty-card-container {
     perspective: 1000px;
 }
-
 .loyalty-card {
     transform: rotateY(-5deg) rotateX(5deg);
     transition: transform 0.5s ease;
 }
-
 .loyalty-card-container:hover .loyalty-card {
     transform: rotateY(0) rotateX(0);
 }
-
 .loyalty-badge {
-    top: -20px;
-    right: -20px;
+    top: -10px;
+    right: 15px;
     z-index: 2;
 }
-
 .badge-content {
     animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
-
 .icon-circle {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
 }
-
 .loyalty-benefit {
     flex: 1;
-    min-width: 150px;
+    min-width: 120px;
     text-align: center;
-    padding: 15px;
+    padding: 10px;
+}
+.loyalty-btn {
+    transition: transform 0.2s ease;
+}
+.loyalty-btn:hover {
+    transform: scale(1.05);
 }
 
 /* How Loyalty Works */
 .step-number {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
     font-weight: bold;
 }
-
 #how-loyalty-works .card {
     transition: all 0.3s ease;
     border-radius: 15px;
 }
-
 #how-loyalty-works .card:hover {
     transform: translateY(-10px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
-
 .progress {
     border-radius: 10px;
     overflow: visible;
     position: relative;
 }
-
 .progress-bar {
     border-radius: 10px;
     position: relative;
 }
-
 .progress-text {
     position: absolute;
     top: 50%;
@@ -921,33 +862,15 @@
     transform: translate(-50%, -50%);
     color: white;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 }
 
 /* Responsive Design */
 @media (max-width: 992px) {
     .loyalty-benefit {
-        min-width: 120px;
+        min-width: 100px;
     }
 }
-
-@media (max-width: 768px) {
-    .loyalty-card {
-        transform: none;
-    }
-    
-    .loyalty-badge {
-        top: -15px;
-        right: -15px;
-    }
-    
-    .badge-content {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
     .carousel-image, .carousel-content, .carousel-item .row {
         height: 280px;
@@ -966,6 +889,18 @@
     }
     .review-card .card {
         height: 200px;
+    }
+    .loyalty-card {
+        max-width: 300px;
+    }
+    .loyalty-badge {
+        top: -8px;
+        right: 10px;
+    }
+    .badge-content {
+        width: 40px;
+        height: 40px;
+        padding: 1rem;
     }
 }
 @media (max-width: 576px) {
@@ -995,8 +930,505 @@
     .review-card p {
         font-size: 0.85rem;
     }
+    .loyalty-benefit {
+        min-width: 90px;
+        padding: 5px;
+    }
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+    }
+    .loyalty-btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* New Styles from Previous Code */
+:root {
+    --primary: #121643;
+    --primary-dark: #0e123a;
+    --accent: #ffd700;
+    --light: #f8f9fa;
+    --gray-bg: #f5f7fa;
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Raleway', sans-serif;
+    color: #333;
+    overflow-x: hidden;
+    background-color: var(--light);
+}
+
+/* Hero Section Styles */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 0.5rem;
+}
+.hero-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6,10,30,0.65) 0%, rgba(6,10,30,0.55) 60%, rgba(6,10,30,0.45) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+.hero-section .container,
+.hero-section .row { height: auto; position: relative; z-index: 2; }
+
+.hero-content {
+    position: relative;
+    z-index: 3;
+    padding: 60px 0;
+}
+
+/* Hero slideshow layers */
+.hero-slides {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transform: scale(1.02);
+    transition: opacity 1s ease-in-out, transform 8s ease;
+    will-change: opacity, transform;
+}
+.hero-slide.active {
+    opacity: 1;
+    transform: scale(1);
+}
+.hero-slides:hover .hero-slide {
+    transition-duration: 0.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-slide, .hero-slide.active { transition: none !important; }
+}
+
+.hero-media-col { display: flex; align-items: center; justify-content: center; }
+.hero-media { width: 100%; max-width: 520px; border-radius: 18px; box-shadow: 0 30px 60px rgba(0,0,0,0.12); object-fit: cover; transition: transform 0.35s ease; }
+.hero-media:hover { transform: translateY(-6px) scale(1.02); }
+
+.hero-text {
+    color: #ffffff;
+    max-width: 620px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.08;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.hero-title span {
+    color: var(--accent);
+    position: relative;
+}
+
+.hero-title span:after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    font-weight: 400;
+    margin-bottom: 1.75rem;
+    color: rgba(255,255,255,0.92);
+}
+
+.hero-cta {
+    background: linear-gradient(45deg, var(--accent), #ffcc00);
+    color: var(--primary-dark);
+    border: none;
+    padding: 12px 34px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 999px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.hero-cta:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ffcc00, var(--accent));
+    z-index: -1;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.hero-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+}
+
+.hero-cta:hover:before {
+    opacity: 1;
+}
+
+/* Discover Hotels Section */
+.discover-section {
+    padding: 100px 0;
+    background-color: var(--gray-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-title {
+    position: relative;
+    text-align: center;
+    margin-bottom: 60px;
+    z-index: 1;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.section-title .divider {
+    width: 80px;
+    height: 4px;
+    background: var(--accent);
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+.hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+    z-index: 1;
+    position: relative;
+}
+
+.hotel-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    transition: var(--transition);
+    position: relative;
+}
+
+.hotel-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.hotel-image-container {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.hotel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.hotel-card:hover .hotel-image {
+    transform: scale(1.1);
+}
+
+.hotel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(6,10,30,0.85) 0%, rgba(6,10,30,0.8) 40%, rgba(6,10,30,0.7) 100%);
+    opacity: 0;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 5;
+    transform: translateY(6px);
+}
+
+.hotel-card:hover .hotel-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hotel-overlay h4,
+.hotel-overlay p,
+.hotel-overlay small,
+.hotel-overlay .text-muted,
+.hotel-overlay .stars {
+    color: #ffffff !important;
+    text-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+
+.hotel-overlay small {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 600;
+}
+
+.hotel-overlay .fa-star,
+.hotel-overlay .fa-star-half-alt {
+    color: var(--accent);
+    text-shadow: 0 4px 12px rgba(0,0,0,0.45);
+}
+
+.stars {
+    color: var(--accent);
+}
+
+/* Why Choose Us Section */
+.benefits-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.benefits-section:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffd700' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.3;
+}
+
+.benefit-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: var(--transition);
+    height: 100%;
+    padding: 30px 25px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.benefit-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+}
+
+.benefit-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 30px;
+    color: var(--accent);
+    transition: var(--transition);
+}
+
+.benefit-card:hover .benefit-icon {
+    background: var(--accent);
+    color: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+.benefit-card h4 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.benefit-card p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+/* Responsive Adjustments for New Sections */
+@media (max-width: 1200px) {
+    .hero-media { max-width: 460px; }
+}
+
+@media (max-width: 992px) {
+    .hero-title {
+        font-size: 2.4rem;
+    }
+    .hotels-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section { min-height: 60vh; padding-bottom: 40px; }
+    .hero-media { max-width: 320px; }
+    .hero-title {
+        font-size: 2.3rem;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    .discover-section {
+        padding: 70px 0;
+    }
+    .section-title h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-content { padding: 40px 0; }
+    .hero-title {
+        font-size: 2rem;
+    }
+    .hero-media { display: none; }
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    .hero-cta {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+    .discover-section {
+        padding: 60px 0;
+    }
+    .section-title h2 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Animation classes */
+[data-aos] {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.aos-fade-up {
+    transform: translateY(30px);
+    opacity: 0;
+}
+
+.aos-fade-up.aos-animate {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.aos-fade-left {
+    transform: translateX(-30px);
+    opacity: 0;
+}
+
+.aos-fade-left.aos-animate {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.aos-fade-right {
+    transform: translateX(30px);
+    opacity: 0;
+}
+
+.aos-fade-right.aos-animate {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.aos-zoom-in {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.aos-zoom-in.aos-animate {
+    transform: scale(1);
+    opacity: 1;
 }
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        once: true,
+        easing: 'ease-in-out'
+    });
+</script>
+
+<script>
+    // Hero slideshow rotator
+    (function(){
+        const slides = document.querySelectorAll('.hero-slide');
+        if(!slides || slides.length < 2) return;
+
+        let idx = 0;
+        let interval = null;
+        const delay = 6000;
+
+        function show(i){
+            slides.forEach((s, j) => s.classList.toggle('active', j === i));
+        }
+
+        function start(){
+            interval = setInterval(() => {
+                idx = (idx + 1) % slides.length;
+                show(idx);
+            }, delay);
+        }
+
+        function stop(){
+            if(interval) { clearInterval(interval); interval = null; }
+        }
+
+        show(0);
+        start();
+
+        const hero = document.querySelector('.hero-section');
+        if(hero){
+            hero.addEventListener('mouseenter', stop);
+            hero.addEventListener('mouseleave', start);
+        }
+    })();
+</script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}

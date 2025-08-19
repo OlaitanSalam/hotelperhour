@@ -27,7 +27,8 @@ def customer_register(request):
                 email=form.cleaned_data['email'],
                 password=form.cleaned_data['password1'],
                 full_name=form.cleaned_data['full_name'],
-                phone_number=form.cleaned_data['phone_number']
+                phone_number=form.cleaned_data['phone_number'],
+                username=form.cleaned_data['username']
             )
             customer.is_active = False
             customer.save()
@@ -97,10 +98,6 @@ def customer_login(request):
         form = CustomerLoginForm()
     return render(request, 'customers/login.html', {'form': form})
 
-def customer_logout(request):
-    logout(request)
-    messages.success(request, "You have been logged out.")
-    return redirect('home')
 
 @login_required
 def customer_dashboard(request):

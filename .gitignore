@@ -18,3 +18,4 @@ media/
 *.py[cod]
 *$py.class
 test_email.py
+test_sms.py
