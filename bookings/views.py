@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Booking
+from .models import Booking, ExtraService
 from .forms import BookingForm
 from hotels.models import Room
 import requests
@@ -50,18 +50,15 @@ def book_room(request, room_id):
     if request.method == 'POST':
         form = BookingForm(request.POST, room=room, user=request.user)
         if form.is_valid():
+            # Calculate totals (same as before)
             check_in = form.cleaned_data['check_in']
             check_out = form.cleaned_data['check_out']
             duration = form.cleaned_data['duration']
             extras = form.cleaned_data['extras']
-
-            # Calculate base costs
             total_hours = duration
             room_cost = room.price_per_hour * Decimal(str(total_hours))
             service_charge = room_cost * Decimal('0.10')
             extras_cost = sum(extra.price for extra in extras)
-
-            # Apply discount based on loyalty points
             discount_amount = Decimal('0.00')
             points_used = 0
             if is_customer and form.cleaned_data.get('use_points'):
@@ -69,104 +66,165 @@ def book_room(request, room_id):
                 points_used = form.cleaned_data.get('points_to_use', 0)
                 if discount_percentage > 0 and points_used > 0:
                     discount_amount = room_cost * (Decimal(discount_percentage) / Decimal('100'))
-                    request.user.loyalty_points -= points_used
-                    request.user.save()
-
-            # Calculate final prices
+                    # Note: Points deduction happens after payment success
             total_price_with_discount = room_cost - discount_amount
             total_amount = total_price_with_discount + service_charge + extras_cost
 
-            # Create booking instance
-            booking = form.save(commit=False)
-            booking.room = room
-            booking.check_in = check_in
-            booking.check_out = check_out
-            booking.total_hours = total_hours
-            booking.total_price = total_price_with_discount
-            booking.service_charge = service_charge
-            booking.discount_applied = discount_amount
-            booking.points_used = points_used
-            booking.total_amount = total_amount
-            booking.name = form.cleaned_data['name']
-            booking.phone_number = form.cleaned_data['phone_number']
-            booking.email = form.cleaned_data['email']
+            # Store data in session instead of creating booking
+            booking_data = {
+                'room_id': room.id,
+                'check_in': check_in.isoformat(),
+                'check_out': check_out.isoformat(),
+                'total_hours': total_hours,
+                'name': form.cleaned_data['name'],
+                'phone_number': form.cleaned_data['phone_number'],
+                'email': form.cleaned_data['email'],
+                'extras_ids': [extra.id for extra in extras],
+                'discount_amount': float(discount_amount),
+                'points_used': points_used,
+                'service_charge': float(service_charge),
+                'total_amount': float(total_amount),
+                'user_id': request.user.id if request.user.is_authenticated else None,
+            }
+            request.session['pending_booking_data'] = booking_data
+            # Generate reference early
+            reference = Booking.generate_booking_reference()
+            request.session['pending_booking_reference'] = reference
 
-            # Associate user if authenticated
-            if request.user.is_authenticated:
-                booking.content_type = ContentType.objects.get_for_model(request.user)
-                booking.object_id = request.user.pk
-
-            if not is_room_available(room, booking.check_in, booking.check_out):
-                form.add_error(None, "This room is not available for the selected time slot.")
-                return render(request, 'bookings/book_room.html', {'form': form, 'room': room, 'is_customer': is_customer})
-
-            booking.save()
-            form.save_m2m()
-
-            # Send notifications (email + SMS)
-            try:
-                # Email to hotel owner
-                subject = 'New Booking Notification'
-                message = render_to_string('bookings/booking_notification.html', {'booking': booking})
-                send_mail(subject, '', None, [booking.room.hotel.owner.email], html_message=message)
-                
-                # SMS to hotel owner
-                owner_sms = f"New booking #{booking.booking_reference} for {booking.room.room_type} at {booking.room.hotel.name} on {booking.check_in}."
-                send_sms_notification(booking.room.hotel.owner.phone_number, owner_sms)
-                
-                # SMS to customer
-                customer_sms = f"Your booking #{booking.booking_reference} is confirmed for {booking.check_in}. Total: ₦{booking.total_amount}."
-                send_sms_notification(booking.phone_number, customer_sms)
-            except Exception as e:
-                logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
-
-            return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+            return redirect('initiate_payment', booking_reference=reference)
     else:
         form = BookingForm(room=room, user=request.user)
     return render(request, 'bookings/book_room.html', {'form': form, 'room': room, 'is_customer': is_customer})
 
 def initiate_payment(request, booking_reference):
-    booking = get_object_or_404(Booking, booking_reference=booking_reference)
-    if booking.is_paid:
-        return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+    booking_data = request.session.get('pending_booking_data')
+    reference = request.session.get('pending_booking_reference')
+    if not booking_data or not reference:
+        return redirect('hotel_list')  # Or error page
+
     url = 'https://api.paystack.co/transaction/initialize'
     headers = {
         'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
         'Content-Type': 'application/json'
     }
     data = {
-        'email': booking.email,
-        'amount': int(booking.total_amount * 100),
-        'reference': str(booking.booking_reference),
+        'email': booking_data['email'],
+        'amount': int(Decimal(str(booking_data['total_amount'])) * 100),
+        'reference': reference,
         'callback_url': request.build_absolute_uri(reverse('payment_callback'))
     }
     response = requests.post(url, json=data, headers=headers)
     if response.status_code == 200:
         return redirect(response.json()['data']['authorization_url'])
-    return render(request, 'bookings/payment_error.html')
+    else:
+        # Handle error
+        del request.session['pending_booking_data']
+        del request.session['pending_booking_reference']
+        return render(request, 'bookings/payment_error.html', {'error': 'Failed to initiate payment. Please try again.'})
 
-@csrf_exempt
 def payment_callback(request):
-    if request.method == 'GET':
-        reference = request.GET.get('reference')
-        booking = get_object_or_404(Booking, booking_reference=reference)
-        if verify_payment(reference):
-            booking.is_paid = True
-            booking.payment_reference = reference
-            booking.save()
-            # Send confirmation notifications
-            try:
-                # Email to customer
-                subject = 'Payment Confirmation'
-                message = render_to_string('bookings/payment_confirmation.html', {'booking': booking})
-                send_mail(subject, '', None, [booking.email], html_message=message)
-                
-                # SMS to customer
-                sms_message = f"Payment confirmed for booking #{booking.booking_reference}. Check-in: {booking.check_in}. Thank you!"
-                send_sms_notification(booking.phone_number, sms_message)
-            except Exception as e:
-                logger.error(f"Failed to send payment confirmation for booking {booking.booking_reference}: {str(e)}")
-        return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+    reference = request.GET.get('reference')
+    if not reference:
+        return render(request, 'bookings/payment_error.html', {'error': 'No reference provided.'})
+
+    # Verify payment
+    if not verify_payment(reference):
+        return render(request, 'bookings/payment_error.html', {'error': 'Payment verification failed.'})
+
+    booking_data = request.session.get('pending_booking_data')
+    pending_reference = request.session.get('pending_booking_reference')
+    if not booking_data or reference != pending_reference:
+        return render(request, 'bookings/payment_error.html', {'error': 'Invalid session data.'})
+
+    # Create booking
+    room = Room.objects.get(id=booking_data['room_id'])
+    check_in = timezone.datetime.fromisoformat(booking_data['check_in'])
+    check_out = timezone.datetime.fromisoformat(booking_data['check_out'])
+    if not is_room_available(room, check_in, check_out):
+        # Refund if needed (implement Paystack refund)
+        return render(request, 'bookings/payment_error.html', {'error': 'Room no longer available. Payment will be refunded.'})
+
+    booking = Booking(
+        room=room,
+        check_in=check_in,
+        check_out=check_out,
+        total_hours=booking_data['total_hours'],
+        is_paid=True,
+        payment_reference=reference,
+        name=booking_data['name'],
+        email=booking_data['email'],
+        phone_number=booking_data['phone_number'],
+        booking_reference=reference,  # Use same as payment ref for simplicity
+        total_price=Decimal(str(booking_data['total_amount'])) - Decimal(str(booking_data['service_charge'])) - Decimal(str(booking_data['discount_amount'])),
+        service_charge=Decimal(str(booking_data['service_charge'])),
+        discount_applied=Decimal(str(booking_data['discount_amount'])),
+        points_used=booking_data['points_used'],
+        total_amount=Decimal(str(booking_data['total_amount'])),
+    )
+    if booking_data['user_id']:
+        user = Customer.objects.get(id=booking_data['user_id'])
+        booking.content_type = ContentType.objects.get_for_model(user)
+        booking.object_id = user.id
+        if booking.points_used > 0:
+            user.loyalty_points -= booking.points_used
+            user.save()
+    booking.save()
+    extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
+    booking.extras.set(extras)
+
+    # Send notifications
+    try:
+        # Calculate full revenue for hotel
+        full_room_cost = room.price_per_hour * Decimal(str(booking.total_hours))
+        extras_cost = sum(extra.price for extra in booking.extras.all())
+        hotel_revenue = full_room_cost + extras_cost
+
+        # Hotel email
+        subject = 'New Booking Notification'
+        context = {'booking': booking, 'hotel_revenue': hotel_revenue}
+        message = render_to_string('bookings/booking_notification.html', context)
+        send_mail(subject, '', None, [booking.room.hotel.owner.email], html_message=message)
+
+        if booking.email:
+            subject = 'Booking Confirmation - Hotel per Hour'
+            context = {
+                'booking': booking,
+                'extras_cost': extras_cost,
+                'original_room_cost': full_room_cost,
+                'discount_percentage': (booking.discount_applied / full_room_cost * 100) if full_room_cost > 0 else Decimal('0')
+            }
+            customer_html = render_to_string('bookings/customer_confirmation_email.html', context)
+            send_mail(
+                subject=subject,
+                message='',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[booking.email],
+                html_message=customer_html,
+                fail_silently=False,
+            )
+            logger.info(f"Customer email sent to {booking.email} for booking {booking.booking_reference}")
+        else:
+            logger.warning(f"No customer email for booking {booking.booking_reference}")
+
+        
+        
+        # Hotel SMS
+        owner_sms = f"New booking #{booking.booking_reference} for {booking.room.room_type} at {booking.room.hotel.name} on {booking.check_in}. Revenue: ₦{hotel_revenue}."
+        send_sms_notification(booking.room.hotel.owner.phone_number, owner_sms)
+        
+        # Customer SMS
+        customer_sms = f"Your booking #{booking.booking_reference} is confirmed for {booking.check_in}. Total: ₦{booking.total_amount}. Hotel: {booking.room.hotel.name}, Address: {booking.room.hotel.address}."
+        send_sms_notification(booking.phone_number, customer_sms)
+        
+        
+    except Exception as e:
+        logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
+
+    # Clear session
+    del request.session['pending_booking_data']
+    del request.session['pending_booking_reference']
+
+    return redirect('booking_confirmation', booking_reference=booking.booking_reference)
 
 @csrf_exempt
 def paystack_webhook(request):
@@ -174,10 +232,16 @@ def paystack_webhook(request):
         payload = json.loads(request.body)
         if payload['event'] == 'charge.success':
             reference = payload['data']['reference']
-            booking = Booking.objects.get(booking_reference=reference)
-            booking.is_paid = True
-            booking.payment_reference = reference
-            booking.save()
+            # Check if booking exists; if not, log (since created in callback)
+            try:
+                booking = Booking.objects.get(booking_reference=reference)
+                if not booking.is_paid:
+                    booking.is_paid = True
+                    booking.payment_reference = reference
+                    booking.save()
+                    # Send notifications if needed (but already sent in callback)
+            except Booking.DoesNotExist:
+                logger.warning(f"Webhook received for non-existent booking reference: {reference}")
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
 

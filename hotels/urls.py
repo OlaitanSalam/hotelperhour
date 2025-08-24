@@ -9,6 +9,7 @@ urlpatterns = [
     path('nearby/', views.nearby_hotels, name='nearby_hotels'),  # Moved before <slug:slug>/
     path('about/', views.about, name='about'),
     path('contacts/', views.contacts, name='contacts'),
+     path('submit-feedback/', views.submit_feedback, name='submit_feedback'),
     
     path('success/', views.contact_success, name='contact_success'),
     path('<slug:slug>/', views.HotelDetailView.as_view(), name='hotel_detail'),  # Moved after specific paths
@@ -22,5 +23,6 @@ urlpatterns = [
     path('hotels/<slug:slug>/bookings/<int:booking_id>/confirm-cancel/', 
      views.confirm_cancel_booking, 
      name='confirm_cancel_booking'),
+    
     # Other patterns...
 ]

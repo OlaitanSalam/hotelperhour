@@ -16,6 +16,10 @@ from django.http import HttpResponseForbidden
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from urllib.parse import urlencode
 from decimal import Decimal
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from .models import Review
 
 def hotel_owner_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -112,7 +116,7 @@ def hotel_list(request):
     query = request.GET.get('q')
     hotels = Hotel.objects.filter(is_approved=True)
     if query:
-        hotels = hotels.filter(Q(name__icontains=query) | Q(address__icontains=query))
+        hotels = hotels.filter(Q(city__icontains=query))
     paginator = Paginator(hotels, 9)  # 9 hotels per page
     page = request.GET.get('page')
     try:
@@ -298,3 +302,25 @@ def contacts(request):
 
 def contact_success(request):
     return render(request, 'hotels/contact_success.html')
+
+@require_POST
+@csrf_exempt
+def submit_feedback(request):
+    try:
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        review_text = request.POST.get('review_text')
+        rating = request.POST.get('rating')
+        
+        # Create and save the review
+        review = Review(
+            name=name,
+            email=email,
+            review_text=review_text,
+            rating=rating
+        )
+        review.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

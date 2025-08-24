@@ -59,8 +59,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-between align-items-center mt-3">
-                            <!-- Add password reset URL when implemented -->
-                            <a href="#" class="text-decoration-none fw-medium">Forgot Password?</a>
+                            <a href="{% url 'customer_password_reset' %}" class="text-decoration-none fw-medium">Forgot Password?</a>
                             <a href="{% url 'customer_register' %}" class="text-decoration-none fw-medium">Sign up</a>
                         </div>
                     </form>

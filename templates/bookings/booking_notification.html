@@ -1,6 +1,8 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Booking Notification - Hotel per Hour</title>
@@ -50,12 +52,12 @@
                 <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
                 <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
                 <p><strong>Total Hours:</strong> {{ booking.total_hours }}</p>
-                <p><strong>Total Price:</strong> ₦{{ booking.hotel_revenue }}</p>
+                <p><strong>Total Price:</strong> ₦{{ hotel_revenue|floatformat:2|intcomma }}</p>
                 {% if booking.extras.exists %}
                 <div class="extras-container">
                     <p><strong>Extras:</strong></p>
                     {% for extra in booking.extras.all %}
-                    <p>{{ extra.name }}: ₦{{ extra.price }}</p>
+                    <p>{{ extra.name }}: ₦{{ extra.price|floatformat:2|intcomma }}</p>
                     {% endfor %}
                 </div>
                 {% endif %}

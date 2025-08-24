@@ -1,5 +1,5 @@
 {% extends 'base2.html' %}
-
+{% load humanize %}
 {% block title %}Sales Report for {{ hotel.name }}{% endblock %}
 
 {% block content %}
@@ -36,9 +36,9 @@
                 <tr>
                     <td>{{ data.date }}</td>
                     <td>{{ data.booking_count }}</td>
-                    <td>₦{{ data.total_sales|floatformat:2 }}</td>
-                    <td>₦{{ data.commission|floatformat:2 }}</td>
-                    <td>₦{{ data.payout|floatformat:2 }}</td>
+                    <td>₦{{ data.total_sales|floatformat:2|intcomma }}</td>
+                    <td>₦{{ data.commission|floatformat:2|intcomma }}</td>
+                    <td>₦{{ data.payout|floatformat:2|intcomma }}</td>
                 </tr>
                 {% empty %}
                 <tr>

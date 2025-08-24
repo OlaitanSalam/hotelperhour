@@ -50,12 +50,13 @@ class Booking(models.Model):
             points_earned = int(self.total_hours * 10)  # 10 points per hour
             self.user.loyalty_points += points_earned
             self.user.save()
-
+    
     @property
     def hotel_revenue(self):
-        """Amount excluding service charge"""
+        """Amount excluding service charge and discounts, including full room cost"""
+        full_room_cost = self.room.price_per_hour * Decimal(str(self.total_hours))
         extras_cost = sum(extra.price for extra in self.extras.all())
-        return self.total_price + extras_cost
+        return full_room_cost + extras_cost
 
     @staticmethod
     def generate_booking_reference():

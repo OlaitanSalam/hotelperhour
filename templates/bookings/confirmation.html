@@ -1,5 +1,6 @@
 {% extends 'base2.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Booking Confirmation{% endblock %}
 
@@ -51,6 +52,14 @@
                                 <div class="info-item">
                                     <span class="label">Hotel:</span>
                                     <span class="value">{{ booking.room.hotel.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Address:</span>
+                                    <span class="value">{{ booking.room.hotel.address }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">City:</span>
+                                    <span class="value">{{ booking.room.hotel.city }}</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="label">Room Type:</span>
@@ -107,7 +116,7 @@
                                 <h6 class="section-title"><i class="fas fa-credit-card me-2"></i>Payment Summary</h6>
                                 <div class="info-item">
                                     <span class="label">Rate per Hour:</span>
-                                    <span class="value">₦{{ booking.room.price_per_hour|floatformat:0 }}</span>
+                                    <span class="value">₦{{ booking.room.price_per_hour|floatformat:2|intcomma }}</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="label">Total Hours:</span>
@@ -115,31 +124,31 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="label">Original Room Cost:</span>
-                                    <span class="value">₦{{ original_room_cost|floatformat:0 }}</span>
+                                    <span class="value">₦{{ original_room_cost|floatformat:2|intcomma }}</span>
                                 </div>
                                 {% if booking.discount_applied > 0 %}
                                 <div class="info-item">
                                     <span class="label">Discount Applied:</span>
-                                    <span class="value text-success">₦{{ booking.discount_applied|floatformat:0 }} ({{ discount_percentage|floatformat:2 }}% discount)</span>
+                                    <span class="value text-success">₦{{ booking.discount_applied|floatformat:2|intcomma }} ({{ discount_percentage|floatformat:2 }}% discount)</span>
                                 </div>
                                 {% endif %}
                                 <div class="info-item">
                                     <span class="label">Room Cost (after discount):</span>
-                                    <span class="value">₦{{ booking.total_price|floatformat:0 }}</span>
+                                    <span class="value">₦{{ booking.total_price|floatformat:2|intcomma }}</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="label">Service Charge:</span>
-                                    <span class="value">₦{{ booking.service_charge|floatformat:0 }}</span>
+                                    <span class="value">₦{{ booking.service_charge|floatformat:2|intcomma }}</span>
                                 </div>
                                 {% if booking.extras.exists %}
                                     <div class="info-item">
                                         <span class="label">Extras Cost:</span>
-                                        <span class="value">₦{{ extras_cost|floatformat:0 }}</span>
+                                        <span class="value">₦{{ extras_cost|floatformat:2|intcomma }}</span>
                                     </div>
                                 {% endif %}
                                 <div class="info-item total-price">
                                     <span class="label">Total Amount:</span>
-                                    <span class="value text-success fw-bold">₦{{ booking.total_amount|floatformat:0 }}</span>
+                                    <span class="value text-success fw-bold">₦{{ booking.total_amount|floatformat:2|intcomma }}</span>
                                 </div>
                             </div>
                         </div>
@@ -270,7 +279,7 @@
     
     /* Button styling */
     .btn {
-        border-radius: 6px;
+        border-radius: 0px;
         font-weight: 500;
     }
     

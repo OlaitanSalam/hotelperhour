@@ -1,5 +1,5 @@
 {% extends 'base2.html' %}
-
+{% load humanize %}
 {% block title %}Bookings for {{ hotel.name }}{% endblock %}
 
 {% block content %}
@@ -73,10 +73,10 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-flex flex-column">
-                                    <span class="fw-medium">₦{{ booking.hotel_revenue }}</span>
+                                    <span class="fw-medium">₦{{ booking.hotel_revenue|floatformat:2|intcomma }}</span>
                                     {% if booking.extras.exists %}
                                         <small class="text-muted">
-                                            Extras: {% for extra in booking.extras.all %}{{ extra.name }} (₦{{ extra.price }}){% if not forloop.last %}, {% endif %}{% endfor %}
+                                            Extras: {% for extra in booking.extras.all %}{{ extra.name }} (₦{{ extra.price|floatformat:2|intcomma }}){% if not forloop.last %}, {% endif %}{% endfor %}
                                         </small>
                                     {% endif %}
                                 </div>

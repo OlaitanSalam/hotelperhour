@@ -17,7 +17,7 @@ class HotelForm(forms.ModelForm):
 
     class Meta:
         model = Hotel
-        fields = ('name', 'address', 'hotel_phone', 'hotel_email', 'description', 'latitude', 'longitude', 'image', 'account_number', 'account_name', 'bank_name')
+        fields = ('name', 'address', 'city', 'hotel_phone', 'hotel_email', 'description', 'latitude', 'longitude', 'image', 'account_number', 'account_name', 'bank_name')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2}),
         }

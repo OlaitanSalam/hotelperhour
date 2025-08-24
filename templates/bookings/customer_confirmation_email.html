@@ -1,0 +1,50 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f7fa; font-family: Arial, sans-serif;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 15px;">
+        <header style="text-align: center; margin-bottom: 15px;">
+            <h1 style="color: #121643; font-size: 24px;">HotelPerHour</h1>
+            <p style="color: #6c757d; font-size: 12px;">Your Trusted Hourly Booking Platform</p>
+        </header>
+        <div style="background-color: #ffffff; padding: 15px; border: 1px solid #dee2e6;">
+            <h2 style="color: #121643; text-align: center; font-size: 20px;">Booking Confirmed!</h2>
+            <p style="text-align: center; color: #6c757d; font-size: 14px;">Thank you for your booking!</p>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Booking Reference:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.booking_reference }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Hotel:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.room.hotel.name }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Address:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.room.hotel.address }}, {{ booking.room.hotel.city }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Room Type:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.room.room_type }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Check-in:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.check_in|date:"M d, Y - g:i A" }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Check-out:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.check_out|date:"M d, Y - g:i A" }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Total Hours:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.total_hours }}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Total Amount:</td><td style="padding: 8px; border: 1px solid #dee2e6; color: #ffd700;">₦{{ booking.total_amount|floatformat:2|intcomma }}</td></tr>
+                {% if booking.extras.exists %}
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Extras:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{% for extra in booking.extras.all %}{{ extra.name }}: ₦{{ extra.price|floatformat:2|intcomma }}<br>{% endfor %}</td></tr>
+                {% endif %}
+                {% if booking.discount_applied > 0 %}
+                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Discount Applied:</td><td style="padding: 8px; border: 1px solid #dee2e6;">₦{{ booking.discount_applied|floatformat:2|intcomma }} ({{ discount_percentage|floatformat:2 }}%)</td></tr>
+                {% endif %}
+            </table>
+            <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa;">
+                <h4 style="color: #121643; font-size: 16px; margin-bottom: 8px;">Important Information</h4>
+                <ul style="list-style-type: none; padding-left: 0; color: #6c757d; font-size: 12px;">
+                    <li style="margin-bottom: 5px;">Please arrive with a valid ID</li>
+                    <li style="margin-bottom: 5px;">Present your booking reference at check-in</li>
+                    <li style="margin-bottom: 5px;">Check-in available 15 minutes early</li>
+                    <li>Late arrivals may reduce your booking time</li>
+                </ul>
+            </div>
+            <p style="text-align: center; color: #6c757d; font-size: 14px; margin-top: 15px;">Thank you for choosing Hotel per Hour!</p>
+        </div>
+        <footer style="text-align: center; margin-top: 15px; font-size: 10px; color: #6c757d;">
+            <p>Hotel per Hour Team<br>© 2025 Hotel per Hour. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

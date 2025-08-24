@@ -64,7 +64,25 @@
         </table>
     </div>
 </div>
+<style>
+    /* Give breathing room for dropdowns at the bottom */
+.table-responsive {
+    padding-bottom: 5rem; /* enough space for dropdown */
+}
 
+footer {
+    margin-top: 2rem; /* push footer down further */
+}
+@media (max-width: 768px) {
+    .table-responsive {
+        padding-bottom: 6rem; /* larger space on mobile */
+    }
+    footer {
+        margin-top: 2rem;
+    }
+}
+
+</style>
 <script>
 /* close dropdowns when clicking outside and keep menu in viewport */
 document.addEventListener('click', function(event) {

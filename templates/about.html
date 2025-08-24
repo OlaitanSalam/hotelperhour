@@ -5,20 +5,77 @@
 
 {% block content %}
 <section>
-    <div class="container py-4 py-xl-5" data-aos="fade-left" data-aos-duration="900">
-        <div class="row mb-5">
-            <div class="col-md-8 col-xl-6">
-                <h3 class="display-6 fw-bold pb-4 mb-4" style="text-align: center;">About Us</h3>
-            </div>
-            <div class="col-md-8 col-xl-6 pt-4">
-                <p class="text-muted">We’re a startup built around one simple idea: flexibility. our platform makes it easy for you to book hotel rooms by the hour, giving you full control over your time and your budget. whether you need a quick nap between travels, a quiet space for a business call, or just a few hours to relax, we’ve got you covered.<br><br>We partner with verified hotels across major cities to offer safe, clean, and comfortable spaces—whenever you need them. no extra charges. no unnecessary overnight fees. just pay for the time you use.</p>
-            </div>
-            <div class="w-100"></div>
-        </div>
+  <div class="container py-4 py-xl-5 position-relative" data-aos="fade-up" data-aos-duration="900">
+    <!-- Heading -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h3 class="display-6 fw-bold pb-3 mb-0 text-center">About Us</h3>
+      </div>
     </div>
+
+    <!-- Blob + Image and Text -->
+    <div class="row align-items-center g-5">
+      <!-- Blob + Image -->
+      <div class="col-lg-6 d-flex justify-content-center">
+        <figure class="blob-figure position-relative mx-auto float-slow" aria-hidden="true">
+          <!-- Blob (your brand color) -->
+          <svg class="blob-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <path fill="#121643"
+            d="M39.2,-45.3C54.8,-33.7,74.1,-25.1,81.2,-10.5C88.3,4,83.1,24.5,70.5,35.6C58,46.7,38.1,48.4,20.3,54.1C2.6,59.8,-13.1,69.5,-30.2,69.3C-47.4,69,-65.9,58.9,-69.4,44.3C-72.9,29.6,-61.2,10.4,-51.9,-3.4C-42.6,-17.2,-35.7,-25.7,-27.4,-38.7C-19.2,-51.7,-9.6,-69.1,1.1,-70.4C11.8,-71.8,23.6,-57,39.2,-45.3Z" transform="translate(100 100)" />
+                        </svg>
+
+          <!-- Image on the blob (use your real image path) -->
+          <img
+            src="{% static 'images/aboutus2.png' %}"
+            alt="Guest enjoying flexible hourly stays"
+            class="blob-img img-fluid" />
+        </figure>
+      </div>
+
+      <!-- Text -->
+      <div class="col-lg-6">
+        <p class="text-muted mb-0">
+          We’re a startup built around one simple idea: flexibility. Our platform makes it easy to book hotel rooms by the hour, giving you full control over your time and your budget—whether you need a quick nap between travels, a quiet space for a business call, or just a few hours to relax.
+        </p>
+        <p class="text-muted mt-3 mb-0">
+          We partner with verified hotels across major cities to offer safe, clean, and comfortable spaces—whenever you need them. No extra charges. No unnecessary overnight fees. Just pay for the time you use.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats / Counters -->
+    <div class="row text-center mt-5 g-4" data-aos="fade-up" data-aos-duration="900">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" data-count-to="5">0</div>
+          <div class="stat-label">Years Served</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" data-count-to="40">0</div><span class="ms-1">+</span>
+          <div class="stat-label">Team Members</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" data-count-to="10000">0</div><span class="ms-1">+</span>
+
+          <div class="stat-label">Happy Customers</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" data-count-to="50">0</div><span class="ms-1">+</span>
+          <div class="stat-label">Partner Hotels</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<section class="py-5">
-    <div class="container text-white bg-primary border rounded border-0 p-4 p-lg-5 py-4 py-xl-5" data-aos="fade-up" data-aos-duration="1000" style="background: rgb(125,115,29);">
+
+<section class="py-1">
+    <div class="container text-white bg-primary border rounded border-0 p-4 p-lg-5 py-4 py-xl-5" style="background: rgb(125,115,29);">
         <div class="row mb-5">
             <div class="col-md-8 col-xl-6 text-center mx-auto" data-aos="fade-left" data-aos-duration="700">
                 <h2 class="text-white">More Information</h2>
@@ -76,4 +133,134 @@
         </div>
     </section>
 </section>
+
+<style>
+/* Blob figure sizing */
+.blob-figure {
+  width: min(92%, 460px);
+  aspect-ratio: 1 / 1;
+}
+
+/* Blob visuals */
+.blob-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.16;                 /* subtle */
+  filter: drop-shadow(0 8px 24px rgba(18,22,67,0.25));
+  pointer-events: none;
+  z-index: 0;
+  
+}
+.blob-svg path {
+  fill: #121643 !important;
+}
+
+
+/* Image above the blob */
+.blob-img {
+  position: absolute;
+  z-index: 1;
+  inset: 4% 4% 4% 4%;          /* how much blob peeks around the image */
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform: translateX(-25px);
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,.18));
+}
+
+/* Gentle float animation */
+@keyframes floatSlow {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+.float-slow {
+  animation: floatSlow 12s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .float-slow { animation: none; }
+}
+
+/* Stats / Counters */
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 14px;
+  box-shadow: 0 8px 28px rgba(18,22,67,0.06);
+  height: 100%;
+}
+.stat-number {
+  font-weight: 800;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  color: #121643;
+  line-height: 1;
+}
+.stat-label {
+  margin-top: 6px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Small screens */
+@media (max-width: 576px) {
+  .blob-figure { width: 84vw; }
+}
+</style>
+<script>
+(function() {
+  // Count-up with requestAnimationFrame
+  function animateCount(el, to, duration = 1400) {
+    const start = 0;
+    const startTime = performance.now();
+    const isInt = Number.isInteger(to);
+
+    function step(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const current = start + (to - start) * eased;
+      el.textContent = formatNumber(isInt ? Math.round(current) : current);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function formatNumber(num) {
+    // integer grouping (12,000)
+    return num.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
+  // Observe once and animate
+  const counters = document.querySelectorAll('.stat-number[data-count-to]');
+  let started = false;
+
+  if ('IntersectionObserver' in window && counters.length) {
+    const trigger = counters[0].closest('.row');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          counters.forEach(el => {
+            const to = parseFloat(el.getAttribute('data-count-to')) || 0;
+            animateCount(el, to);
+          });
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.25 });
+
+    if (trigger) io.observe(trigger);
+  } else {
+    // Fallback: start immediately
+    counters.forEach(el => {
+      const to = parseFloat(el.getAttribute('data-count-to')) || 0;
+      animateCount(el, to);
+    });
+  }
+})();
+</script>
+
 {% endblock %}

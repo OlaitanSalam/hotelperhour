@@ -8,6 +8,7 @@ class Hotel(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100, blank=True)
     hotel_phone = models.CharField(max_length=20, null=True, blank=True)
     hotel_email = models.EmailField(max_length=255, null=True, blank=True)
     description = models.TextField()
@@ -27,11 +28,18 @@ class Hotel(models.Model):
             self.slug = slugify(self.name)
             original_slug = self.slug
             counter = 1
-            # Ensure uniqueness by appending a number if needed
             while Hotel.objects.filter(slug=self.slug).exclude(id=self.id).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
+        # Populate city from address if empty (fallback)
+        if not self.city and self.address:
+            parts = self.address.split(',')
+            self.city = parts[1].strip() if len(parts) > 1 else "Unknown"
         super().save(*args, **kwargs)
+
+    def get_public_name(self):
+        """Return anonymized name for public display"""
+        return f"Hotel in {self.city}"
 
     def __str__(self):
         return self.name

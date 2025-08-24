@@ -19,7 +19,7 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
+            user = form.save(commit=True)
             user.is_active = False
             user.save()
             current_site = get_current_site(request)
@@ -33,8 +33,14 @@ def register(request):
             plain_message = strip_tags(html_message)
             email = EmailMultiAlternatives(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email])
             email.attach_alternative(html_message, "text/html")
-            email.send()
-            return redirect('activation_sent')
+            
+            try:
+                email.send()
+                return redirect('activation_sent')
+            except Exception as e:
+                # Log the error and inform the user
+                messages.error(request, f"Failed to send activation email: {str(e)}")
+                return render(request, 'users/register.html', {'form': form})
         else:
             return render(request, 'users/register.html', {'form': form})
     else:

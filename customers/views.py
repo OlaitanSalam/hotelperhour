@@ -8,6 +8,8 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.contrib import messages
+
+from users.models import CustomUser
 from .forms import CustomerCreationForm, CustomerLoginForm
 from .models import Customer
 from bookings.models import Booking
@@ -17,6 +19,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate
 from .forms import CustomerProfileForm
 from django.core.exceptions import ValidationError
+# customers/views.py
+from django.conf import settings
+from django.core.mail import send_mail
+from django.views.generic import FormView
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.urls import reverse_lazy
+
 
 def customer_register(request):
     if request.method == 'POST':
@@ -71,32 +80,44 @@ def customer_activate(request, uidb64, token):
     messages.error(request, "Activation link is invalid or has expired.")
     return render(request, 'customers/activation_invalid.html')
 
-# customers/views.py
+
+
 def customer_login(request):
     if request.method == 'POST':
         form = CustomerLoginForm(request.POST)
         if form.is_valid():
-            user = authenticate(
-                request,
-                username=form.cleaned_data['email'].lower(),
-                password=form.cleaned_data['password']
-            )
-            
-            if user is not None:
-                login(request, user)
-                # Redirect based on user role
-                if user.is_hotel_owner:
-                    return redirect('hotel_dashboard')
-                elif user.is_customer:
-                    return redirect('customer_dashboard')
-                return redirect('home')
+            email = form.cleaned_data['email'].lower()
+            password = form.cleaned_data['password']
+
+            try:
+                user_obj = Customer.objects.get(email=email)
+            except Customer.DoesNotExist:
+                user_obj = None
+
+            if user_obj is None:
+                messages.error(request, "No account found with this email.")
             else:
-                messages.error(request, "Invalid credentials or account not activated.")
+                if not user_obj.is_active:
+                    messages.error(request, "Your account is not activated. Please check your email.")
+                else:
+                    user = authenticate(request, username=email, password=password)
+                    if user is None:
+                        messages.error(request, "Invalid password. Please try again.")
+                    else:
+                        login(request, user)
+                        # Redirect based on role
+                        if user.is_hotel_owner:
+                            return redirect('hotel_dashboard')
+                        elif user.is_customer:
+                            return redirect('customer_dashboard')
+                        return redirect('home')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
         form = CustomerLoginForm()
+
     return render(request, 'customers/login.html', {'form': form})
+
 
 
 @login_required
@@ -138,3 +159,79 @@ def verify_booking(request):
         except ValidationError:
             return render(request, 'customers/verify_booking.html', {'error': 'Invalid booking reference format.'})
     return render(request, 'customers/verify_booking.html')
+
+
+
+
+
+class CustomerPasswordResetView(FormView):
+    template_name = "customers/password_reset.html"
+    form_class = PasswordResetForm
+    success_url = reverse_lazy("customer_password_reset_done")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        try:
+            customer = Customer.objects.get(email=email)
+        except Customer.DoesNotExist:
+            # Always pretend success for security
+            return super().form_valid(form)
+
+        token = default_token_generator.make_token(customer)
+        uid = urlsafe_base64_encode(force_bytes(customer.pk))
+        reset_url = self.request.build_absolute_uri(
+            reverse_lazy("customer_password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+        )
+
+        message = f"Hello {customer.full_name},\n\n"
+        message += "We received a request to reset your password.\n"
+        message += f"Click the link below to set a new password:\n{reset_url}\n\n"
+        message += "If you didn’t request this, you can ignore this email.\n\n"
+        message += "Thanks,\nHotelsPerHour Team"
+
+        send_mail(
+            subject="Password Reset",
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[customer.email],
+        )
+        return super().form_valid(form)
+
+
+class CustomerPasswordResetConfirmView(FormView):
+    template_name = "customers/password_reset_confirm.html"
+    form_class = SetPasswordForm
+    success_url = reverse_lazy("customer_password_reset_complete")
+
+    def get_customer(self, uidb64):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            return Customer.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, Customer.DoesNotExist):
+            return None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        customer = self.get_customer(self.kwargs["uidb64"])
+        if customer:
+            kwargs["user"] = customer
+        return kwargs
+
+    def form_valid(self, form):
+        customer = self.get_customer(self.kwargs["uidb64"])
+        token = self.kwargs["token"]
+        if customer and default_token_generator.check_token(customer, token):
+            form.save()
+            return super().form_valid(form)
+        return render(self.request, "customers/password_reset_confirm.html", {
+            "form": form,
+            "validlink": False
+        })
+
+
+def customer_password_reset_done(request):
+    return render(request, "customers/password_reset_done.html")
+
+
+def customer_password_reset_complete(request):
+    return render(request, "customers/password_reset_complete.html")

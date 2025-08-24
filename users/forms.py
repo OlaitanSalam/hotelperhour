@@ -1,10 +1,22 @@
 from django import forms
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from .models import CustomUser
 
 class CustomUserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
-    is_hotel_owner = forms.BooleanField(label='Register as Hotel Owner', required=False)
+    password1 = forms.CharField(
+        label='Password', 
+        widget=forms.PasswordInput,
+        validators=[validate_password]  # Add password validation
+    )
+    password2 = forms.CharField(
+        label='Confirm Password', 
+        widget=forms.PasswordInput
+    )
+    is_hotel_owner = forms.BooleanField(
+        label='Register as Hotel Owner', 
+        required=False
+    )
 
     class Meta:
         model = CustomUser
@@ -17,6 +29,11 @@ class CustomUserCreationForm(forms.ModelForm):
     def clean_full_name(self):
         # Convert full name to title case (e.g., "Jane Doe")
         return self.cleaned_data['full_name'].title()
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        # Additional custom validation if needed
+        return password1
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -37,7 +54,7 @@ class CustomUserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
-        user.is_hotel_owner = self.cleaned_data['is_hotel_owner']  # Respect checkbox
+        user.is_hotel_owner = True
         if commit:
             user.save()
         return user

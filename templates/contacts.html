@@ -7,16 +7,16 @@
 <div class="container py-5">
     <!-- Header Section -->
     <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold mb-3">Get In Touch</h1>
-        <p class="lead text-muted">We’re here to help with any questions about our hotel booking service</p>
+        <h1 class="display-4 fw-bold mb-3" data-aos="fade-right">Get In Touch</h1>
+        <p class="lead text-muted" data-aos="fade-left">We’re here to help with any questions about our hotel booking service</p>
     </div>
 
-    <div class="row justify-content-center">
-        <!-- Contact Information (unchanged) -->
-        <div class="col-lg-4 col-md-6 mb-4">
+    <div class="row justify-content-center" data-aos="fade-up" data-aos-duration="800">
+        <div class="col-lg-6 col-md-8">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-body p-4">
                     <h4 class="card-title mb-4 text-center">Contact Information</h4>
+
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
                             <div class="contact-icon-wrapper me-3"><i class="fas fa-phone text-white"></i></div>
@@ -26,6 +26,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
                             <div class="contact-icon-wrapper me-3"><i class="fas fa-envelope text-white"></i></div>
@@ -35,6 +36,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="contact-item mb-4">
                         <div class="d-flex align-items-center">
                             <div class="contact-icon-wrapper me-3"><i class="fas fa-map-marker-alt text-white"></i></div>
@@ -44,6 +46,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="contact-item">
                         <div class="d-flex align-items-center">
                             <div class="contact-icon-wrapper me-3"><i class="fas fa-clock text-white"></i></div>
@@ -53,121 +56,22 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Enhanced Review Form -->
-        <div class="col-lg-6 col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h4 class="card-title mb-4 text-center">Drop a Feedback</h4>
-                    <form method="post" class="contact-form">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="name" class="form-label fw-bold">Full Name</label>
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label fw-bold">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
-                        </div>
-                        <div class="mb-4 text-center">
-                            <label class="form-label fw-bold">Rating</label>
-                            <div class="star-rating d-flex justify-content-center align-items-center">
-                                <i class="fas fa-star" data-value="1"></i>
-                                <i class="fas fa-star" data-value="2"></i>
-                                <i class="fas fa-star" data-value="3"></i>
-                                <i class="fas fa-star" data-value="4"></i>
-                                <i class="fas fa-star" data-value="5"></i>
-                            </div>
-                            <input type="hidden" name="rating" id="rating" required>
-                            <div id="rating-error" class="text-danger mt-2" style="display: none;">Please select a rating.</div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="review_text" class="form-label fw-bold">Feedback</label>
-                            <textarea class="form-control" id="review_text" name="review_text" rows="5" placeholder="Tell us about your experience..." required></textarea>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>Submit Feedback
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- FAQ Section (unchanged) -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="text-center mb-4">
-                <h2 class="fw-bold">Frequently Asked Questions</h2>
-                <p class="text-muted">Quick answers to common questions</p>
-            </div>
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                    How does hourly hotel booking work?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    You choose a hotel, select the number of hours you want to stay, pick your check-in time, and confirm your booking. It's fast, flexible, and affordable.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                    How many hours can I book for?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    You can typically book for 3, 4, 6, or 8 hours. The minimum is 3 hours.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                    Is hourly booking private and discreet?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Yes. All bookings are confidential. Our hotel partners respect your privacy and treat each guest professionally.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                                    Can I cancel or modify my booking?
-                                </button>
-                            </h2>
-                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Yes, you can cancel or modify your booking up to 2 hours before your check-in time. Cancellation policies may vary by hotel.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
-    /* Contact icon styling */
+    :root {
+        --primary: #121643;
+        --primary-dark: #0e123a;
+        --accent: #ffd700;
+        --light: #f8f9fa;
+        --gray-bg: #f5f7fa;
+        --transition: all 0.3s ease;
+    }
     .contact-icon-wrapper {
         width: 50px;
         height: 50px;
@@ -185,115 +89,21 @@
     .contact-item:last-child {
         border-bottom: none;
     }
-    /* Form styling */
-    .contact-form .form-control:focus,
-    .contact-form textarea:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-    .contact-form .form-control,
-    .contact-form textarea {
-        border-radius: 8px;
-        padding: 10px;
-    }
-    .contact-form .btn {
-        border-radius: 8px;
-    }
-    /* Card styling */
     .card {
         border-radius: 15px;
-        transition: transform 0.3s ease;
+        transition: var(--transition);
     }
     .card:hover {
         transform: translateY(-5px);
     }
-    /* Accordion styling */
-    .accordion-button:not(.collapsed) {
-        background-color: #f8f9fa;
-        color: #007bff;
-    }
-    .accordion-button:focus {
-        box-shadow: none;
-        border-color: #007bff;
-    }
-    /* Enhanced Star Rating */
-    .star-rating {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-    .star-rating i {
-        font-size: 2rem;
-        color: #ddd;
-        cursor: pointer;
-        transition: color 0.3s ease, transform 0.3s ease;
-    }
-    .star-rating i:hover {
-        color: #ffc107;
-        transform: scale(1.2);
-    }
-    .star-rating i.active {
-        color: #ffc107;
-        transform: scale(1.1);
-    }
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .contact-icon-wrapper {
             width: 40px;
             height: 40px;
         }
         .display-4 {
-            font-size: 2.5rem;
-        }
-        .star-rating i {
-            font-size: 1.5rem;
+            font-size: 2.3rem;
         }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const stars = document.querySelectorAll('.star-rating i');
-        const ratingInput = document.getElementById('rating');
-        const ratingError = document.getElementById('rating-error');
-        const form = document.querySelector('.contact-form');
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                ratingInput.value = value;
-                ratingError.style.display = 'none';
-                stars.forEach(s => {
-                    s.classList.toggle('active', s.getAttribute('data-value') <= value);
-                });
-            });
-            star.addEventListener('mouseover', function() {
-                const value = this.getAttribute('data-value');
-                stars.forEach(s => {
-                    if (s.getAttribute('data-value') <= value) {
-                        s.classList.add('hover');
-                    } else {
-                        s.classList.remove('hover');
-                    }
-                });
-            });
-            star.addEventListener('mouseout', function() {
-                stars.forEach(s => s.classList.remove('hover'));
-            });
-        });
-
-        form.addEventListener('submit', function(e) {
-            if (!ratingInput.value) {
-                e.preventDefault();
-                ratingError.style.display = 'block';
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Review';
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-                submitBtn.disabled = true;
-            }
-        });
-    });
-</script>
 {% endblock %}

@@ -16,8 +16,8 @@
             <tbody>
                 {% for item in nearby_hotels %}
                     <tr>
-                        <td>{{ item.hotel.name }}</td>
-                        <td>{{ item.hotel.address }}</td>
+                        <td>{{ item.hotel.get_public_name }}</td>
+                        <td>{{ item.hotel.city }}</td>
                         <td>{{ item.distance|floatformat:2 }}</td>
                         <td><a href="{% url 'hotel_detail' item.hotel.slug %}" class="btn btn-primary btn-sm">View</a></td>
                     </tr>
