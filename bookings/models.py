@@ -25,7 +25,7 @@ class Booking(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     check_in = models.DateTimeField()
     check_out = models.DateTimeField()
-    total_hours = models.FloatField()
+    total_hours = models.FloatField(default=0.0)
     is_paid = models.BooleanField(default=False)
     payment_reference = models.CharField(max_length=100, blank=True, null=True)
     name = models.CharField(max_length=100)

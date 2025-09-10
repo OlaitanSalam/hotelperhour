@@ -30,7 +30,7 @@ class HotelAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at',)
     fieldsets = (
         ('Hotel Information', {
-            'fields': ('name', 'owner', 'address', 'description', 'hotel_phone', 'hotel_email', 'is_approved')
+            'fields': ('name', 'owner', 'address', 'city', 'description', 'hotel_phone', 'hotel_email', 'is_approved')
         }),
         ('Location', {
             'fields': ('latitude', 'longitude'),

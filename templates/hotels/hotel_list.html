@@ -8,7 +8,7 @@
     <div class="row mb-4">
         <div class="col-md-8 mb-3 mb-md-0">
             <form method="get" class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Search by city" 
+                <input type="text" name="q" class="form-control" placeholder="Search by city or suburb" 
                        value="{{ request.GET.q }}">
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
@@ -34,7 +34,7 @@
                 {% endif %}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ hotel.get_public_name }}</h5>
-                    <p>{{ hotel.city }}</p>
+                    <p>{{ hotel.suburb|default:hotel.city }}</p>
                     <div class="d-grid mt-auto">
                         <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-primary">View Details</a>
                     </div>

@@ -38,9 +38,15 @@
                                         {{ form.address }}
                                     </div>
                                 </div>
-                                <div class="mb-3">
+                                <div class="row mb-3">
+                                <div class="col-md-6">
                                     <label for="id_city" class="form-label fw-semibold">City</label>
                                     {{ form.city }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_suburb" class="form-label fw-semibold">suburb/zone</label>
+                                    {{ form.suburb }}
+                                </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
@@ -115,12 +121,16 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="map-style" class="form-label fw-semibold">Map Style</label>
-                                    <select id="map-style" class="form-select w-auto">
-                                        <option value="mapbox://styles/mapbox/streets-v12" selected>Streets</option>
-                                        <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
-                                    </select>
-                                </div>
-                                <div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+                                   <select id="map-style" class="form-select w-auto">
+  <option value="roadmap" selected>Streets</option>
+  <option value="hybrid">Satellite Streets</option>
+  <option value="satellite">Satellite (imagery)</option>
+  <option value="terrain">Terrain</option>
+  <option value="night">Dark (styled)</option>
+</select>
+
+<div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+
                                 {{ form.latitude }}
                                 {{ form.longitude }}
                                 <small class="text-muted mt-2 d-block">Click on the map or search for a location to set the hotel's position</small>
@@ -319,10 +329,9 @@
 </div>
 
 
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+
+
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
@@ -470,9 +479,12 @@ textarea[id$=-description] {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Bootstrap form controls ---
     document.querySelectorAll('input, select, textarea').forEach(element => {
-        if (!element.classList.contains('form-control') && !element.classList.contains('form-select') && !element.classList.contains('form-check-input')) {
+        if (!element.classList.contains('form-control') &&
+            !element.classList.contains('form-select') &&
+            !element.classList.contains('form-check-input')) {
             if (element.tagName === 'SELECT') {
                 element.classList.add('form-select');
             } else if (element.type !== 'checkbox' && element.type !== 'radio' && element.type !== 'hidden') {
@@ -486,10 +498,13 @@ document.addEventListener('DOMContentLoaded', function() {
         textarea.classList.add('form-control');
     });
 
+    // --- Room & Extra counts ---
     function updateRoomCount() {
         const roomCount = document.querySelectorAll('.room-form-container').length;
-        document.getElementById('room-count').textContent = roomCount;
-        document.getElementById('no-rooms-message').style.display = roomCount === 0 ? 'block' : 'none';
+        const rc = document.getElementById('room-count');
+        const msg = document.getElementById('no-rooms-message');
+        if (rc) rc.textContent = roomCount;
+        if (msg) msg.style.display = roomCount === 0 ? 'block' : 'none';
         document.querySelectorAll('.room-form-title').forEach((title, index) => {
             const roomTypeInput = title.closest('.room-form-container').querySelector('input[id$=-room_type]');
             const roomType = roomTypeInput ? roomTypeInput.value || 'Unnamed' : 'Unnamed';
@@ -499,8 +514,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateExtraCount() {
         const extraCount = document.querySelectorAll('.extra-form-container').length;
-        document.getElementById('extra-count').textContent = extraCount;
-        document.getElementById('no-extras-message').style.display = extraCount === 0 ? 'block' : 'none';
+        const ec = document.getElementById('extra-count');
+        const msg = document.getElementById('no-extras-message');
+        if (ec) ec.textContent = extraCount;
+        if (msg) msg.style.display = extraCount === 0 ? 'block' : 'none';
         document.querySelectorAll('.extra-form-title').forEach((title, index) => {
             const extraNameInput = title.closest('.extra-form-container').querySelector('input[id$=-name]');
             const extraName = extraNameInput ? extraNameInput.value || 'Unnamed' : 'Unnamed';
@@ -508,155 +525,273 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    mapboxgl.accessToken = '{{ mapbox_access_token }}';
-    var initialLat = {% if is_edit %}{{ hotel.latitude|default_if_none:8.6753 }}{% else %}8.6753{% endif %};
-    var initialLng = {% if is_edit %}{{ hotel.longitude|default_if_none:9.0820 }}{% else %}9.0820{% endif %};
-    var map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [initialLng, initialLat],
-        zoom: {% if is_edit and hotel.latitude and hotel.longitude %}12{% else %}10{% endif %}
-    });
+    // --- Google Maps Integration ---
+    let map, marker, geocoder, searchBox;
 
-    var geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken,
-        mapboxgl: mapboxgl,
-        placeholder: 'Search for an address in Nigeria',
-        countries: 'NG'
-    });
-    map.addControl(geocoder);
+    const NIGHT_STYLE = [
+      { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+      { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+      { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+      { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+      { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+      { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+      { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] }
+    ];
 
-    var marker = new mapboxgl.Marker({
-        draggable: true
-    }).setLngLat([initialLng, initialLat]).addTo(map);
+    window.initMap = function () {
+        const initialLat = {% if is_edit and hotel.latitude %}{{ hotel.latitude }}{% else %}8.6753{% endif %};
+        const initialLng = {% if is_edit and hotel.longitude %}{{ hotel.longitude }}{% else %}9.0820{% endif %};
 
-    marker.on('dragend', function() {
-        var lngLat = marker.getLngLat();
-        document.getElementById('id_latitude').value = lngLat.lat;
-        document.getElementById('id_longitude').value = lngLat.lng;
-        updateAddress(lngLat.lng, lngLat.lat);
-    });
+        const center = { lat: parseFloat(initialLat), lng: parseFloat(initialLng) };
 
-    geocoder.on('result', function(e) {
-        var coordinates = e.result.geometry.coordinates;
-        marker.setLngLat(coordinates);
-        map.setCenter(coordinates);
-        document.getElementById('id_latitude').value = coordinates[1];
-        document.getElementById('id_longitude').value = coordinates[0];
-        document.getElementById('id_address').value = e.result.place_name;
-    });
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: center,
+            zoom: {% if is_edit and hotel.latitude and hotel.longitude %}12{% else %}6{% endif %},
+            mapTypeId: 'roadmap',
+            mapTypeControl: false // remove default map/satellite toggle
+        });
 
-    map.on('click', function(e) {
-        marker.setLngLat(e.lngLat);
-        document.getElementById('id_latitude').value = e.lngLat.lat;
-        document.getElementById('id_longitude').value = e.lngLat.lng;
-        updateAddress(e.lngLat.lng, e.lngLat.lat);
-    });
+        marker = new google.maps.Marker({
+            position: center,
+            map: map,
+            draggable: true
+        });
 
-    document.getElementById('map-style').addEventListener('change', function(e) {
-        map.setStyle(e.target.value);
-    });
+        geocoder = new google.maps.Geocoder();
 
-    function updateAddress(lng, lat) {
-        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&country=NG`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.features.length > 0) {
-                    document.getElementById('id_address').value = data.features[0].place_name;
+        // Marker drag updates fields
+        google.maps.event.addListener(marker, "dragend", function () {
+            const pos = marker.getPosition();
+            document.getElementById("id_latitude").value = pos.lat();
+            document.getElementById("id_longitude").value = pos.lng();
+            reverseGeocode(pos);
+        });
+
+        // Map click sets marker
+        google.maps.event.addListener(map, "click", function (event) {
+            marker.setPosition(event.latLng);
+            document.getElementById("id_latitude").value = event.latLng.lat();
+            document.getElementById("id_longitude").value = event.latLng.lng();
+            reverseGeocode(event.latLng);
+        });
+
+        // Floating search box on the map
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Search hotels in Nigeria...";
+        input.classList.add("form-control");
+        input.style.margin = "10px";
+        input.style.width = "300px";
+
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+        searchBox = new google.maps.places.SearchBox(input);
+
+        // Bias search to map's viewport
+        map.addListener("bounds_changed", () => {
+            searchBox.setBounds(map.getBounds());
+        });
+
+        searchBox.addListener("places_changed", () => {
+            const places = searchBox.getPlaces();
+            if (!places.length) return;
+
+            const place = places[0];
+            if (!place.geometry) return;
+
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+            marker.setPosition(place.geometry.location);
+
+            document.getElementById("id_latitude").value = place.geometry.location.lat();
+            document.getElementById("id_longitude").value = place.geometry.location.lng();
+            document.getElementById("id_address").value = place.formatted_address;
+        });
+
+        // Style switcher
+        const styleSelect = document.getElementById('map-style');
+        if (styleSelect) {
+            styleSelect.addEventListener('change', function(e) {
+                const val = e.target.value;
+                if (val === 'night') {
+                    map.setOptions({ styles: NIGHT_STYLE });
+                    map.setMapTypeId('roadmap');
+                } else {
+                    map.setOptions({ styles: null });
+                    map.setMapTypeId(val);
                 }
             });
+        }
+    };
+
+    function reverseGeocode(latlng) {
+        geocoder.geocode({ location: latlng }, function (results, status) {
+            if (status === "OK" && results && results.length > 0) {
+                // Try to skip plus codes by checking address components
+                let formatted = results[0].formatted_address;
+                if (formatted.match(/^[A-Z0-9+]+,/)) {
+                    // If starts with a plus code, use the next best result
+                    if (results[1]) {
+                        formatted = results[1].formatted_address;
+                    }
+                }
+                document.getElementById("id_address").value = formatted;
+            }
+        });
     }
 
-    document.getElementById('add-room').addEventListener('click', function() {
-        var formset = document.getElementById('room-forms');
-        var totalForms = document.querySelector('#id_room-TOTAL_FORMS');
-        var formCount = parseInt(totalForms.value);
-        var templateForm = formset.querySelector('.room-form-container');
 
-        if (!templateForm) return;
+    // --- Add Room ---
+    const addRoomBtn = document.getElementById('add-room');
+    if (addRoomBtn) {
+        addRoomBtn.addEventListener('click', function() {
+            const formset = document.getElementById('room-forms');
+            const totalForms = document.querySelector('#id_room-TOTAL_FORMS');
+            const formCount = parseInt(totalForms.value);
+            const templateForm = formset.querySelector('.room-form-container');
+            if (!templateForm) return;
 
-        var newForm = templateForm.cloneNode(true);
-        newForm.innerHTML = newForm.innerHTML.replace(/room-\d+-/g, `room-${formCount}-`).replace(/room-collapse-\d+/g, `room-collapse-${formCount + 1}`);
-        newForm.classList.add('animate__animated', 'animate__fadeIn');
+            const newForm = templateForm.cloneNode(true);
+            newForm.innerHTML = newForm.innerHTML
+                .replace(/room-\d+-/g, `room-${formCount}-`)
+                .replace(/room-collapse-\d+/g, `room-collapse-${formCount + 1}`);
+            newForm.classList.add('animate__animated', 'animate__fadeIn');
 
-        newForm.querySelectorAll('input, textarea, select').forEach(input => {
-            input.value = '';
-            if (input.type === 'checkbox') input.checked = false;
+            newForm.querySelectorAll('input, textarea, select').forEach(input => {
+                input.value = '';
+                if (input.type === 'checkbox') input.checked = false;
+            });
+
+            newForm.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
+                textarea.setAttribute('rows', '2');
+                textarea.classList.add('form-control');
+            });
+
+            newForm.querySelectorAll('.room-image-preview').forEach(img => {
+                img.parentElement.innerHTML = `
+                    <div class="default-image-placeholder">
+                        <div class="placeholder-content">
+                            <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                            <small class="text-muted">No image uploaded</small>
+                        </div>
+                    </div>`;
+            });
+
+            newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
+                input.parentElement.remove();
+            });
+
+            newForm.querySelector('.room-form-content').classList.remove('show');
+
+            formset.appendChild(newForm);
+            totalForms.value = formCount + 1;
+            updateRoomCount();
+            newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
+    }
 
-        newForm.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
-            textarea.setAttribute('rows', '2');
-            textarea.classList.add('form-control');
+    // --- Add Extra ---
+    const addExtraBtn = document.getElementById('add-extra');
+    if (addExtraBtn) {
+        addExtraBtn.addEventListener('click', function() {
+            const formset = document.getElementById('extra-forms');
+            const totalForms = document.querySelector('#id_extra-TOTAL_FORMS');
+            const formCount = parseInt(totalForms.value);
+            const templateForm = formset.querySelector('.extra-form-container');
+            if (!templateForm) return;
+
+            const newForm = templateForm.cloneNode(true);
+            newForm.innerHTML = newForm.innerHTML
+                .replace(/extra-\d+-/g, `extra-${formCount}-`)
+                .replace(/extra-collapse-\d+/g, `extra-collapse-${formCount + 1}`);
+            newForm.classList.add('animate__animated', 'animate__fadeIn');
+
+            newForm.querySelectorAll('input, textarea, select').forEach(input => {
+                input.value = '';
+                if (input.type === 'checkbox') input.checked = false;
+            });
+
+            newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
+                input.parentElement.remove();
+            });
+
+            newForm.querySelector('.extra-form-content').classList.remove('show');
+
+            formset.appendChild(newForm);
+            totalForms.value = formCount + 1;
+            updateExtraCount();
+            newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
+    }
 
-        newForm.querySelectorAll('.room-image-preview').forEach(img => {
-            img.parentElement.innerHTML = `
-                <div class="default-image-placeholder">
-                    <div class="placeholder-content">
-                        <i class="fas fa-image fa-2x text-muted mb-2"></i>
-                        <small class="text-muted">No image uploaded</small>
-                    </div>
-                </div>
-            `;
-        });
-
-        newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
-            input.parentElement.remove();
-        });
-
-        newForm.querySelector('.room-form-content').classList.remove('show');
-
-        formset.appendChild(newForm);
-        totalForms.value = formCount + 1;
-        updateRoomCount();
-        newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-
-    document.getElementById('add-extra').addEventListener('click', function() {
-        var formset = document.getElementById('extra-forms');
-        var totalForms = document.querySelector('#id_extra-TOTAL_FORMS');
-        var formCount = parseInt(totalForms.value);
-        var templateForm = formset.querySelector('.extra-form-container');
-
-        if (!templateForm) return;
-
-        var newForm = templateForm.cloneNode(true);
-        newForm.innerHTML = newForm.innerHTML.replace(/extra-\d+-/g, `extra-${formCount}-`).replace(/extra-collapse-\d+/g, `extra-collapse-${formCount + 1}`);
-        newForm.classList.add('animate__animated', 'animate__fadeIn');
-
-        newForm.querySelectorAll('input, textarea, select').forEach(input => {
-            input.value = '';
-            if (input.type === 'checkbox') input.checked = false;
-        });
-
-        newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
-            input.parentElement.remove();
-        });
-
-        newForm.querySelector('.extra-form-content').classList.remove('show');
-
-        formset.appendChild(newForm);
-        totalForms.value = formCount + 1;
-        updateExtraCount();
-        newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-
+    // --- Delete buttons ---
     document.querySelectorAll('.delete-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.dataset.target;
-        const checkbox = document.getElementById(targetId);
-
-        if (confirm("Are you sure you want to delete this item?")) {
-            checkbox.checked = true; // mark for deletion
-            // Optionally hide the form immediately
-            this.closest('.room-form-container, .extra-form-container').style.display = 'none';
-        }
+        button.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const checkbox = document.getElementById(targetId);
+            if (confirm("Are you sure you want to delete this item?")) {
+                checkbox.checked = true;
+                this.closest('.room-form-container, .extra-form-container').style.display = 'none';
+            }
+        });
     });
-});
-
 
     updateRoomCount();
     updateExtraCount();
+});
+</script>
+
+<!-- Load Google Maps once -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+
+    function showError(input, message) {
+        // Remove existing alert if any
+        let existingAlert = input.parentElement.querySelector(".file-size-alert");
+        if (existingAlert) existingAlert.remove();
+
+        // Create new alert
+        let alertDiv = document.createElement("div");
+        alertDiv.className = "alert alert-danger mt-2 file-size-alert";
+        alertDiv.innerText = message;
+
+        // Insert right after the file input
+        input.parentElement.appendChild(alertDiv);
+    }
+
+    function clearError(input) {
+        let existingAlert = input.parentElement.querySelector(".file-size-alert");
+        if (existingAlert) existingAlert.remove();
+    }
+
+    function validateFileInput(input) {
+        const file = input.files[0];
+        if (file && file.size > MAX_SIZE) {
+            showError(input, "⚠️ The selected image is too large. Please upload an image under 2MB.");
+            input.value = ""; // Clear the file input
+        } else {
+            clearError(input);
+        }
+    }
+
+    // Attach to hotel image input
+    const hotelImageInput = document.getElementById("id_image");
+    if (hotelImageInput) {
+        hotelImageInput.addEventListener("change", function () {
+            validateFileInput(this);
+        });
+    }
+
+    // Attach to room form image inputs (handles dynamically added forms too)
+    document.addEventListener("change", function (e) {
+        if (e.target && e.target.matches("input[type='file'][id$='-image']")) {
+            validateFileInput(e.target);
+        }
+    });
 });
 </script>
 {% endblock %}

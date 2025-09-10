@@ -359,6 +359,16 @@
             text-align: center;
             color: var(--primary);
         }
+        .footer-links .non i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+            color: var(--primary);
+        }
+        .footer-links .non i:hover {
+            color: var(--primary);
+            
+        }
         
         .footer-links a:hover {
             color: var(--primary);
@@ -439,6 +449,13 @@
 .whatsapp-float i {
     margin-top: 15px;
 }
+/* Shared style for WhatsApp & Loyalty floating buttons */
+.action-btn {
+  width: 45px;   /* bigger than your 56px */
+  height: 45px;
+  font-size: 1.2rem;
+}
+
 
 @keyframes bounce {
     0% { transform: translateY(0); }
@@ -552,8 +569,27 @@
                             </ul>
                         </div>
                     {% else %}
-                        <a class="btn btn-primary shadow" role="button" href="{% url 'customer_login' %}">Login</a>
-                    {% endif %}
+  <!-- Login dropdown for Guests: choose Customer or Hotel Owner -->
+  <div class="dropdown user-dropdown ms-2">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="guestLoginMenu" data-bs-toggle="dropdown" aria-expanded="false">
+      Login
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="guestLoginMenu">
+      <li>
+        <a class="dropdown-item" href="{% url 'customer_login' %}">
+          <i class="fas fa-user me-2"></i>Customer Login
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{% url 'login' %}">
+          <i class="fas fa-hotel me-2"></i>Hotel Owner Login
+        </a>
+      </li>
+      
+    </ul>
+  </div>
+{% endif %}
+
                 </div>
             </div>
         </div>
@@ -595,14 +631,23 @@
                 </a>
                 
                 {% if user.is_authenticated %}
-                    <a class="btn btn-primary w-100" role="button" href="{% url 'unified_logout' %}">
-                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </a>
-                {% else %}
-                    <a class="btn btn-primary w-100" role="button" href="{% url 'customer_login' %}">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login
-                    </a>
-                {% endif %}
+  <a class="btn btn-primary w-100 mb-2" role="button" href="{% if user.is_hotel_owner %}{% url 'hotel_dashboard' %}{% else %}{% url 'customer_dashboard' %}{% endif %}">
+    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+  </a>
+  <a class="btn btn-outline-secondary w-100" role="button" href="{% url 'unified_logout' %}">
+    <i class="fas fa-sign-out-alt me-2"></i> Logout
+  </a>
+{% else %}
+  <div class="d-grid gap-2">
+    <a class="btn btn-primary w-100" href="{% url 'customer_login' %}">
+      <i class="fas fa-user me-2"></i> Customer Login
+    </a>
+    <a class="btn w-100 mb-3" href="{% url 'login' %}" style="background-color: var(--accent); color: var(--primary);">
+      <i class="fas fa-hotel me-2"></i> Hotel Owner Login
+    </a>
+  </div>
+{% endif %}
+
             </div>
             
             <div class="mt-5 text-center">
@@ -646,11 +691,11 @@
                 <!-- We make booking column -->
                 <div class="col-sm-6 col-md-4 mb-4 mb-sm-0 footer-links">
                     <h5>We make booking</h5>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-check-circle"></i> Simple</a></li>
-                        <li><a href="#"><i class="fas fa-bolt"></i> Fast</a></li>
-                        <li><a href="#"><i class="fas fa-sync-alt"></i> Flexible</a></li>
-                        <li><a href="#"><i class="fas fa-lock"></i> Secure</a></li>
+                    <ul class="non">
+                        <li><i class="fas fa-check-circle"></i> Simple</li>
+                        <li><i class="fas fa-bolt"></i> Fast</li>
+                        <li><i class="fas fa-sync-alt"></i> Flexible</li>
+                        <li><i class="fas fa-lock"></i> Secure</li>
                     </ul>
                 </div>
                 
@@ -659,8 +704,8 @@
                     <h5>Quick Links</h5>
                     <ul>
                         <li><a href="{% url 'contacts' %}"><i class="fas fa-phone-alt"></i> Contact Us</a></li>
-                        <li><a href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i> Book Hotel</a></li>
-                        <li><a href="{% url 'verify_booking' %}"><i class="fas fa-qrcode"></i> Verify Booking</a></li>
+                        <li><a href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i> Book A Room</a></li>
+                        <li><a href="{% url 'verify_booking' %}"><i class="fas fa-qrcode"></i> Check Reservation</a></li>
                         {% if user.is_authenticated %}
                             {% if user.is_customer %}
                                 <li><a href="{% url 'customer_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
@@ -693,10 +738,87 @@
             </div>
         </div>
     </footer>
-    <!-- WhatsApp Icon -->
-<a href="https://wa.me/2349154304099?text=Hello%20HotelPerHour,%20I%20have%20a%20question" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
-    <i class="fab fa-whatsapp"></i>
-</a>
+
+<!-- Floating Buttons Row -->
+<div class="d-flex flex-row gap-2 position-fixed end-0 bottom-0 p-3" style="z-index:1050;">
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/2349154304099?text=Hello%20HotelPerHour,%20I%20have%20a%20question"
+     target="_blank" rel="noopener noreferrer"
+     class="btn btn-success shadow rounded-circle action-btn d-flex align-items-center justify-content-center">
+      <i class="fab fa-whatsapp fa-lg"></i>
+  </a>
+
+  <!-- Loyalty Button -->
+  <button id="loyaltyFloatBtn"
+          class="btn btn-warning shadow rounded-circle action-btn d-flex align-items-center justify-content-center">
+    <i class="fas fa-gift fa-lg"></i>
+  </button>
+
+</div>
+
+
+
+<!-- Loyalty Modal -->
+<div class="modal fade" id="loyaltyModal" tabindex="-1" aria-labelledby="loyaltyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="loyaltyModalLabel">
+          <i class="fas fa-gift me-2 text-warning"></i> Earn Rewards with Every Stay
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Intro -->
+        <p class="lead text-center mb-4">
+          Join our loyalty program — stay more, save more! Earn points with every booking and redeem them for exclusive discounts.
+        </p>
+
+        <!-- Benefits row -->
+        <div class="row text-center mb-4">
+          <div class="col-md-4 mb-3">
+            <div class="icon-circle bg-primary mb-2 mx-auto"><i class="fas fa-star fa-2x text-white"></i></div>
+            <h6 class="fw-bold">Points Per Stay</h6>
+            <p class="small mb-0">Earn points for every booking</p>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="icon-circle bg-success mb-2 mx-auto"><i class="fas fa-percent fa-2x text-white"></i></div>
+            <h6 class="fw-bold">Discount Redemption</h6>
+            <p class="small mb-0">Redeem points for discounts</p>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="icon-circle bg-warning mb-2 mx-auto"><i class="fas fa-gift fa-2x text-white"></i></div>
+            <h6 class="fw-bold">Exclusive Offers</h6>
+            <p class="small mb-0">Special deals for loyal customers</p>
+          </div>
+        </div>
+
+        <!-- How it works (compressed list) -->
+        <h6 class="fw-bold mb-3">How It Works:</h6>
+        <ol class="small">
+          <li>Book any hotel on our platform</li>
+          <li>Earn points based on booking value</li>
+          <li>Redeem points for discounts</li>
+          <li>Enjoy exclusive perks & offers</li>
+        </ol>
+
+        <!-- Info bar -->
+        <div class="alert alert-primary small text-center mt-4">
+          <i class="fas fa-info-circle me-2"></i> 100 points = 1% discount · Minimum 1000 points to redeem
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ 
 
     
     
@@ -737,5 +859,25 @@
             }
         }, 5000);
     </script>
+<script>
+// Gift button animation + modal trigger
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('loyaltyFloatBtn');
+  if(btn){
+    btn.addEventListener('click', function(){ 
+      const modal = new bootstrap.Modal(document.getElementById('loyaltyModal'));
+      modal.show();
+    });
+
+    // Add shake animation loop
+    setInterval(() => {
+      btn.classList.add('animate__animated','animate__tada'); // requires animate.css
+      setTimeout(() => btn.classList.remove('animate__animated','animate__tada'), 1000);
+    }, 3000); // shake every 3 seconds
+  }
+});
+</script>
+
+
 </body>
 </html>

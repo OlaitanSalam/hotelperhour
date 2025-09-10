@@ -100,19 +100,20 @@
                                 </div>
                             </div>
                             <div class="mb-3">
+                                <small class="form-text text-danger">Note: The least duration you can book is 3 hours.</small>
         <div class="input-group">
             <span class="input-group-text bg-light border-end-0">
                 <i class="fas fa-hourglass"></i>
             </span>
-            <select name="duration" id="id_duration" 
-                    class="form-select border-start-0" required>
-                {% for duration in form.duration.field.choices %}
-                    <option value="{{ duration.0 }}" 
-                        {% if duration.0|stringformat:'s' == form.duration.value|stringformat:'s' %}selected{% endif %}>
-                        {{ duration.1 }}
-                    </option>
-                {% endfor %}
-            </select>
+            <select name="duration" id="id_duration" class="form-select border-start-0" required>
+    <option value="" selected disabled>-- Pick your duration --</option>
+    {% for duration in form.duration.field.choices %}
+        <option value="{{ duration.0 }}">
+            {{ duration.1 }}
+        </option>
+    {% endfor %}
+</select>
+
         </div>
         {% if form.duration.errors %}
             <div class="text-danger small mt-1">

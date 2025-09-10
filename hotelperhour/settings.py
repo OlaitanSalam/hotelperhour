@@ -160,13 +160,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # File system path for uploads
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-'''EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yournotify.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')'''
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.brevo.com'
@@ -178,17 +171,19 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
 
-
-YOURNOTIFY_API_KEY = config('YOURNOTIFY_API_KEY')
-YOURNOTIFY_SENDER_ID = config('YOURNOTIFY_SENDER_ID')
-
-
 MAPBOX_ACCESS_TOKEN = config('MAPBOX_ACCESS_TOKEN')
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
+
 
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
 
+# Try to load production settings if available
+try:
+    from .settings_production import *
+except ImportError:
+    pass
 
 
-THOUSAND_SEPARATOR=','
-THOUSAND_GROUPING=3
+
+

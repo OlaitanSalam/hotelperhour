@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from bookings.views import book_room, get_loyalty_discount
+from hotels import views as hotel_views
+
 
 
 urlpatterns = [
@@ -31,5 +33,7 @@ urlpatterns = [
     path("bookings/", include("bookings.urls")),
     path("customers/", include("customers.urls")),
     path('get_loyalty_discount/', get_loyalty_discount, name='get_loyalty_discount'),
+    path('about/', hotel_views.about, name='about'),
+    path('contacts/', hotel_views.contacts, name='contacts'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

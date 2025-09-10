@@ -22,26 +22,7 @@ from customers.models import Customer, LoyaltyRule
 # Setup logging
 logger = logging.getLogger(__name__)
 
-def send_sms_notification(phone_number, message):
-    """Send SMS via Yournotify API."""
-    if not phone_number.startswith('+'):
-        phone_number = f'+234{phone_number.lstrip("0")}'  # Normalize Nigerian numbers
-    url = 'https://api.yournotify.com/sms'
-    headers = {
-        'Authorization': f'Bearer {settings.YOURNOTIFY_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'sender': settings.YOURNOTIFY_SENDER_ID,
-        'recipient': phone_number,
-        'message': message[:160],  # SMS limit
-    }
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
-        logger.info(f"SMS sent to {phone_number}: {message}")
-    except Exception as e:
-        logger.error(f"Failed to send SMS to {phone_number}: {str(e)}")
+
 
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
@@ -205,16 +186,6 @@ def payment_callback(request):
             logger.info(f"Customer email sent to {booking.email} for booking {booking.booking_reference}")
         else:
             logger.warning(f"No customer email for booking {booking.booking_reference}")
-
-        
-        
-        # Hotel SMS
-        owner_sms = f"New booking #{booking.booking_reference} for {booking.room.room_type} at {booking.room.hotel.name} on {booking.check_in}. Revenue: ₦{hotel_revenue}."
-        send_sms_notification(booking.room.hotel.owner.phone_number, owner_sms)
-        
-        # Customer SMS
-        customer_sms = f"Your booking #{booking.booking_reference} is confirmed for {booking.check_in}. Total: ₦{booking.total_amount}. Hotel: {booking.room.hotel.name}, Address: {booking.room.hotel.address}."
-        send_sms_notification(booking.phone_number, customer_sms)
         
         
     except Exception as e:
@@ -313,10 +284,6 @@ def cancel_booking(request, booking_reference):
                 subject = 'Booking Cancellation'
                 message = render_to_string('bookings/cancellation_notification.html', {'booking': booking})
                 send_mail(subject, '', None, [booking.email], html_message=message)
-                
-                # SMS to customer
-                sms_message = f"Your booking #{booking.booking_reference} has been cancelled."
-                send_sms_notification(booking.phone_number, sms_message)
             except Exception as e:
                 logger.error(f"Failed to send cancellation notifications for booking {booking.booking_reference}: {str(e)}")
             return redirect('hotel_list')

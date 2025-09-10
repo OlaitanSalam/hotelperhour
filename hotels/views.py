@@ -65,7 +65,9 @@ def hotel_create(request):
         'form': form,
         'room_formset': room_formset,
         'extra_formset': extra_formset,
-        'mapbox_access_token': settings.MAPBOX_ACCESS_TOKEN
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        
+
     })
 
 @login_required
@@ -89,7 +91,9 @@ def hotel_edit(request, slug):
         'form': form,
         'room_formset': room_formset,
         'extra_formset': extra_formset,
-        'mapbox_access_token': settings.MAPBOX_ACCESS_TOKEN,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        
+
         'is_edit': True,
         'hotel': hotel
     })
@@ -116,7 +120,7 @@ def hotel_list(request):
     query = request.GET.get('q')
     hotels = Hotel.objects.filter(is_approved=True)
     if query:
-        hotels = hotels.filter(Q(city__icontains=query))
+        hotels = hotels.filter(Q(city__icontains=query) | Q(suburb__icontains=query))
     paginator = Paginator(hotels, 9)  # 9 hotels per page
     page = request.GET.get('page')
     try:

@@ -8,7 +8,8 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.contrib import messages
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from urllib.parse import urlencode
 from users.models import CustomUser
 from .forms import CustomerCreationForm, CustomerLoginForm
 from .models import Customer
@@ -126,9 +127,22 @@ def customer_dashboard(request):
         messages.error(request, "Access restricted to customers.")
         return redirect('home')
     bookings = Booking.objects.filter(content_type=ContentType.objects.get_for_model(Customer), object_id=request.user.pk).order_by('-created_at')
+    paginator = Paginator(bookings, 10)  # 10 bookings per page, matching hotel_bookings
+    page = request.GET.get('page')
+    try:
+        bookings_page = paginator.page(page)
+    except PageNotAnInteger:
+        bookings_page = paginator.page(1)
+    except EmptyPage:
+        bookings_page = paginator.page(paginator.num_pages)
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = urlencode(query_params)
     context = {
-        'bookings': bookings,
+        'bookings': bookings_page,
         'loyalty_points': request.user.loyalty_points,
+        'query_string': query_string,
     }
     return render(request, 'customers/dashboard.html', context)
 

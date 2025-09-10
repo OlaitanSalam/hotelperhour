@@ -3,7 +3,7 @@
 *.pot
 *.pyc
 
-
+venv/
 .env
 __pycache__/
 *.pyc
@@ -20,3 +20,6 @@ media/
 test_email.py
 test_sms.py
 test_smtp.py
+
+
+hotelperhour/settings_production.py

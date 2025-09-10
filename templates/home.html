@@ -19,10 +19,10 @@
                 <div class="col-lg-6">
                     <div class="hero-text" data-aos="fade-right">
                         <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
-                            Book Hotels by the Hour. Stay on Your <span>Time</span>.
+                            Flexible Hourly Hotel Bookings. Pay Only for What You <span>Need</span>.
                         </h1>
                         <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
-                            Why pay for a full day when you only need a few hours? Book hotels by the hour and enjoy affordable, flexible stays anytime, anywhere.
+                            Short stay? No problem. Find vetted hotels near you for a few hours, perfect for layovers, day-rest, or private work spaces. Book by the hour, pay only for what you use.
                         </p>
                         <div class="text-center text-md-start" data-aos="fade-up" data-aos-delay="300">
                             <a href="{% url 'hotel_list' %}" class="btn hero-cta" type="button">
@@ -93,8 +93,8 @@
                         <img src="{% static 'images/hotel1-800.jpg' %}" alt="Luxury Suites" class="hotel-image" loading="lazy" decoding="async">
                     </picture>
                     <div class="hotel-overlay">
-                        <h4 class="fw-bold mb-3">Luxury Suites</h4>
-                        <p class="mb-3">Experience premium comfort with our luxury suites featuring modern amenities, elegant design, and exceptional service.</p>
+                        <h4 class="fw-bold mb-3">Hotels in Ikeja</h4>
+                        <p class="mb-3">Experience premium comfort with our hotels in Ikeja featuring modern amenities, elegant design, and exceptional service.</p>
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-star text-warning me-1"></i>
                             <i class="fas fa-star text-warning me-1"></i>
@@ -116,8 +116,8 @@
                         <img src="{% static 'images/hotel2-800.jpg' %}" alt="Business Hotels" class="hotel-image" loading="lazy" decoding="async">
                     </picture>
                     <div class="hotel-overlay">
-                        <h4 class="fw-bold mb-3">Business Hotels</h4>
-                        <p class="mb-3">Perfect for business travelers with high-speed WiFi and meeting facilities.</p>
+                        <h4 class="fw-bold mb-3">Hotels in Lagos Island</h4>
+                        <p class="mb-3">Enjoy a vibrant atmosphere with our hotels in Lagos Island, offering stunning views and easy access to local attractions.</p>
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-star text-warning me-1"></i>
                             <i class="fas fa-star text-warning me-1"></i>
@@ -139,8 +139,8 @@
                         <img src="{% static 'images/hotel3-800.jpg' %}" alt="Boutique Hotels" class="hotel-image" loading="lazy" decoding="async">
                     </picture>
                     <div class="hotel-overlay">
-                        <h4 class="fw-bold mb-3">Boutique Hotels</h4>
-                        <p class="mb-3">Unique and stylish accommodations with personalized service.</p>
+                        <h4 class="fw-bold mb-3">Hotels in Lekki</h4>
+                        <p class="mb-3">Stylish luxury hotels in vibrant neighborhoods, perfect for relaxation and entertainment.</p>
                         <div class="d-flex align-items mb-2">
                             <i class="fas fa-star text-warning me-1"></i>
                             <i class="fas fa-star text-warning me-1"></i>
@@ -220,169 +220,7 @@
     </div>
 </section>
 
-<!-- Loyalty Rewards Program Section -->
-<section id="loyalty-program" class="py-4">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <div class="text-center text-lg-start">
-                    <span class="badge bg-primary mb-2">NEW FEATURE</span>
-                    <h2 class="fw-bold mb-3">Earn Rewards with Every Stay</h2>
-                    <p class="lead mb-3">Our loyalty program offers discounts with every booking. Stay more, save more!</p>
-                    <div class="d-flex flex-wrap gap-2 mb-4">
-                        <div class="loyalty-benefit">
-                            <div class="icon-circle bg-primary mb-2">
-                                <i class="fas fa-star fa-lg text-white"></i>
-                            </div>
-                            <h6 class="fw-bold">Points Per Stay</h6>
-                            <p class="mb-0 small">Earn points for every booking</p>
-                        </div>
-                        <div class="loyalty-benefit">
-                            <div class="icon-circle bg-success mb-2">
-                                <i class="fas fa-percent fa-lg text-white"></i>
-                            </div>
-                            <h6 class="fw-bold">Discount Redemption</h6>
-                            <p class="mb-0 small">Redeem points for discounts</p>
-                        </div>
-                        <div class="loyalty-benefit">
-                            <div class="icon-circle bg-warning mb-2">
-                                <i class="fas fa-gift fa-lg text-white"></i>
-                            </div>
-                            <h6 class="fw-bold">Exclusive Offers</h6>
-                            <p class="mb-0 small">Special deals for loyal customers</p>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <a href="#how-loyalty-works" class="btn btn-primary btn-md px-4 loyalty-btn">
-                            Learn How It Works
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="loyalty-card-container position-relative">
-                    <div class="loyalty-card shadow-lg">
-                        <div class="card-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <img src="{% static 'img/illustrations/navbar2.png' %}" alt="Logo" width="30">
-                                <h5 class="mb-0">Premium Member</h5>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div>
-                                    <h6 class="text-muted small">CURRENT POINTS</h6>
-                                    <h3 class="fw-bold text-primary">1,250</h3>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-muted small">NEXT REWARD</h6>
-                                    <h3 class="fw-bold text-success">15% OFF</h3>
-                                </div>
-                            </div>
-                            <div class="progress mb-2" style="height: 12px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" 
-                                     aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
-                                    <span class="progress-text">65% to next reward</span>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between small">
-                                <div>
-                                    <small class="text-muted">POINTS REQUIRED</small>
-                                    <h6 class="fw-bold">100 points = 1% discount</h6>
-                                </div>
-                                <div class="text-end">
-                                    <small class="text-muted">MAX DISCOUNT</small>
-                                    <h6 class="fw-bold">Up to 50% OFF</h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <div class="d-flex justify-content-between small">
-                                <span>Member Since: 2023</span>
-                                <span>Expires: Never</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="loyalty-badge position-absolute">
-                        <div class="badge-content bg-warning text-dark p-2 rounded-circle shadow">
-                            <i class="fas fa-crown fa-md"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- How Loyalty Works Section -->
-<section id="how-loyalty-works" class="py-5 bg-light">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-5">How Our Loyalty Program Works</h2>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
-                            1
-                        </div>
-                        <h5 class="fw-bold">Book a Room</h5>
-                        <p class="text-muted">Make any booking through our platform</p>
-                        <div class="mt-3">
-                            <i class="fas fa-hotel fa-2x text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
-                            2
-                        </div>
-                        <h5 class="fw-bold">Earn Points</h5>
-                        <p class="text-muted">Get points based on your booking value</p>
-                        <div class="mt-3">
-                            <i class="fas fa-coins fa-2x text-warning"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
-                            3
-                        </div>
-                        <h5 class="fw-bold">Redeem Discounts</h5>
-                        <p class="text-muted">Use points to get discounts on future stays</p>
-                        <div class="mt-3">
-                            <i class="fas fa-percent fa-2x text-success"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
-                            4
-                        </div>
-                        <h5 class="fw-bold">Enjoy Benefits</h5>
-                        <p class="text-muted">Get exclusive offers and special treatment</p>
-                        <div class="mt-3">
-                            <i class="fas fa-gift fa-2x text-danger"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="text-center mt-5">
-            <div class="d-inline-block bg-primary text-white p-3 rounded">
-                <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>100 points = 1% discount · Minimum 1000 points to redeem</h4>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Scrollable Customer Reviews Section -->
 <section id="testimonials" class="py-5">
@@ -430,7 +268,7 @@
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                         </div>
-                        <p class="card-text text-muted">The app made it so easy to find a hotel for a few hours. Great service!</p>
+                        <p class="card-text text-muted">The website made it so easy to find a hotel for a few hours. Great service!</p>
                     </div>
                 </div>
             </div>
@@ -480,11 +318,7 @@
                 </div>
             </div>
         </div>
-        <div class="text-center my-4">
-        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#feedbackModal">
-  Leave Your Feedback
-</button>
-</div>
+        
     </div>
 </section>
 <!-- Feedback Modal -->
@@ -623,7 +457,7 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header" role="tab">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-3" aria-expanded="true" aria-controls="accordion-1 .item-3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-3" aria-expanded="false" aria-controls="accordion-1 .item-3">
                                 Is hourly booking private and discreet?
                             </button>
                         </h2>
@@ -673,6 +507,11 @@
             </div>
         </div>
     </div>
+    <div class="text-center my-4">
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+  Leave Your Feedback
+</button>
+</div>
 </section>
 
 <!-- Ready to Book? Section -->
@@ -685,8 +524,8 @@
                         <h2 class="fw-bold mb-3">Ready to Book by the Hour?</h2>
                         <p class="mb-4">Search now and find a hotel near you, only for the time you need.</p>
                         <div class="my-3">
-                            <a class="btn btn-secondary me-2 mt-2" role="button" href="{% url 'hotel_list' %}">Start Booking</a>
-                            <a class="btn btn-light mt-2" role="button" href="#how-it-works">How It Works</a>
+                            <a class="btn btn-secondary me-2 mt-2" role="button" href="{% url 'hotel_list' %}">Book A Room</a>
+                            
                         </div>
                     </div>
                 </div>
@@ -1739,6 +1578,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+
+
+
 
 
 
