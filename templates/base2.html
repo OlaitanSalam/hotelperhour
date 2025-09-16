@@ -571,9 +571,12 @@
                     {% else %}
   <!-- Login dropdown for Guests: choose Customer or Hotel Owner -->
   <div class="dropdown user-dropdown ms-2">
-    <button class="btn btn-primary dropdown-toggle" type="button" id="guestLoginMenu" data-bs-toggle="dropdown" aria-expanded="false">
-      Login
-    </button>
+    <button class="btn btn-primary dropdown-toggle d-flex align-items-center justify-content-between" 
+        type="button" id="guestLoginMenu" data-bs-toggle="dropdown" aria-expanded="false">
+  Login
+  <i class="fas fa-chevron-down ms-1"></i>
+</button>
+
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="guestLoginMenu">
       <li>
         <a class="dropdown-item" href="{% url 'customer_login' %}">

@@ -135,23 +135,54 @@ def hotel_list(request):
     query_string = urlencode(query_params)
     return render(request, 'hotels/hotel_list.html', {'hotels': hotels_page, 'query_string': query_string})
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from urllib.parse import urlencode
+
 def nearby_hotels(request):
     user_lat = request.GET.get('lat')
     user_lng = request.GET.get('lng')
-    radius = 10  # km
+    radius = float(request.GET.get('radius', 10))  # default 10 km
+    radius_options = [5, 10, 20, 50]
+
+    nearby_hotels = []
+
     if user_lat and user_lng:
         user_location = (float(user_lat), float(user_lng))
         hotels = Hotel.objects.filter(is_approved=True)
-        nearby_hotels = []
+
         for hotel in hotels:
             if hotel.latitude and hotel.longitude:
                 hotel_location = (hotel.latitude, hotel.longitude)
                 distance = geodesic(user_location, hotel_location).km
                 if distance <= radius:
                     nearby_hotels.append({'hotel': hotel, 'distance': distance})
+
         nearby_hotels.sort(key=lambda x: x['distance'])
-        return render(request, 'hotels/nearby_hotels.html', {'nearby_hotels': nearby_hotels})
-    return render(request, 'hotels/nearby_hotels.html', {'nearby_hotels': []})
+
+    # --- Pagination ---
+    paginator = Paginator(nearby_hotels, 10)  # 10 hotels per page
+    page = request.GET.get('page')
+    try:
+        hotels_page = paginator.page(page)
+    except PageNotAnInteger:
+        hotels_page = paginator.page(1)
+    except EmptyPage:
+        hotels_page = paginator.page(paginator.num_pages)
+
+    # Keep query params except "page" for pagination links
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = urlencode(query_params)
+
+    return render(request, 'hotels/nearby_hotels.html', {
+        'nearby_hotels': hotels_page,
+        'selected_radius': radius,
+        'radius_options': radius_options,
+        'query_string': query_string,
+    })
+
+
 
 @login_required
 @hotel_owner_required
