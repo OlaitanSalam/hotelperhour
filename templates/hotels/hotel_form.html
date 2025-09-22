@@ -1,5 +1,7 @@
 {% extends 'base2.html' %}
 {% load static %}
+{% load widget_tweaks %}
+
 
 {% block content %}
 <div class="container mt-5">
@@ -19,7 +21,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endif %}
-                    <form method="post" id="hotel_form" enctype="multipart/form-data">
+                    <form method="post" id="hotel_form" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
                         <!-- Hotel Information Section -->
@@ -31,11 +33,11 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_name" class="form-label fw-semibold">Hotel Name *</label>
-                                        {{ form.name }}
+                                        {{ form.name |add_class:"form-control"|attr:"required"  }}
                                     </div>
                                     <div class="col-md-6">
                                         <label for="id_address" class="form-label fw-semibold">Address *</label>
-                                        {{ form.address }}
+                                        {{ form.address |add_class:"form-control"|attr:"required"  }}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -51,11 +53,11 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_hotel_email" class="form-label fw-semibold">Hotel Email *</label>
-                                        {{ form.hotel_email }}
+                                        {{ form.hotel_email |add_class:"form-control"|attr:"required"  }}
                                     </div>
                                     <div class="col-md-6">
                                         <label for="id_hotel_phone" class="form-label fw-semibold">Hotel Phone *</label>
-                                        {{ form.hotel_phone }}
+                                        {{ form.hotel_phone|add_class:"form-control"|attr:"required"  }}
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -158,20 +160,29 @@
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.room_type.id_for_label }}" class="form-label fw-semibold">Room Type *</label>
-                                                        {{ form.room_type }}
+                                                        {{ form.room_type|add_class:"form-control"|attr:"required"  }}
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label for="{{ form.price_per_hour.id_for_label }}" class="form-label fw-semibold">Price per Hour *</label>
                                                         <div class="input-group">
                                                             <span class="input-group-text bg-light">₦</span>
-                                                            {{ form.price_per_hour }}
+                                                            {{ form.price_per_hour|add_class:"form-control"|attr:"required"  }}
                                                         </div>
                                                     </div>
+                                                    <!-- In room formset loop, after price_per_hour -->
+                                                <div class="mb-3">
+                                                    <label>Discounted 12-Hour Price (optional)</label>
+                                                    {{ form.twelve_hour_price }}
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label>Discounted 24-Hour Price (optional)</label>
+                                                    {{ form.twenty_four_hour_price }}
+                                                </div>
                                                 </div>
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.capacity.id_for_label }}" class="form-label fw-semibold">Capacity *</label>
-                                                        {{ form.capacity }}
+                                                        {{ form.capacity|add_class:"form-control"|attr:"required" }}
                                                         <small class="form-text text-muted">Maximum number of guests</small>
                                                     </div>
                                                     <div class="col-md-6">
@@ -479,6 +490,113 @@ textarea[id$=-description] {
 </style>
 
 <script>
+// Define initMap globally
+function initMap() {
+    const NIGHT_STYLE = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] }
+    ];
+
+    const initialLat = {% if is_edit and hotel.latitude %}{{ hotel.latitude }}{% else %}8.6753{% endif %};
+    const initialLng = {% if is_edit and hotel.longitude %}{{ hotel.longitude }}{% else %}9.0820{% endif %};
+
+    const center = { lat: parseFloat(initialLat), lng: parseFloat(initialLng) };
+
+    const map = new google.maps.Map(document.getElementById("map"), {
+        center: center,
+        zoom: {% if is_edit and hotel.latitude and hotel.longitude %}12{% else %}6{% endif %},
+        mapTypeId: 'roadmap',
+        mapTypeControl: false
+    });
+
+    const marker = new google.maps.Marker({
+        position: center,
+        map: map,
+        draggable: true
+    });
+
+    const geocoder = new google.maps.Geocoder();
+
+    google.maps.event.addListener(marker, "dragend", function () {
+        const pos = marker.getPosition();
+        document.getElementById("id_latitude").value = pos.lat();
+        document.getElementById("id_longitude").value = pos.lng();
+        reverseGeocode(pos);
+    });
+
+    google.maps.event.addListener(map, "click", function (event) {
+        marker.setPosition(event.latLng);
+        document.getElementById("id_latitude").value = event.latLng.lat();
+        document.getElementById("id_longitude").value = event.latLng.lng();
+        reverseGeocode(event.latLng);
+    });
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Search hotels in Nigeria...";
+    input.classList.add("form-control");
+    input.style.margin = "10px";
+    input.style.width = "300px";
+
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+    const searchBox = new google.maps.places.SearchBox(input);
+
+    map.addListener("bounds_changed", () => {
+        searchBox.setBounds(map.getBounds());
+    });
+
+    searchBox.addListener("places_changed", () => {
+        const places = searchBox.getPlaces();
+        if (!places.length) return;
+
+        const place = places[0];
+        if (!place.geometry) return;
+
+        map.setCenter(place.geometry.location);
+        map.setZoom(15);
+        marker.setPosition(place.geometry.location);
+
+        document.getElementById("id_latitude").value = place.geometry.location.lat();
+        document.getElementById("id_longitude").value = place.geometry.location.lng();
+        document.getElementById("id_address").value = place.formatted_address;
+    });
+
+    const styleSelect = document.getElementById('map-style');
+    if (styleSelect) {
+        styleSelect.addEventListener('change', function(e) {
+            const val = e.target.value;
+            if (val === 'night') {
+                map.setOptions({ styles: NIGHT_STYLE });
+                map.setMapTypeId('roadmap');
+            } else {
+                map.setOptions({ styles: null });
+                map.setMapTypeId(val);
+            }
+        });
+    }
+
+    function reverseGeocode(latlng) {
+        geocoder.geocode({ location: latlng }, function (results, status) {
+            if (status === "OK" && results && results.length > 0) {
+                let formatted = results[0].formatted_address;
+                if (formatted.match(/^[A-Z0-9+]+,/)) {
+                    if (results[1]) {
+                        formatted = results[1].formatted_address;
+                    }
+                }
+                document.getElementById("id_address").value = formatted;
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // --- Bootstrap form controls ---
     document.querySelectorAll('input, select, textarea').forEach(element => {
@@ -524,123 +642,6 @@ document.addEventListener('DOMContentLoaded', function () {
             title.innerHTML = `<i class="fas fa-concierge-bell me-2 text-primary"></i>Extra Service ${index + 1}: ${extraName}`;
         });
     }
-
-    // --- Google Maps Integration ---
-    let map, marker, geocoder, searchBox;
-
-    const NIGHT_STYLE = [
-      { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-      { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-      { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-      { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-      { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
-      { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-      { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
-      { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] }
-    ];
-
-    window.initMap = function () {
-        const initialLat = {% if is_edit and hotel.latitude %}{{ hotel.latitude }}{% else %}8.6753{% endif %};
-        const initialLng = {% if is_edit and hotel.longitude %}{{ hotel.longitude }}{% else %}9.0820{% endif %};
-
-        const center = { lat: parseFloat(initialLat), lng: parseFloat(initialLng) };
-
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: center,
-            zoom: {% if is_edit and hotel.latitude and hotel.longitude %}12{% else %}6{% endif %},
-            mapTypeId: 'roadmap',
-            mapTypeControl: false // remove default map/satellite toggle
-        });
-
-        marker = new google.maps.Marker({
-            position: center,
-            map: map,
-            draggable: true
-        });
-
-        geocoder = new google.maps.Geocoder();
-
-        // Marker drag updates fields
-        google.maps.event.addListener(marker, "dragend", function () {
-            const pos = marker.getPosition();
-            document.getElementById("id_latitude").value = pos.lat();
-            document.getElementById("id_longitude").value = pos.lng();
-            reverseGeocode(pos);
-        });
-
-        // Map click sets marker
-        google.maps.event.addListener(map, "click", function (event) {
-            marker.setPosition(event.latLng);
-            document.getElementById("id_latitude").value = event.latLng.lat();
-            document.getElementById("id_longitude").value = event.latLng.lng();
-            reverseGeocode(event.latLng);
-        });
-
-        // Floating search box on the map
-        const input = document.createElement("input");
-        input.type = "text";
-        input.placeholder = "Search hotels in Nigeria...";
-        input.classList.add("form-control");
-        input.style.margin = "10px";
-        input.style.width = "300px";
-
-        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-        searchBox = new google.maps.places.SearchBox(input);
-
-        // Bias search to map's viewport
-        map.addListener("bounds_changed", () => {
-            searchBox.setBounds(map.getBounds());
-        });
-
-        searchBox.addListener("places_changed", () => {
-            const places = searchBox.getPlaces();
-            if (!places.length) return;
-
-            const place = places[0];
-            if (!place.geometry) return;
-
-            map.setCenter(place.geometry.location);
-            map.setZoom(15);
-            marker.setPosition(place.geometry.location);
-
-            document.getElementById("id_latitude").value = place.geometry.location.lat();
-            document.getElementById("id_longitude").value = place.geometry.location.lng();
-            document.getElementById("id_address").value = place.formatted_address;
-        });
-
-        // Style switcher
-        const styleSelect = document.getElementById('map-style');
-        if (styleSelect) {
-            styleSelect.addEventListener('change', function(e) {
-                const val = e.target.value;
-                if (val === 'night') {
-                    map.setOptions({ styles: NIGHT_STYLE });
-                    map.setMapTypeId('roadmap');
-                } else {
-                    map.setOptions({ styles: null });
-                    map.setMapTypeId(val);
-                }
-            });
-        }
-    };
-
-    function reverseGeocode(latlng) {
-        geocoder.geocode({ location: latlng }, function (results, status) {
-            if (status === "OK" && results && results.length > 0) {
-                // Try to skip plus codes by checking address components
-                let formatted = results[0].formatted_address;
-                if (formatted.match(/^[A-Z0-9+]+,/)) {
-                    // If starts with a plus code, use the next best result
-                    if (results[1]) {
-                        formatted = results[1].formatted_address;
-                    }
-                }
-                document.getElementById("id_address").value = formatted;
-            }
-        });
-    }
-
 
     // --- Add Room ---
     const addRoomBtn = document.getElementById('add-room');

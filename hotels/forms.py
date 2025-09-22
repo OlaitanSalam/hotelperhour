@@ -34,13 +34,19 @@ class HotelForm(forms.ModelForm):
         }
 
     def clean_name(self):
-        return self.cleaned_data['name'].title()
+        name = self.cleaned_data.get('name')
+        return name.title() if name else name
 
     def clean_address(self):
-        return self.cleaned_data['address'].title()
+        address = self.cleaned_data.get('address')
+        return address.title() if address else address
 
     def clean_hotel_email(self):
-        return self.cleaned_data['hotel_email'].lower()
+        email = self.cleaned_data.get('hotel_email')
+        if email:
+            return email.lower()
+        return email  # leave it as None if not provided
+
 
 
 class RoomForm(forms.ModelForm):
@@ -54,13 +60,29 @@ class RoomForm(forms.ModelForm):
 
     class Meta:
         model = Room
-        fields = ('room_type', 'price_per_hour', 'description', 'capacity', 'image')
+        fields = ('room_type', 'price_per_hour', 'description', 'capacity', 'image', 'twelve_hour_price', 'twenty_four_hour_price')
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2, 'cols': 30}),
+            'twelve_hour_price': forms.NumberInput(attrs={'placeholder': 'e.g., ₦50,000 for discounted flat rate'}),
+            'twenty_four_hour_price': forms.NumberInput(attrs={'placeholder': 'e.g., ₦100,000 for discounted flat rate'}),
         }
 
     def clean_room_type(self):
-        return self.cleaned_data['room_type'].title()
+        room_type = self.cleaned_data.get('room_type')
+        return room_type.title() if room_type else room_type
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        price_per_hour = cleaned_data.get('price_per_hour')
+        twelve_hour_price = cleaned_data.get('twelve_hour_price')
+        twenty_four_hour_price = cleaned_data.get('twenty_four_hour_price')
+        if price_per_hour:
+            if twelve_hour_price and twelve_hour_price >= price_per_hour * 12:
+                self.add_error('twelve_hour_price', "Must be less than 12 * hourly rate.")
+            if twenty_four_hour_price and twenty_four_hour_price >= price_per_hour * 24:
+                self.add_error('twenty_four_hour_price', "Must be less than 24 * hourly rate.")
+        return cleaned_data
+
 
 
 class ExtraServiceForm(forms.ModelForm):
@@ -72,7 +94,7 @@ class ExtraServiceForm(forms.ModelForm):
 RoomFormSet = inlineformset_factory(
     Hotel,
     Room,
-    fields=('room_type', 'price_per_hour', 'description', 'capacity', 'image'),
+    fields=('room_type', 'price_per_hour', 'description', 'capacity', 'image', 'twelve_hour_price', 'twenty_four_hour_price'),
     extra=1,
     can_delete=True
 )

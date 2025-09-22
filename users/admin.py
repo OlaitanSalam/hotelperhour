@@ -12,7 +12,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('email', 'full_name', 'phone_number', 
                     'is_hotel_owner', 'is_active', 'is_staff', 
                     'date_joined', 'last_login')
-    list_filter = ('is_active', 'is_staff', 'date_joined')
+    list_filter = ('is_active', 'is_staff','is_hotel_owner', 'date_joined')
     search_fields = ('email', 'full_name', 'phone_number')
     list_per_page = 30
     ordering = ('-date_joined',)

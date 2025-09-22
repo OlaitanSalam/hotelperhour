@@ -62,7 +62,7 @@ class HotelAdmin(admin.ModelAdmin):
         html_message = render_to_string('hotels/approval_email.html', {'hotel': hotel})
         plain_message = strip_tags(html_message)
         email = EmailMultiAlternatives(
-            subject, plain_message, 'Hotel Per Hour<no-reply@hotelsperhour.com>', [hotel.owner.email]
+            subject, plain_message, 'HotelPerHour<no-reply@hotelsperhour.com>', [hotel.owner.email]
         )
         email.attach_alternative(html_message, "text/html")
         email.send()
@@ -73,7 +73,7 @@ class HotelAdmin(admin.ModelAdmin):
         html_message = render_to_string('hotels/decline_email.html', {'hotel': hotel})
         plain_message = strip_tags(html_message)
         email = EmailMultiAlternatives(
-            subject, plain_message, 'Hotel Per Hour<no-reply@hotelsperhour.com>', [hotel.owner.email]
+            subject, plain_message, 'HotelPerHour<no-reply@hotelsperhour.com>', [hotel.owner.email]
         )
         email.attach_alternative(html_message, "text/html")
         email.send()
@@ -117,7 +117,7 @@ class RoomAdmin(admin.ModelAdmin):
     list_filter = ('hotel', 'is_available')
     fieldsets = (
         ('Room Information', {
-            'fields': ('hotel', 'room_type', 'price_per_hour', 'description', 'capacity', 'is_available')
+            'fields': ('hotel', 'room_type', 'price_per_hour', 'description', 'capacity', 'is_available', 'twelve_hour_price', 'twenty_four_hour_price')
         }),
         ('Images', {
             'fields': ('image',),

@@ -3,6 +3,7 @@ from .models import Booking, BookingDuration
 from hotels.models import ExtraService
 from django.utils import timezone
 from customers.models import Customer, LoyaltyRule
+from django.core.exceptions import ValidationError
 
 class BookingForm(forms.ModelForm):
     check_in_date = forms.DateField(label="Check-in Date", widget=forms.DateInput(attrs={'type': 'date'}))
@@ -35,6 +36,14 @@ class BookingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.room:
             self.fields['extras'].queryset = ExtraService.objects.filter(hotel=self.room.hotel)
+            # Add 12/24-hour duration choices
+            standard_choices = [(d.hours, f"{d.hours} hours") for d in BookingDuration.objects.all()]
+            long_choices = []
+            if hasattr(self.room, 'twelve_hour_price') and self.room.twelve_hour_price:
+                long_choices.append((12, f"12 hours (₦{self.room.twelve_hour_price})"))
+            if hasattr(self.room, 'twenty_four_hour_price') and self.room.twenty_four_hour_price:
+                long_choices.append((24, f"24 hours (₦{self.room.twenty_four_hour_price})"))
+            self.fields['duration'].choices = standard_choices + long_choices
         if self.user and self.user.is_authenticated and isinstance(self.user, Customer):
             self.fields['name'].initial = self.user.full_name
             self.fields['email'].initial = self.user.email
@@ -46,6 +55,17 @@ class BookingForm(forms.ModelForm):
 
     def clean_email(self):
         return self.cleaned_data['email'].lower()
+    
+    def clean_duration(self):
+        duration = self.cleaned_data.get('duration')
+        if duration:
+            duration = int(duration)  # Convert to integer
+            if duration in [12, 24]:
+                if duration == 12 and (not hasattr(self.room, 'twelve_hour_price') or not self.room.twelve_hour_price):
+                    raise ValidationError("12-hour booking not available for this room.")
+                if duration == 24 and (not hasattr(self.room, 'twenty_four_hour_price') or not self.room.twenty_four_hour_price):
+                    raise ValidationError("24-hour booking not available for this room.")
+        return duration
 
     def clean(self):
         cleaned_data = super().clean()
@@ -54,7 +74,7 @@ class BookingForm(forms.ModelForm):
         duration = cleaned_data.get('duration')
 
         if check_in_date and check_in_hour and duration:
-            check_in = timezone.datetime.combine(check_in_date, timezone.datetime.strptime(check_in_hour, "%H").time())
+            check_in = timezone.make_aware(timezone.datetime.combine(check_in_date, timezone.datetime.strptime(check_in_hour, "%H").time()))
             duration = int(duration)
             check_out = check_in + timezone.timedelta(hours=duration)
 

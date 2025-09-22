@@ -6,6 +6,10 @@ from django.utils import timezone
 from PIL import Image
 import os
 from django.conf import settings
+from django.core.exceptions import ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Hotel(models.Model):
     name = models.CharField(max_length=255)
@@ -80,8 +84,20 @@ class Room(models.Model):
     description = models.TextField()
     capacity = models.IntegerField()
     is_available = models.BooleanField(default=True)
+    twelve_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Discounted price for 12 hours (optional)')
+    twenty_four_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Discounted price for 24 hours (optional)')
+    
+
+    def clean(self):
+        if self.twelve_hour_price and self.price_per_hour and self.twelve_hour_price >= self.price_per_hour * 12:
+            logger.warning(f"Validation failed for room {self.id}: twelve_hour_price ({self.twelve_hour_price}) >= price_per_hour * 12 ({self.price_per_hour * 12})")
+            raise ValidationError("12-hour price must be less than 12 * hourly rate for discount.")
+        if self.twenty_four_hour_price and self.price_per_hour and self.twenty_four_hour_price >= self.price_per_hour * 24:
+            logger.warning(f"Validation failed for room {self.id}: twenty_four_hour_price ({self.twenty_four_hour_price}) >= price_per_hour * 24 ({self.price_per_hour * 24})")
+            raise ValidationError("24-hour price must be less than 24 * hourly rate for discount.")
 
     def save(self, *args, **kwargs):
+        self.full_clean()  # Validate before saving
         super().save(*args, **kwargs)
         if self.image:
             self._convert_image_to_webp(self.image.path)

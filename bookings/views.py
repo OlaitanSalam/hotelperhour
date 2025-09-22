@@ -18,6 +18,7 @@ from django.utils import timezone
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from customers.models import Customer, LoyaltyRule
+from users.models import CustomUser
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -31,13 +32,17 @@ def book_room(request, room_id):
     if request.method == 'POST':
         form = BookingForm(request.POST, room=room, user=request.user)
         if form.is_valid():
-            # Calculate totals (same as before)
+            # Calculate totals
             check_in = form.cleaned_data['check_in']
             check_out = form.cleaned_data['check_out']
             duration = form.cleaned_data['duration']
             extras = form.cleaned_data['extras']
             total_hours = duration
-            room_cost = room.price_per_hour * Decimal(str(total_hours))
+            # Use special pricing for 12/24 hours if set, else standard
+            if total_hours in [12, 24] and getattr(room, f"{'twelve' if total_hours == 12 else 'twenty_four'}_hour_price", None):
+                room_cost = room.twelve_hour_price if total_hours == 12 else room.twenty_four_hour_price
+            else:
+                room_cost = room.price_per_hour * Decimal(str(total_hours))
             service_charge = room_cost * Decimal('0.10')
             extras_cost = sum(extra.price for extra in extras)
             discount_amount = Decimal('0.00')
@@ -47,11 +52,23 @@ def book_room(request, room_id):
                 points_used = form.cleaned_data.get('points_to_use', 0)
                 if discount_percentage > 0 and points_used > 0:
                     discount_amount = room_cost * (Decimal(discount_percentage) / Decimal('100'))
-                    # Note: Points deduction happens after payment success
             total_price_with_discount = room_cost - discount_amount
             total_amount = total_price_with_discount + service_charge + extras_cost
+            
 
-            # Store data in session instead of creating booking
+            # Determine user model for content type
+            user_content_type_id = None
+            if request.user.is_authenticated:
+                # Force resolution of SimpleLazyObject
+                _ = request.user.pk  # Access pk to ensure user is resolved
+                # Explicitly determine model based on user properties
+                if hasattr(request.user, 'is_hotel_owner') and request.user.is_hotel_owner:
+                    user_model = CustomUser
+                else:
+                    user_model = Customer
+                user_content_type_id = ContentType.objects.get_for_model(user_model).id
+
+            # Store data in session
             booking_data = {
                 'room_id': room.id,
                 'check_in': check_in.isoformat(),
@@ -65,7 +82,8 @@ def book_room(request, room_id):
                 'points_used': points_used,
                 'service_charge': float(service_charge),
                 'total_amount': float(total_amount),
-                'user_id': request.user.id if request.user.is_authenticated else None,
+                'user_content_type_id': user_content_type_id,
+                'user_object_id': request.user.id if request.user.is_authenticated else None,
             }
             request.session['pending_booking_data'] = booking_data
             # Generate reference early
@@ -117,13 +135,29 @@ def payment_callback(request):
     if not booking_data or reference != pending_reference:
         return render(request, 'bookings/payment_error.html', {'error': 'Invalid session data.'})
 
+    # Validate required keys
+    required_keys = ['room_id', 'check_in', 'check_out', 'total_hours', 'name', 'phone_number', 'email', 'service_charge', 'total_amount', 'discount_amount', 'points_used', 'extras_ids']
+    if not all(key in booking_data for key in required_keys):
+        logger.error(f"Missing keys in booking_data: {booking_data}")
+        return render(request, 'bookings/payment_error.html', {'error': 'Invalid booking data.'})
+
     # Create booking
     room = Room.objects.get(id=booking_data['room_id'])
     check_in = timezone.datetime.fromisoformat(booking_data['check_in'])
     check_out = timezone.datetime.fromisoformat(booking_data['check_out'])
+    # Ensure check_in and check_out are timezone-aware
+    if not timezone.is_aware(check_in):
+        check_in = timezone.make_aware(check_in)
+    if not timezone.is_aware(check_out):
+        check_out = timezone.make_aware(check_out)
     if not is_room_available(room, check_in, check_out):
-        # Refund if needed (implement Paystack refund)
         return render(request, 'bookings/payment_error.html', {'error': 'Room no longer available. Payment will be refunded.'})
+
+    try:
+        content_type = ContentType.objects.get(id=booking_data['user_content_type_id']) if booking_data.get('user_content_type_id') else None
+    except ContentType.DoesNotExist:
+        logger.error(f"Invalid content_type_id {booking_data.get('user_content_type_id')} for booking")
+        content_type = None
 
     booking = Booking(
         room=room,
@@ -135,32 +169,39 @@ def payment_callback(request):
         name=booking_data['name'],
         email=booking_data['email'],
         phone_number=booking_data['phone_number'],
-        booking_reference=reference,  # Use same as payment ref for simplicity
+        booking_reference=reference,
         total_price=Decimal(str(booking_data['total_amount'])) - Decimal(str(booking_data['service_charge'])) - Decimal(str(booking_data['discount_amount'])),
         service_charge=Decimal(str(booking_data['service_charge'])),
         discount_applied=Decimal(str(booking_data['discount_amount'])),
         points_used=booking_data['points_used'],
+        content_type=content_type,
+        object_id=booking_data['user_object_id'] if booking_data.get('user_object_id') else None,
         total_amount=Decimal(str(booking_data['total_amount'])),
     )
-    if booking_data['user_id']:
-        user = Customer.objects.get(id=booking_data['user_id'])
-        booking.content_type = ContentType.objects.get_for_model(user)
-        booking.object_id = user.id
-        if booking.points_used > 0:
-            user.loyalty_points -= booking.points_used
-            user.save()
     booking.save()
     extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
     booking.extras.set(extras)
 
+    # Deduct loyalty points if user is a Customer and points were used
+    if booking_data.get('user_object_id') and booking.points_used > 0:
+        try:
+            user = Customer.objects.get(id=booking_data['user_object_id'])
+            user.loyalty_points -= booking.points_used
+            user.save()
+        except Customer.DoesNotExist:
+            logger.warning(f"No Customer found for user_id {booking_data['user_object_id']} when deducting points")
+
     # Send notifications
     try:
-        # Calculate full revenue for hotel
-        full_room_cost = room.price_per_hour * Decimal(str(booking.total_hours))
+        total_hours = booking.total_hours
+        if total_hours in [12, 24] and getattr(room, f"{'twelve' if total_hours == 12 else 'twenty_four'}_hour_price", None):
+            room_cost = room.twelve_hour_price if total_hours == 12 else room.twenty_four_hour_price
+        else:
+            room_cost = room.price_per_hour * Decimal(str(total_hours))
         extras_cost = sum(extra.price for extra in booking.extras.all())
-        hotel_revenue = full_room_cost + extras_cost
+        hotel_revenue = room_cost + extras_cost
+        full_room_cost = room.price_per_hour * Decimal(str(total_hours))
 
-        # Hotel email
         subject = 'New Booking Notification'
         context = {'booking': booking, 'hotel_revenue': hotel_revenue}
         message = render_to_string('bookings/booking_notification.html', context)
@@ -186,8 +227,6 @@ def payment_callback(request):
             logger.info(f"Customer email sent to {booking.email} for booking {booking.booking_reference}")
         else:
             logger.warning(f"No customer email for booking {booking.booking_reference}")
-        
-        
     except Exception as e:
         logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
 
@@ -298,7 +337,7 @@ def check_availability(request, room_id):
 
     if check_in_str and duration:
         try:
-            check_in = timezone.datetime.strptime(check_in_str, '%Y-%m-%dT%H:%M')
+            check_in = timezone.make_aware(timezone.datetime.strptime(check_in_str, '%Y-%m-%dT%H:%M'))
             duration = int(duration)
             check_out = check_in + timezone.timedelta(hours=duration)
             available = is_room_available(room, check_in, check_out)

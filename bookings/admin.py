@@ -20,10 +20,10 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ['name', 'email', 'phone_number', 'room__hotel__name', 'booking_reference']
     list_per_page = 20  # Pagination: 20 bookings per page
     ordering = ['-created_at']  # Order by most recent bookings first
-    readonly_fields = ['created_at', 'booking_reference', 'payment_reference','content_type', 'object_id']
+    readonly_fields = ['created_at', 'booking_reference', 'payment_reference','content_type', 'object_id', 'get_user']
     fieldsets = (
         ('Booking Details', {
-            'fields': ('room', 'user', 'check_in', 'check_out', 'total_hours', 'total_price', 'total_amount')
+            'fields': ('room', 'get_user', 'check_in', 'check_out', 'total_hours', 'total_price', 'total_amount')
         }),
         ('Payment Information', {
             'fields': ('is_paid', 'payment_reference')
@@ -35,13 +35,15 @@ class BookingAdmin(admin.ModelAdmin):
             'fields': ('booking_reference', 'created_at')
         }),
     )
+    def get_user(self, obj):
+       
+       if obj.user:
+           return obj.user
+       return "Guest (No associated user)"
+    get_user.short_description = 'User'  # Label in admin
 
     def is_hotel_owner(self, obj):
-        """
-        Check if the booking user is a hotel owner.
-        Returns True if the user is a hotel owner, False otherwise.
-        """
-        if obj.user:
+        if obj.user and hasattr(obj.user, 'is_hotel_owner'):
             return obj.user.is_hotel_owner
         return False
     is_hotel_owner.boolean = True  # Display as a boolean icon in admin

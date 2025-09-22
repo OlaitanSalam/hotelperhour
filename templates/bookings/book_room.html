@@ -295,7 +295,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (duration) {
-            const baseAmount = duration * pricePerHour;
+            let baseAmount;
+
+            if (duration === 12 && {{ room.twelve_hour_price|default:"null" }}) {
+                baseAmount = parseFloat("{{ room.twelve_hour_price|default:0 }}");
+            } else if (duration === 24 && {{ room.twenty_four_hour_price|default:"null" }}) {
+                baseAmount = parseFloat("{{ room.twenty_four_hour_price|default:0 }}");
+            } else {
+                baseAmount = duration * pricePerHour;
+            }
+
             const serviceCharge = baseAmount * 0.10;
             let originalTotal = baseAmount + serviceCharge + extrasCost;
             let discountAmount = 0;

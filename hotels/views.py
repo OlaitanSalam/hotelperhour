@@ -121,7 +121,7 @@ def hotel_list(request):
     hotels = Hotel.objects.filter(is_approved=True)
     if query:
         hotels = hotels.filter(Q(city__icontains=query) | Q(suburb__icontains=query))
-    paginator = Paginator(hotels, 9)  # 9 hotels per page
+    paginator = Paginator(hotels.order_by('name'), 9)  # 9 hotels per page
     page = request.GET.get('page')
     try:
         hotels_page = paginator.page(page)
