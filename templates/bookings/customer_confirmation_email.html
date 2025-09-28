@@ -22,14 +22,69 @@
                 <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Room Type:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.room.room_type }}</td></tr>
                 <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Check-in:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.check_in|date:"M d, Y - g:i A" }}</td></tr>
                 <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Check-out:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.check_out|date:"M d, Y - g:i A" }}</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Total Hours:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.total_hours }}</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Total Amount:</td><td style="padding: 8px; border: 1px solid #dee2e6; color: #ffd700;">₦{{ booking.total_amount|floatformat:2|intcomma }}</td></tr>
-                {% if booking.extras.exists %}
-                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Extras:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{% for extra in booking.extras.all %}{{ extra.name }}: ₦{{ extra.price|floatformat:2|intcomma }}<br>{% endfor %}</td></tr>
-                {% endif %}
-                {% if booking.discount_applied > 0 %}
-                <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Discount Applied:</td><td style="padding: 8px; border: 1px solid #dee2e6;">₦{{ booking.discount_applied|floatformat:2|intcomma }} ({{ discount_percentage|floatformat:2 }}%)</td></tr>
-                {% endif %}
+                <tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Original Room Cost:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    ₦{{ base_room_cost|floatformat:2|intcomma }}
+  </td>
+</tr>
+
+{% if booking.discount_applied > 0 %}
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Discount Applied:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    -₦{{ booking.discount_applied|floatformat:2|intcomma }}
+    ({{ discount_percentage|floatformat:1 }}%)
+  </td>
+</tr>
+{% endif %}
+
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Room Cost (after discount):
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    ₦{{ final_room_cost|floatformat:2|intcomma }}
+  </td>
+</tr>
+
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Extras:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    {% if booking.extras.exists %}
+      {% for extra in booking.extras.all %}
+        {{ extra.name }}: ₦{{ extra.price|floatformat:2|intcomma }}<br>
+      {% endfor %}
+    {% else %}
+      None
+    {% endif %}
+  </td>
+</tr>
+
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Service Charge:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    ₦{{ booking.service_charge|floatformat:2|intcomma }}
+  </td>
+</tr>
+
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    <strong>Total Paid:</strong>
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6; color: #28a745; font-weight: bold;">
+    ₦{{ booking.total_amount|floatformat:2|intcomma }}
+  </td>
+</tr>
+
             </table>
             <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa;">
                 <h4 style="color: #121643; font-size: 16px; margin-bottom: 8px;">Important Information</h4>

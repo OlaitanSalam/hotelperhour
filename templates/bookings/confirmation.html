@@ -115,43 +115,41 @@
                             <div class="info-section">
                                 <h6 class="section-title"><i class="fas fa-credit-card me-2"></i>Payment Summary</h6>
                                 <div class="info-item">
-                                    <span class="label">Rate per Hour:</span>
-                                    <span class="value">₦{{ booking.room.price_per_hour|floatformat:2|intcomma }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Total Hours:</span>
-                                    <span class="value">{{ booking.total_hours }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Original Room Cost:</span>
-                                    <span class="value">₦{{ original_room_cost|floatformat:2|intcomma }}</span>
-                                </div>
-                                {% if booking.discount_applied > 0 %}
-                                <div class="info-item">
-                                    <span class="label">Discount Applied:</span>
-                                    <span class="value text-success">₦{{ booking.discount_applied|floatformat:2|intcomma }} ({{ discount_percentage|floatformat:2 }}% discount)</span>
-                                </div>
-                                {% endif %}
-                                <div class="info-item">
-                                    <span class="label">Room Cost (after discount):</span>
-                                    <span class="value">₦{{ booking.total_price|floatformat:2|intcomma }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Service Charge:</span>
-                                    <span class="value">₦{{ booking.service_charge|floatformat:2|intcomma }}</span>
-                                </div>
-                                {% if booking.extras.exists %}
-                                    <div class="info-item">
-                                        <span class="label">Extras Cost:</span>
-                                        <span class="value">₦{{ extras_cost|floatformat:2|intcomma }}</span>
-                                    </div>
-                                {% endif %}
-                                <div class="info-item total-price">
-                                    <span class="label">Total Amount:</span>
-                                    <span class="value text-success fw-bold">₦{{ booking.total_amount|floatformat:2|intcomma }}</span>
+  <span class="label">Original Room Cost:</span>
+  <span class="value">₦{{ base_room_cost|floatformat:2|intcomma }}</span>
+</div>
+
+{% if booking.discount_applied > 0 %}
+<div class="info-item">
+  <span class="label">Discount Applied:</span>
+  <span class="value text-success">
+    -₦{{ booking.discount_applied|floatformat:2|intcomma }}
+    ({{ discount_percentage|floatformat:1 }}% off)
+  </span>
+</div>
+{% endif %}
+
+<div class="info-item">
+  <span class="label">Room Cost (after discount):</span>
+  <span class="value">₦{{ final_room_cost|floatformat:2|intcomma }}</span>
+</div>
+
+<div class="info-item">
+  <span class="label">Extras Cost:</span>
+  <span class="value">₦{{ extras_cost|floatformat:2|intcomma }}</span>
+</div>
+
+<div class="info-item">
+  <span class="label">Service Charge:</span>
+  <span class="value">₦{{ booking.service_charge|floatformat:2|intcomma }}</span>
+</div>
+
+<div class="info-item total-price">
+  <span class="label">Total Amount Paid:</span>
+  <span class="value text-success fw-bold">₦{{ booking.total_amount|floatformat:2|intcomma }}</span>
+</div>
                                 </div>
                             </div>
-                        </div>
                     </div>
                     
                     <!-- Payment Status -->

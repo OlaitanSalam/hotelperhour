@@ -1,31 +1,111 @@
 {% extends 'base2.html' %}
 {% load humanize %}
+
 {% block title %}Sales Report for {{ hotel.name }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Sales Report for {{ hotel.name }}</h2>
+
+    <!-- Title -->
+    <h2 class="mb-4">Sales Report for {{ hotel.name }}</h2>
+
+    
+
+    <!-- KPI Summary Cards -->
+    <div class="row mb-4">
+        <!-- Today -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Today’s Revenue</h6>
+                    <h4 class="fw-bold text-dark">₦{{ summary.today_revenue|floatformat:2|intcomma }}</h4>
+                    <small class="text-muted">Resets daily</small>
+                </div>
+            </div>
+        </div>
+        <!-- This Month Revenue -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">This Month Revenue</h6>
+                    <h4 class="fw-bold text-primary">₦{{ summary.current_month_revenue|floatformat:2|intcomma }}</h4>
+                    <small class="text-muted">Resets monthly</small>
+                </div>
+            </div>
+        </div>
+        <!-- This Month Commission -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">This Month Commission (5%)</h6>
+                    <h4 class="fw-bold text-danger">₦{{ summary.current_month_commission|floatformat:2|intcomma }}</h4>
+                    <small class="text-muted">Resets monthly</small>
+                </div>
+            </div>
+        </div>
+        <!-- This Month Payout -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">This Month Payout</h6>
+                    <h4 class="fw-bold text-success">₦{{ summary.current_month_payout|floatformat:2|intcomma }}</h4>
+                    <small class="text-muted">Resets monthly</small>
+                </div>
+            </div>
+        </div>
+        <!-- Previous Month -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Previous Month Revenue</h6>
+                    <h4 class="fw-bold text-secondary">₦{{ summary.previous_month_revenue|floatformat:2|intcomma }}</h4>
+                    <small class="text-muted">Last month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filter Form -->
     <form method="get" class="mb-4">
         <div class="row">
             <div class="col-md-4">
                 <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ form.start_date.value|default_if_none:''|date:'Y-m-d' }}">
+                <input type="date" name="start_date" id="start_date" class="form-control"
+                       value="{{ form.start_date.value|default_if_none:''|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4">
                 <label for="end_date" class="form-label">End Date</label>
-                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ form.end_date.value|default_if_none:''|date:'Y-m-d' }}">
+                <input type="date" name="end_date" id="end_date" class="form-control"
+                       value="{{ form.end_date.value|default_if_none:''|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary">Filter</button>
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
             </div>
         </div>
     </form>
+
+    <!-- Chart with toggle -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Revenue Trend</h5>
+                <div class="btn-group mt-2 mt-sm-0" role="group">
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateChart('daily')">Daily</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateChart('weekly')">Weekly</button>
+                    <button class="btn btn-sm btn-outline-primary active" id="monthlyBtn" onclick="updateChart('monthly')">Monthly</button>
+                </div>
+            </div>
+            <canvas id="salesChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- Sales Table -->
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead class="table-dark">
                 <tr>
                     <th>Date</th>
-                    <th>Number of Bookings</th>
+                    <th>Bookings</th>
                     <th>Total Sales</th>
                     <th>Commission (5%)</th>
                     <th>Payout</th>
@@ -42,14 +122,113 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No sales data available for the selected period.</td>
+                    <td colspan="5" class="text-center">No sales data available for this period.</td>
                 </tr>
                 {% endfor %}
             </tbody>
+            {% if sales_data %}
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td>Totals</td>
+                    <td>{{ summary.total_bookings }}</td>
+                    <td>₦{{ summary.total_revenue|floatformat:2|intcomma }}</td>
+                    <td>₦{{ summary.total_commission|floatformat:2|intcomma }}</td>
+                    <td>₦{{ summary.total_payout|floatformat:2|intcomma }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
         </table>
     </div>
+
     <!-- Pagination -->
     {% include 'pagination.html' with page_obj=sales_data query_string=query_string %}
+
+    <!-- Back -->
     <a href="{% url 'hotel_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chart;
+const ctx = document.getElementById('salesChart').getContext('2d');
+
+function renderChart(labels, data) {
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (₦)',
+                data: data,
+                backgroundColor: '#121643'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                            return value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Default load (monthly)
+renderChart({{ monthly_chart_data|safe }}, {{ monthly_revenue_data|safe }});
+
+// Toggle simulation (daily/weekly/monthly)
+function updateChart(type) {
+    document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+    if (type === 'daily') {
+        renderChart({{ daily_chart_data|safe }}, {{ daily_revenue_data|safe }});
+        event.target.classList.add('active');
+    } else if (type === 'weekly') {
+        renderChart({{ weekly_chart_data|safe }}, {{ weekly_revenue_data|safe }});
+        event.target.classList.add('active');
+    } else {
+        renderChart({{ monthly_chart_data|safe }}, {{ monthly_revenue_data|safe }});
+        document.getElementById('monthlyBtn').classList.add('active');
+    }
+}
+</script>
+
+<!-- Custom Styles -->
+<style>
+/* Keep cards same height */
+.card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.card h6 {
+    font-size: 0.9rem;
+}
+.card h4 {
+    font-size: 1.2rem;
+    word-break: break-word;
+}
+
+/* Chart header responsiveness */
+@media (max-width: 576px) {
+    .card-title {
+        font-size: 1rem;
+    }
+    .btn-group button {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+</style>
 {% endblock %}

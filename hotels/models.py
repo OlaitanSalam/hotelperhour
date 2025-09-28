@@ -134,11 +134,24 @@ class ExtraService(models.Model):
 
 
 class Review(models.Model):
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='reviews')
     name = models.CharField(max_length=100)
     email = models.EmailField()
     review_text = models.TextField()
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     created_at = models.DateTimeField(default=timezone.now)
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Review by {self.name} - {self.rating}/5"
+        return f"Review for {self.hotel.name} by {self.name} - {self.rating}/5"
+    
+class AppFeedback(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    review_text = models.TextField()
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(default=timezone.now)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Feedback by {self.name} - {self.rating}/5"

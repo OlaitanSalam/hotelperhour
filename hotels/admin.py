@@ -1,7 +1,7 @@
 # hotels/admin.py
 from django.contrib import admin
 from django.contrib import messages
-from .models import Hotel, Room
+from .models import Hotel, Room, AppFeedback
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -162,3 +162,19 @@ class ReviewAdmin(admin.ModelAdmin):
     review_text_short.short_description = 'Review Text'
 
 admin.site.register(Review, ReviewAdmin)
+
+@admin.register(AppFeedback)
+class AppFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('name', 'rating', 'is_approved', 'created_at')
+    list_filter = ('is_approved',)
+    actions = ['approve_feedback', 'decline_feedback']
+
+    def approve_feedback(self, request, queryset):
+        """Approve selected feedback."""
+        queryset.update(is_approved=True)
+        self.message_user(request, "Selected feedback has been approved.")
+
+    def decline_feedback(self, request, queryset):
+        """Decline selected feedback."""
+        queryset.update(is_approved=False)
+        self.message_user(request, "Selected feedback has been declined.")

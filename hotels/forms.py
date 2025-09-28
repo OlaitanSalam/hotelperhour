@@ -3,6 +3,7 @@ from .models import Hotel, Room, ExtraService
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from .models import Review, AppFeedback
 
 MAX_UPLOAD_SIZE = 2 * 1024 * 1024  # 2MB
 
@@ -112,3 +113,25 @@ ExtraServiceFormSet = inlineformset_factory(
 class DateRangeForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['name', 'email', 'review_text', 'rating']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name *'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address *'}),
+            'review_text': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Your Feedback *', 'rows': 4}),
+            'rating': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class AppFeedbackForm(forms.ModelForm):
+    class Meta:
+        model = AppFeedback
+        fields = ['name', 'email', 'review_text', 'rating']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name *'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address *'}),
+            'review_text': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Your Feedback *', 'rows': 4}),
+            'rating': forms.Select(attrs={'class': 'form-select'}),
+        }

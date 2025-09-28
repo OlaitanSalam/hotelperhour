@@ -83,6 +83,7 @@ def customer_activate(request, uidb64, token):
 
 
 
+# customers/views.py
 def customer_login(request):
     if request.method == 'POST':
         form = CustomerLoginForm(request.POST)
@@ -91,33 +92,46 @@ def customer_login(request):
             password = form.cleaned_data['password']
 
             try:
-                user_obj = Customer.objects.get(email=email)
+                customer = Customer.objects.get(email=email)
             except Customer.DoesNotExist:
-                user_obj = None
-
-            if user_obj is None:
                 messages.error(request, "No account found with this email.")
-            else:
-                if not user_obj.is_active:
-                    messages.error(request, "Your account is not activated. Please check your email.")
-                else:
-                    user = authenticate(request, username=email, password=password)
-                    if user is None:
-                        messages.error(request, "Invalid password. Please try again.")
-                    else:
-                        login(request, user)
-                        # Redirect based on role
-                        if user.is_hotel_owner:
-                            return redirect('hotel_dashboard')
-                        elif user.is_customer:
-                            return redirect('customer_dashboard')
-                        return redirect('home')
-        else:
-            messages.error(request, "Please correct the errors below.")
+                return render(request, 'customers/login.html', {'form': form})
+
+            if not customer.is_active:
+                # Resend activation email
+                current_site = get_current_site(request)
+                subject = 'Activate Your Hotel per Hour Customer Account'
+                html_message = render_to_string('customers/activation_email.html', {
+                    'user': customer,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(customer.pk)),
+                    'token': default_token_generator.make_token(customer),
+                })
+                plain_message = strip_tags(html_message)
+                email_message = EmailMultiAlternatives(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [customer.email])
+                email_message.attach_alternative(html_message, "text/html")
+                email_message.send()
+
+                messages.error(request, "Your account is not activated. We've sent you a new activation email.")
+                return render(request, 'customers/login.html', {'form': form})
+
+            # Authenticate if active
+            user = authenticate(request, username=email, password=password)
+            if user is None:
+                messages.error(request, "Invalid password. Please try again.")
+                return render(request, 'customers/login.html', {'form': form})
+
+            login(request, user)
+            if user.is_hotel_owner:
+                return redirect('hotel_dashboard')
+            elif user.is_customer:
+                return redirect('customer_dashboard')
+            return redirect('home')
     else:
         form = CustomerLoginForm()
 
     return render(request, 'customers/login.html', {'form': form})
+
 
 
 

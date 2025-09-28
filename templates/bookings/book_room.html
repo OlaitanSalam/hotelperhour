@@ -182,6 +182,11 @@
                                     <div class="col-6 text-end fw-bold" id="duration">-- hours</div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-6">Room Cost:</div>
+                                    <div class="col-6 text-end fw-bold" id="room-cost">₦--</div>
+                                </div>
+
+                                <div class="row">
                                     <div class="col-6">Service Charge (10%):</div>
                                     <div class="col-6 text-end fw-bold" id="service-charge">₦--</div>
                                 </div>
@@ -287,6 +292,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateSummary() {
         const duration = parseInt(durationInput.value) || 0;
+        const roomCostElement = document.getElementById('room-cost');
+
         let extrasCost = 0;
         extraCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
@@ -314,6 +321,8 @@ document.addEventListener('DOMContentLoaded', function () {
             serviceChargeElement.textContent = `₦${serviceCharge.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             extrasCostElement.textContent = `₦${extrasCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             originalTotalElement.textContent = `₦${originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            roomCostElement.textContent = `₦${baseAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 
             {% if is_customer %}
                 fetch('{% url 'get_loyalty_discount' %}')
@@ -361,7 +370,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 originalTotalElement.style.color = '';
                 originalTotalElement.style.textDecoration = 'none';
             {% endif %}
+        } 
+        else {
+            roomCostElement.textContent = "₦0";
+            serviceChargeElement.textContent = "₦0";
+            extrasCostElement.textContent = "₦0";
+            originalTotalElement.textContent = "₦0";
+            totalAmountElement.textContent = "₦0";
         }
+
+        
+
     }
 
     function checkAvailability() {

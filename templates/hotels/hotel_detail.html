@@ -4,6 +4,28 @@
 {% block title %}{{ hotel.get_public_name }}{% endblock %}
 
 {% block content %}
+<!-- Toast Notifications - Place at the beginning of content -->
+<div class="toast-container position-fixed bottom-0 start-0 p-3">
+  <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">Thank you for your review!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 start-0 p-3">
+  <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="errorToastMessage">There was an error submitting your review.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+
+
+
 <!-- Hero Section -->
 <div class="position-relative">
     {% if hotel.image %}
@@ -15,6 +37,24 @@
     <div class="container position-relative">
         <div class="hotel-hero-content">
             <h1 class="display-4 fw-bold text-white mb-2">{{ hotel.get_public_name }}</h1>
+            <!-- Average Rating -->
+{% if hotel.average_rating %}
+  <div class="d-flex align-items-center mb-2">
+    <div class="text-warning me-2">
+      {% for i in "12345"|make_list %}
+  {% if hotel.average_rating|floatformat:0 >= i|add:"0"|floatformat:0 %}
+    <i class="fas fa-star text-warning"></i>
+  {% else %}
+    <i class="far fa-star text-warning"></i>
+  {% endif %}
+{% endfor %}
+
+    </div>
+    <span class="text-white small">
+      {{ hotel.average_rating|floatformat:1 }} stars
+    </span>
+  </div>
+{% endif %}
             <div class="d-flex align-items-center text-white mb-3">
                 <i class="fas fa-map-marker-alt me-2"></i>
                 <span>{{ hotel.suburb|default:hotel.city }}</span>
@@ -249,7 +289,107 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Guest Reviews Section -->
+<section id="hotel-reviews" class="py-5 mt-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-5">Hotel Reviews</h2>
+
+    {% if reviews %}
+      <div class="reviews-container d-flex flex-nowrap overflow-auto pb-3">
+        {% for review in reviews %}
+          <div class="review-card">
+            <div class="card shadow-sm border-0">
+              <div class="card-body text-center">
+                <h6 class="card-title fw-bold mb-2">{{ review.name }}</h6>
+                <div class="text-warning mb-3">
+                  {% for i in "12345"|make_list %}
+                    {% if review.rating|add:'0' >= i|add:'0' %}
+                      <i class="fas fa-star"></i>
+                    {% else %}
+                      <i class="far fa-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <p class="card-text text-muted">{{ review.review_text }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-4">
+        <div class="mb-3">
+          <i class="fas fa-comments fa-2x text-muted mb-2"></i>
+          <h5 class="text-muted">No reviews yet</h5>
+          <p class="text-muted mb-0">Be the first to share your experience!</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Review Form -->
+    <div class="mt-4">
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-white text-center border-bottom">
+              <h5 class="fw-bold mb-1 text-dark">Leave a Review</h5>
+              <small class="text-muted">Share your experience with other guests</small>
+            </div>
+            <div class="card-body p-3">
+              <form method="post" action="{% url 'hotel_detail' hotel.slug %}">
+
+                {% csrf_token %}
+                {{ review_form.non_field_errors }}
+                
+                <div class="mb-3">
+                  <label for="{{ review_form.name.id_for_label }}" class="form-label fw-semibold">Name</label>
+                  {{ review_form.name }}
+                  {{ review_form.name.errors }}
+                </div>
+                <!-- ADD THIS EMAIL FIELD -->
+<div class="mb-3">
+    <label for="{{ review_form.email.id_for_label }}" class="form-label fw-semibold">Email</label>
+    {{ review_form.email }}
+    {{ review_form.email.errors }}
+</div>
+                
+                <div class="mb-3">
+                  <label for="{{ review_form.rating.id_for_label }}" class="form-label fw-semibold">Rating</label>
+                  <select class="form-select" id="{{ review_form.rating.id_for_label }}" name="{{ review_form.rating.name }}" required>
+                    <option value="">Select Rating</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                    <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                    <option value="3">⭐⭐⭐ (3 - Good)</option>
+                    <option value="2">⭐⭐ (2 - Fair)</option>
+                    <option value="1">⭐ (1 - Poor)</option>
+                  </select>
+                  {{ review_form.rating.errors }}
+                </div>
+                
+                <div class="mb-3">
+                  <label for="{{ review_form.review_text.id_for_label }}" class="form-label fw-semibold">Review</label>
+                  {{ review_form.review_text }}
+                  {{ review_form.review_text.errors }}
+                </div>
+                
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-paper-plane me-1"></i>Submit Review
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</section>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 
 <style>
     /* Hero section styles */
@@ -422,7 +562,144 @@
         font-weight: 600;
     }
     
-    /* Responsive Design */
+    /* Enhanced Reviews Section Styles */
+    #hotel-reviews {
+        background: linear-gradient(180deg, #e9ecef 0%, #ffffff 100%);
+
+        border-radius: 0;
+    }
+    
+    #hotel-reviews h2 {
+        color: #121643;
+        font-size: 2.2rem;
+        font-weight: 700;
+        position: relative;
+        margin-bottom: 2.5rem;
+    }
+    
+    #hotel-reviews h2:after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: #ffd700;
+        border-radius: 2px;
+    }
+    
+    /* Smaller, completely white review cards */
+    /* Same style as homepage */
+.review-card {
+    flex: 0 0 280px;
+    margin-right: 20px;
+    scroll-snap-align: start;
+}
+    
+    .review-card .card {
+    height: 180px;
+    border-radius: 15px;
+    background: white;
+    border: 1px solid #e9ecef;
+    position: relative;
+    overflow: hidden;
+}
+
+    
+    .review-card .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(18, 22, 67, 0.1);
+        border-color: #121643;
+    }
+    
+    .review-card .card-body {
+        padding: 1.5rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+    
+    /* Truncate or wrap names */
+.review-card .card-title {
+    color: #121643;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    white-space: normal;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+    
+    .review-card .text-warning {
+        margin-bottom: 1rem;
+    }
+    
+    .review-card .text-warning i {
+        font-size: 0.9rem;
+        margin-right: 1px;
+        color: #ffd700;
+    }
+    
+    .review-card .card-text {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        color: #6c757d;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    
+    /* Compact form styling */
+    #hotel-reviews .card-header {
+        background: white;
+        color: #121643;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem;
+    }
+    
+    #hotel-reviews .card-header h5 {
+        color: #121643;
+        margin-bottom: 0.25rem;
+    }
+    
+    #hotel-reviews .btn-primary {
+        background: #121643;
+        border: none;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }
+    
+    #hotel-reviews .btn-primary:hover {
+        background: #0e123a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(18, 22, 67, 0.2);
+    }
+    
+    #hotel-reviews .form-control:focus,
+    #hotel-reviews .form-select:focus {
+        border-color: #121643;
+        box-shadow: 0 0 0 0.2rem rgba(18, 22, 67, 0.15);
+    }
+    
+    #hotel-reviews .form-label {
+        color: #495057;
+        font-size: 0.9rem;
+    }
+    
+    /* Enhanced star rating dropdown */
+    #id_rating option {
+        padding: 8px;
+        font-size: 0.95rem;
+    }
+    
+    /* Responsive adjustments for smaller cards */
     @media (max-width: 768px) {
         .rooms-grid {
             grid-template-columns: 1fr;
@@ -440,6 +717,34 @@
         .room-image-container {
             height: 150px;
         }
+        
+        #hotel-reviews h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .review-card {
+            flex: 0 0 250px;
+            margin-right: 15px;
+        }
+        
+        .review-card .card {
+            height: 160px;
+        }
+        
+        .review-card .card-body {
+            padding: 1.25rem 1rem;
+        }
+        
+        .review-card .card-title {
+            font-size: 0.95rem;
+        }
+        
+        .review-card .card-text {
+            font-size: 0.8rem;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+        }
     }
     
     @media (max-width: 576px) {
@@ -449,6 +754,40 @@
         
         .rooms-grid {
             gap: 0.75rem;
+        }
+        
+        #hotel-reviews {
+            padding: 3rem 0;
+        }
+        
+        #hotel-reviews h2 {
+            font-size: 1.8rem;
+        }
+        
+        .review-card {
+            flex: 0 0 220px;
+            margin-right: 12px;
+        }
+        
+        .review-card .card {
+            height: 150px;
+        }
+        
+        .review-card .card-body {
+            padding: 1rem 0.875rem;
+        }
+        
+        .review-card .text-warning i {
+            font-size: 0.8rem;
+        }
+        
+        .review-card .card-text {
+            font-size: 0.75rem;
+        }
+        
+        #hotel-reviews .btn-primary {
+            padding: 10px 25px;
+            font-size: 0.95rem;
         }
     }
     
@@ -470,6 +809,38 @@
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+    const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+    
+    // Show toast if there's a success message from Django
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                // Show success toast immediately
+                successToast.show();
+            {% elif message.tags == 'error' %}
+                document.getElementById('errorToastMessage').textContent = '{{ message }}';
+                errorToast.show();
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    // Add loading state to form submission
+    const reviewForm = document.querySelector('#hotel-reviews form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            const submitButton = reviewForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+            submitButton.disabled = true;
+            
+            // Form will submit normally and page will reload
+            // The toast will show on the reloaded page
+        });
+    }
     // View Toggle Functionality
     function toggleView(viewType) {
         const container = document.getElementById('rooms-container');
@@ -579,5 +950,6 @@
             });
         }
     }
+});
 </script>
 {% endblock %}

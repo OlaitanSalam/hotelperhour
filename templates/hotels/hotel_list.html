@@ -33,7 +33,25 @@
                 </div>
                 {% endif %}
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ hotel.get_public_name }}</h5>
+                    
+                    <!-- Average Rating -->
+{% if hotel.average_rating %}
+  <div class="d-flex align-items-center mb-2">
+    <div class="text-warning me-2">
+      {% for i in "12345"|make_list %}
+        {% if hotel.average_rating|floatformat:0 >= i|add:"0"|floatformat:0 %}
+          <i class="fas fa-star text-warning"></i>
+        {% else %}
+          <i class="far fa-star text-warning"></i>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <small class="text-muted">
+      {{ hotel.average_rating|floatformat:1 }} stars
+    </small>
+  </div>
+{% endif %}
+<h5 class="card-title">{{ hotel.get_public_name }}</h5>
                     <p>{{ hotel.suburb|default:hotel.city }}</p>
                     <div class="d-grid mt-auto">
                         <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-primary">View Details</a>

@@ -5,7 +5,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from .forms import CustomUserCreationForm
 from .models import CustomUser
 from django.contrib.auth.tokens import default_token_generator
@@ -69,6 +69,43 @@ def activate(request, uidb64, token):
 
 class CustomLoginView(LoginView):
     template_name = 'users/login.html'
+
+    def form_valid(self, form):
+        email = form.cleaned_data.get('username').lower()
+        password = form.cleaned_data.get('password')
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(self.request, "No account found with this email.")
+            return self.form_invalid(form)
+
+        if not user.is_active:
+            # Resend activation email
+            current_site = get_current_site(self.request)
+            subject = 'Activate Your Hotel Per Hour Account'
+            html_message = render_to_string('users/activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            plain_message = strip_tags(html_message)
+            email_message = EmailMultiAlternatives(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            email_message.attach_alternative(html_message, "text/html")
+            email_message.send()
+
+            messages.error(self.request, "Your account is not activated. We've sent you a new activation email.")
+            return self.form_invalid(form)
+
+        # If active, authenticate normally
+        user = authenticate(self.request, username=email, password=password)
+        if user is None:
+            messages.error(self.request, "Invalid password. Please try again.")
+            return self.form_invalid(form)
+
+        login(self.request, user)
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         if self.request.user.is_hotel_owner:

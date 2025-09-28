@@ -22,7 +22,7 @@
                             Flexible Hourly Hotel Bookings. Pay Only for the <span>Hours</span> You Stay.
                         </h1>
                         <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
-                            Stop wasting money on full-day hotel charges. With Hotel Per Hour, book trusted hotels near you by the hour, perfect for short stays, layovers, quick rests, or private work sessions. Pay only for the time you truly use.
+                            With Hotel Per Hour, book trusted hotels near you by the hour, perfect for short stays, layovers, quick rests, or private work sessions. Pay only for the time you truly use.
                         </p>
 
                         <div class="text-center text-md-start" data-aos="fade-up" data-aos-delay="300">
@@ -1510,14 +1510,7 @@ document.addEventListener('DOMContentLoaded', function() {
     feedbackModal.show();
   };
   
-  // Update the "Leave Your Feedback" button to open the modal
-  const feedbackButton = document.querySelector('a[href="{% url 'contacts' %}"]');
-  if (feedbackButton) {
-    feedbackButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      openFeedbackModal();
-    });
-  }
+  
   
   // Form submission handler
   feedbackForm.addEventListener('submit', function(e) {

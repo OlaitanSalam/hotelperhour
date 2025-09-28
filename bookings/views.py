@@ -126,7 +126,7 @@ def payment_callback(request):
     if not reference:
         return render(request, 'bookings/payment_error.html', {'error': 'No reference provided.'})
 
-    # Verify payment
+    # Verify payment with Paystack
     if not verify_payment(reference):
         return render(request, 'bookings/payment_error.html', {'error': 'Payment verification failed.'})
 
@@ -135,30 +135,32 @@ def payment_callback(request):
     if not booking_data or reference != pending_reference:
         return render(request, 'bookings/payment_error.html', {'error': 'Invalid session data.'})
 
-    # Validate required keys
-    required_keys = ['room_id', 'check_in', 'check_out', 'total_hours', 'name', 'phone_number', 'email', 'service_charge', 'total_amount', 'discount_amount', 'points_used', 'extras_ids']
+    required_keys = [
+        'room_id', 'check_in', 'check_out', 'total_hours', 'name', 'phone_number',
+        'email', 'service_charge', 'total_amount', 'discount_amount', 'points_used', 'extras_ids'
+    ]
     if not all(key in booking_data for key in required_keys):
         logger.error(f"Missing keys in booking_data: {booking_data}")
         return render(request, 'bookings/payment_error.html', {'error': 'Invalid booking data.'})
 
-    # Create booking
+    # Prepare booking
     room = Room.objects.get(id=booking_data['room_id'])
     check_in = timezone.datetime.fromisoformat(booking_data['check_in'])
     check_out = timezone.datetime.fromisoformat(booking_data['check_out'])
-    # Ensure check_in and check_out are timezone-aware
     if not timezone.is_aware(check_in):
         check_in = timezone.make_aware(check_in)
     if not timezone.is_aware(check_out):
         check_out = timezone.make_aware(check_out)
+
     if not is_room_available(room, check_in, check_out):
         return render(request, 'bookings/payment_error.html', {'error': 'Room no longer available. Payment will be refunded.'})
 
     try:
         content_type = ContentType.objects.get(id=booking_data['user_content_type_id']) if booking_data.get('user_content_type_id') else None
     except ContentType.DoesNotExist:
-        logger.error(f"Invalid content_type_id {booking_data.get('user_content_type_id')} for booking")
         content_type = None
 
+    # Create booking
     booking = Booking(
         room=room,
         check_in=check_in,
@@ -179,10 +181,12 @@ def payment_callback(request):
         total_amount=Decimal(str(booking_data['total_amount'])),
     )
     booking.save()
+
+    # Set extras
     extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
     booking.extras.set(extras)
 
-    # Deduct loyalty points if user is a Customer and points were used
+    # Deduct points if applicable
     if booking_data.get('user_object_id') and booking.points_used > 0:
         try:
             user = Customer.objects.get(id=booking_data['user_object_id'])
@@ -191,42 +195,50 @@ def payment_callback(request):
         except Customer.DoesNotExist:
             logger.warning(f"No Customer found for user_id {booking_data['user_object_id']} when deducting points")
 
-    # Send notifications
-    try:
-        total_hours = booking.total_hours
-        if total_hours in [12, 24] and getattr(room, f"{'twelve' if total_hours == 12 else 'twenty_four'}_hour_price", None):
-            room_cost = room.twelve_hour_price if total_hours == 12 else room.twenty_four_hour_price
+    # Cost breakdown
+    if booking.total_hours in [12, 24]:
+        if booking.total_hours == 12 and room.twelve_hour_price:
+            base_room_cost = room.twelve_hour_price
+        elif booking.total_hours == 24 and room.twenty_four_hour_price:
+            base_room_cost = room.twenty_four_hour_price
         else:
-            room_cost = room.price_per_hour * Decimal(str(total_hours))
-        extras_cost = sum(extra.price for extra in booking.extras.all())
-        hotel_revenue = room_cost + extras_cost
-        full_room_cost = room.price_per_hour * Decimal(str(total_hours))
+            base_room_cost = room.price_per_hour * Decimal(str(booking.total_hours))
+    else:
+        base_room_cost = room.price_per_hour * Decimal(str(booking.total_hours))
 
+    extras_cost = sum(extra.price for extra in extras)
+    final_room_cost = base_room_cost - booking.discount_applied
+    hotel_revenue = final_room_cost + extras_cost
+
+    # Notifications
+    try:
+        # Hotel owner email
         subject = 'New Booking Notification'
-        context = {'booking': booking, 'hotel_revenue': hotel_revenue}
+        context = {
+            'booking': booking,
+            'base_room_cost': base_room_cost,
+            'extras_cost': extras_cost,
+            'final_room_cost': final_room_cost,
+            'hotel_revenue': hotel_revenue,
+        }
         message = render_to_string('bookings/booking_notification.html', context)
         send_mail(subject, '', None, [booking.room.hotel.owner.email], html_message=message)
 
+        # Customer email
         if booking.email:
             subject = 'Booking Confirmation - Hotel per Hour'
+            discount_percentage = (
+                (booking.discount_applied / base_room_cost * 100) if base_room_cost > 0 else Decimal('0')
+            )
             context = {
                 'booking': booking,
                 'extras_cost': extras_cost,
-                'original_room_cost': full_room_cost,
-                'discount_percentage': (booking.discount_applied / full_room_cost * 100) if full_room_cost > 0 else Decimal('0')
+                'base_room_cost': base_room_cost,
+                'final_room_cost': final_room_cost,
+                'discount_percentage': discount_percentage,
             }
             customer_html = render_to_string('bookings/customer_confirmation_email.html', context)
-            send_mail(
-                subject=subject,
-                message='',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[booking.email],
-                html_message=customer_html,
-                fail_silently=False,
-            )
-            logger.info(f"Customer email sent to {booking.email} for booking {booking.booking_reference}")
-        else:
-            logger.warning(f"No customer email for booking {booking.booking_reference}")
+            send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [booking.email], html_message=customer_html, fail_silently=False)
     except Exception as e:
         logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
 
@@ -235,6 +247,7 @@ def payment_callback(request):
     del request.session['pending_booking_reference']
 
     return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+
 
 @csrf_exempt
 def paystack_webhook(request):
@@ -263,16 +276,33 @@ def verify_payment(reference):
 
 def booking_confirmation(request, booking_reference):
     booking = get_object_or_404(Booking, booking_reference=booking_reference)
+
+    # Correct room cost
+    if booking.total_hours in [12, 24]:
+        if booking.total_hours == 12 and booking.room.twelve_hour_price:
+            base_room_cost = booking.room.twelve_hour_price
+        elif booking.total_hours == 24 and booking.room.twenty_four_hour_price:
+            base_room_cost = booking.room.twenty_four_hour_price
+        else:
+            base_room_cost = booking.room.price_per_hour * Decimal(str(booking.total_hours))
+    else:
+        base_room_cost = booking.room.price_per_hour * Decimal(str(booking.total_hours))
+
     extras_cost = sum(extra.price for extra in booking.extras.all())
-    original_room_cost = booking.room.price_per_hour * Decimal(str(booking.total_hours))
-    discount_percentage = (booking.discount_applied / original_room_cost * 100) if original_room_cost > 0 else Decimal('0')
+    final_room_cost = base_room_cost - booking.discount_applied
+    discount_percentage = (
+        (booking.discount_applied / base_room_cost * 100) if base_room_cost > 0 else Decimal('0')
+    )
+
     context = {
         'booking': booking,
         'extras_cost': extras_cost,
-        'original_room_cost': original_room_cost,
+        'base_room_cost': base_room_cost,
+        'final_room_cost': final_room_cost,
         'discount_percentage': discount_percentage,
     }
     return render(request, 'bookings/confirmation.html', context)
+
 
 def is_room_available(room, check_in, check_out):
     return not Booking.objects.filter(
