@@ -45,6 +45,13 @@ INSTALLED_APPS = [
     'anymail',
     'widget_tweaks',
     'django.contrib.humanize',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+    
+
+    # drf-spectacular for OpenAPI schema + Swagger UI
+    'drf_spectacular',
     
 
 
@@ -61,6 +68,7 @@ ADMIN_LOGIN_REDIRECT_URL = '/admin/'
 CUSTOMER_LOGIN_REDIRECT_URL = '/customer/dashboard/'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -71,6 +79,26 @@ MIDDLEWARE = [
     'customers.middleware.RestrictAdminAccessMiddleware',
     'customers.middleware.RoleBasedRedirectMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # For mobile dev testing
+    'https://hotelsperhour.com',
+    'https://api.hotelsperhour.com',
+    # Add mobile app schemes for iOS/Android
+    'com.hotelsperhour://',  # for mobile deep linking
+]
+
+# Security Settings
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+
+CORS_ALLOW_CREDENTIALS = True  # Allow auth headers
 
 ROOT_URLCONF = "hotelperhour.urls"
 
@@ -177,6 +205,58 @@ GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',  # For testing in browsers
+        'rest_framework.authentication.SessionAuthentication',  # For web-like sessions (optional)
+        'rest_framework_simplejwt.authentication.JWTAuthentication', # For JWT token authentication
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    },
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Default: Require login for API access
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Paginate results to avoid huge responses
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_VERSION': 'v1',  # Default to version 1
+    'ALLOWED_VERSIONS': ['v1'],
+}
+
+# JWT Settings
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+# drf-spectacular basic config
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'HotelPerHour API',
+    'DESCRIPTION': 'API for HotelPerHour mobile and web clients',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+# Try to set spectacular schema class only if drf-spectacular is available
+try:
+    import drf_spectacular  # noqa: F401
+    REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+except Exception:
+    # drf-spectacular not installed in this environment; skip schema class
+    pass
 
 # Try to load production settings if available
 try:

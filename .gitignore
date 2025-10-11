@@ -13,6 +13,7 @@ media/
  # IDEs
 .idea/
 .vscode/
+.pytest_cache/
 
 # Other
 *.py[cod]

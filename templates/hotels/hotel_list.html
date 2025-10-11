@@ -47,10 +47,11 @@
       {% endfor %}
     </div>
     <small class="text-muted">
-      {{ hotel.average_rating|floatformat:1 }} stars
+      {{ hotel.average_rating|floatformat:1 }} ({{ hotel.review_count }} reviews)
     </small>
   </div>
 {% endif %}
+
 <h5 class="card-title">{{ hotel.get_public_name }}</h5>
                     <p>{{ hotel.suburb|default:hotel.city }}</p>
                     <div class="d-grid mt-auto">

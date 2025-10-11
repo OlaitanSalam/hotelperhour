@@ -82,9 +82,19 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="agree_terms" name="agree_terms" required>
+                            <label class="form-check-label small text-muted" for="agree_terms">
+                                I have read and agree to the 
+                                <a href="{% url 'terms' %}" target="_blank" class="text-success fw-medium text-decoration-none">Terms & Conditions</a>
+                                and 
+                                <a href="{% url 'privacy' %}" target="_blank" class="text-success fw-medium text-decoration-none">Privacy Policy</a>.
+                            </label>
+                        </div>
                         
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg" id="registerBtn" disabled>
                                 <i class="fas fa-hotel me-2"></i>Register Hotel Account
                             </button>
                         </div>
@@ -96,11 +106,7 @@
                 </div>
             </div>
             
-            <div class="text-center mt-4">
-                <small class="text-muted">
-                    By registering, you agree to our Terms of Service and Privacy Policy
-                </small>
-            </div>
+        
         </div>
     </div>
 </div>
@@ -164,14 +170,56 @@
         height: 45px;
         padding: 10px 15px;
     }
+
+    /* Make checkbox a small square and ensure consistent appearance */
+    .form-check-input {
+        width: 16px;
+        height: 16px;
+        margin-top: 0.2rem;
+        border-radius: 2px; /* small square corners */
+        border: 1px solid #6c757d;
+        background-color: #fff;
+        display: inline-block;
+        position: relative;
+        -webkit-appearance: none; /* normalize across browsers */
+        appearance: none;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+    .form-check-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.15rem rgba(25, 135, 84, 0.25);
+    }
+
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    /* simple checkmark using pseudo-element */
+    .form-check-input:checked::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 9px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .form-check-label {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
+        // Add placeholders and bootstrap form-control only to text-like inputs
+        document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button])').forEach(input => {
             input.classList.add('form-control');
-            
             if (input.id === 'id_email') {
                 input.placeholder = 'your@email.com';
             } else if (input.id === 'id_full_name') {
@@ -201,6 +249,18 @@
                 }
             });
         });
-    });
+
+        // (already added above) do not re-add here
+
+        // Enable/disable register button based on checkbox
+        const checkbox = document.getElementById('agree_terms');
+        const registerBtn = document.getElementById('registerBtn');
+
+        if (checkbox && registerBtn) {
+            checkbox.addEventListener('change', function() {
+                registerBtn.disabled = !this.checked;
+            });
+        }
+        });
 </script>
 {% endblock %}

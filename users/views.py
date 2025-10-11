@@ -6,6 +6,8 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.contrib.auth import authenticate, login
+
+from customers.models import Customer
 from .forms import CustomUserCreationForm
 from .models import CustomUser
 from django.contrib.auth.tokens import default_token_generator
@@ -19,6 +21,10 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            email = form.cleaned_data['email']
+            if Customer.objects.filter(email__iexact=email).exists():
+                messages.error(request, 'An account with this email already exists.')
+                return render(request, 'users/register.html', {'form': form})
             user = form.save(commit=True)
             user.is_active = False
             user.save()

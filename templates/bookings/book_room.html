@@ -170,8 +170,12 @@
                             <div class="card-body">
                                 <h5 class="card-title"><i class="fas fa-receipt me-2"></i>Booking Summary</h5>
                                 <div class="row">
-                                    <div class="col-6">Room Type:</div>
+                                    <div class="col-6">Room Category:</div>
                                     <div class="col-6 text-end fw-bold">{{ room.room_type }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">Total Units:</div>
+                                    <div class="col-6 text-end fw-bold">{{ room.total_units }}</div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6">Rate per Hour:</div>
@@ -391,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checkInDate && checkInHour && duration) {
             const checkIn = `${checkInDate}T${checkInHour.padStart(2, '0')}:00`;
             
-            availabilityMessage.textContent = 'Checking availability...';
+            availabilityMessage.textContent = 'Checking unit availability...';
             availabilityMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
             availabilityMessage.classList.add('alert-info');
             
@@ -400,11 +404,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     availabilityMessage.classList.remove('alert-info');
                     if (data.available) {
-                        availabilityMessage.textContent = '✓ Room is available for your selected duration!';
+                        availabilityMessage.textContent = `✓ Room available for your selected duration!`;
                         availabilityMessage.classList.add('alert-success');
                         submitBtn.disabled = false;
                     } else {
-                        availabilityMessage.textContent = '✗ Room is unavailable for this period.';
+                        availabilityMessage.textContent = data.message || '✗ Room is not available for this period.';
                         availabilityMessage.classList.add('alert-danger');
                         submitBtn.disabled = true;
                     }

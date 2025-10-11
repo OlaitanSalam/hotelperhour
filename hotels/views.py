@@ -4,8 +4,8 @@ from django.db.models import Q
 from django.views.generic import DetailView
 from geopy.distance import geodesic
 from django.conf import settings
-from .forms import HotelForm, RoomFormSet, ExtraServiceFormSet, ReviewForm, AppFeedbackForm
-from .models import Hotel, Room, ExtraService, Review, AppFeedback
+from .forms import HotelForm, RoomFormSet, ExtraServiceFormSet, ReviewForm, AppFeedbackForm, HotelImageFormSet, HotelPolicyFormSet
+from .models import Hotel, Room, ExtraService, Review, AppFeedback, Amenity
 from django.utils import timezone
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -30,6 +30,9 @@ from decimal import Decimal
 import calendar, json
 from datetime import timedelta
 from .forms import DateRangeForm
+from django.template.defaultfilters import register
+
+
 
 def hotel_owner_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -55,7 +58,9 @@ def hotel_create(request):
         form = HotelForm(request.POST, request.FILES)
         room_formset = RoomFormSet(request.POST, request.FILES, prefix='room')
         extra_formset = ExtraServiceFormSet(request.POST, prefix='extra')
-        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid():
+        image_formset = HotelImageFormSet(request.POST, request.FILES, prefix='image')
+        policy_formset = HotelPolicyFormSet(request.POST, prefix='policy')
+        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
             hotel = form.save(commit=False)
             hotel.owner = request.user
             hotel.save()
@@ -63,6 +68,10 @@ def hotel_create(request):
             room_formset.save()
             extra_formset.instance = hotel
             extra_formset.save()
+            image_formset.instance = hotel  
+            image_formset.save()
+            policy_formset.instance = hotel
+            policy_formset.save()
             if not request.user.is_hotel_owner:
                 request.user.is_hotel_owner = True
                 request.user.save()
@@ -71,11 +80,16 @@ def hotel_create(request):
         form = HotelForm()
         room_formset = RoomFormSet(prefix='room')
         extra_formset = ExtraServiceFormSet(prefix='extra')
+        image_formset = HotelImageFormSet(prefix='image')
+        policy_formset = HotelPolicyFormSet(prefix='policy')
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
         'room_formset': room_formset,
         'extra_formset': extra_formset,
         'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        'image_formset': image_formset,
+        'amenities': Amenity.objects.order_by('name'),
+        'policy_formset': policy_formset,
         
 
     })
@@ -88,24 +102,31 @@ def hotel_edit(request, slug):
         form = HotelForm(request.POST, request.FILES, instance=hotel)
         room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room')
         extra_formset = ExtraServiceFormSet(request.POST, instance=hotel, prefix='extra')
-        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid():
+        image_formset = HotelImageFormSet(request.POST, request.FILES, instance=hotel, prefix='image')
+        policy_formset = HotelPolicyFormSet(request.POST, prefix='policy', instance=hotel)
+        if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
             form.save()
             room_formset.save()
             extra_formset.save()
+            image_formset.save()
+            policy_formset.save()
             return redirect('hotel_dashboard')
     else:
         form = HotelForm(instance=hotel)
         room_formset = RoomFormSet(instance=hotel, prefix='room')
         extra_formset = ExtraServiceFormSet(instance=hotel, prefix='extra')
+        image_formset = HotelImageFormSet(instance=hotel, prefix='image')
+        policy_formset = HotelPolicyFormSet(prefix='policy', instance=hotel)
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
         'room_formset': room_formset,
         'extra_formset': extra_formset,
         'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
-        
-
+        'image_formset': image_formset,
         'is_edit': True,
-        'hotel': hotel
+        'hotel': hotel,
+        'amenities': Amenity.objects.order_by('name'),
+        'policy_formset': policy_formset,
     })
 
 @login_required
@@ -119,11 +140,11 @@ def hotel_delete(request, slug):
     return render(request, 'hotels/hotel_confirm_delete.html', {'hotel': hotel})
 
 
+@register.filter
+def rating_label(value):
+    labels = {5: 'Excellent', 4: 'Very Good', 3: 'Average', 2: 'Fair', 1: 'Poor'}
+    return labels.get(value, 'Unknown')
 
-from datetime import timedelta
-from django.utils.timezone import now
-from django.contrib import messages
-from django.http import JsonResponse
 
 class HotelDetailView(DetailView):
     model = Hotel
@@ -138,10 +159,20 @@ class HotelDetailView(DetailView):
         reviews = Review.objects.filter(hotel=hotel).order_by('-created_at')
 
         stats = reviews.aggregate(avg_rating=Avg('rating'), count=Count('id'))
-        context['reviews'] = reviews[:10]
+        rating_breakdown = {}
+        for rating in range(5, 0, -1):  # Start from 5 to 1
+            count = reviews.filter(rating=rating).count()
+            percent = (count / stats['count'] * 100) if stats['count'] > 0 else 0
+            rating_breakdown[rating] = {'value': count, 'percent': percent}
+        context['rating_breakdown'] = rating_breakdown
+        context['reviews'] = reviews[:5]  # Initial 5 reviews
+        context['all_reviews'] = reviews[5:]  # Remaining for "See More"
         context['review_form'] = ReviewForm()
         context['hotel'].average_rating = stats['avg_rating']
         context['hotel'].review_count = stats['count']
+        context['rating_breakdown'] = rating_breakdown
+        context['hotel_images'] = hotel.images.all().order_by('order')
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -360,7 +391,7 @@ def hotel_sales_report(request, slug):
     sales_data = []
     for row in sales_data_qs:
         total_sales = row["total_sales"] or Decimal("0.00")
-        commission = total_sales * Decimal("0.05")
+        commission = total_sales * Decimal("0.10") # 10% commission
         payout = total_sales - commission
         sales_data.append({
             "date": row["date"],
@@ -390,7 +421,7 @@ def hotel_sales_report(request, slug):
     total_revenue = bookings.aggregate(
         total=Sum(F("total_amount") - F("service_charge"))
     )["total"] or Decimal("0.00")
-    total_commission = total_revenue * Decimal("0.05")
+    total_commission = total_revenue * Decimal("0.10")
     total_payout = total_revenue - total_commission
     avg_booking_value = (
         total_revenue / total_bookings if total_bookings else Decimal("0.00")
@@ -459,8 +490,8 @@ def hotel_sales_report(request, slug):
             "average_booking_value": avg_booking_value,
             "today_revenue": today_revenue,
             "current_month_revenue": current_month_revenue,
-            "current_month_commission": current_month_revenue * Decimal("0.05"),
-            "current_month_payout": current_month_revenue * Decimal("0.95"),
+            "current_month_commission": current_month_revenue * Decimal("0.10"),
+            "current_month_payout": current_month_revenue * Decimal("0.90"),
             "previous_month_revenue": previous_month_revenue,
             "monthly_payout": total_payout,
         },

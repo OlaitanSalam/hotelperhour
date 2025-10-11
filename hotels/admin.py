@@ -1,7 +1,7 @@
 # hotels/admin.py
 from django.contrib import admin
 from django.contrib import messages
-from .models import Hotel, Room, AppFeedback
+from .models import Hotel, Room, AppFeedback, Review, HotelImage, Amenity, HotelPolicy
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -9,9 +9,42 @@ from django.utils import timezone
 from bookings.models import Booking
 from django.forms import Textarea
 from django.db import models
+from django.utils.safestring import mark_safe
 
 class RoomInline(admin.TabularInline):
     model = Room
+    extra = 0
+
+class HotelImageInline(admin.TabularInline):
+    model = HotelImage
+    extra = 1  # Show 1 empty form by default
+    fields = ('image', 'alt_text', 'order', 'image_preview')  # Add preview if wanted
+    readonly_fields = ('image_preview',)
+
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="100" height="100" />')
+        return "No Image"
+    image_preview.short_description = 'Preview'
+
+
+@admin.register(HotelPolicy)
+class HotelPolicyAdmin(admin.ModelAdmin):
+    list_display = ('policy_text', 'hotel')
+    search_fields = ('policy_text', 'hotel__name')
+    list_filter = ('hotel',)
+
+class HotelPolicyInline(admin.TabularInline):
+    model = HotelPolicy
+    extra = 1
+
+@admin.register(Amenity)
+class AmenityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'icon_class')
+    search_fields = ('name',)
+
+class AmenityInline(admin.TabularInline):
+    model = Hotel.amenities.through  # For ManyToMany
     extra = 0
 
 @admin.register(Hotel)
@@ -24,7 +57,7 @@ class HotelAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner', 'address', 'hotel_phone', 'hotel_email', 'is_approved', 'created_at')
     list_filter = ('is_approved',)
     search_fields = ('name', 'address')
-    inlines = [RoomInline]
+    inlines = [RoomInline, HotelImageInline,AmenityInline, HotelPolicyInline]
     actions = ['approve_hotels', 'decline_hotels']
     list_per_page = 20  # Pagination: 20 hotels per page
     readonly_fields = ('created_at',)
@@ -117,7 +150,7 @@ class RoomAdmin(admin.ModelAdmin):
     list_filter = ('hotel', 'is_available')
     fieldsets = (
         ('Room Information', {
-            'fields': ('hotel', 'room_type', 'price_per_hour', 'description', 'capacity', 'is_available', 'twelve_hour_price', 'twenty_four_hour_price')
+            'fields': ('hotel', 'room_type', 'total_units', 'price_per_hour', 'description', 'capacity', 'is_available', 'twelve_hour_price', 'twenty_four_hour_price')
         }),
         ('Images', {
             'fields': ('image',),
@@ -148,14 +181,12 @@ class RoomAdmin(admin.ModelAdmin):
 
 
 
-from .models import Review
-
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'rating', 'review_text_short', 'created_at')
     list_filter = ('rating', 'created_at')
     search_fields = ('name', 'email', 'review_text')
     ordering = ('-created_at',)
-    readonly_fields = ('rating', 'created_at')
+    readonly_fields = ('created_at', 'email')
 
     def review_text_short(self, obj):
         return obj.review_text[:50] + '...' if len(obj.review_text) > 50 else obj.review_text
@@ -178,3 +209,7 @@ class AppFeedbackAdmin(admin.ModelAdmin):
         """Decline selected feedback."""
         queryset.update(is_approved=False)
         self.message_user(request, "Selected feedback has been declined.")
+
+
+
+

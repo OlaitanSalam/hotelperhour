@@ -737,6 +737,9 @@
                         {% else %}
                             <li><a href="{% url 'customer_login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
                         {% endif %}
+                        <li><a href="{% url 'terms' %}"><i class="fas fa-file-contract"></i> Terms & Conditions</a></li>
+                        <li><a href="{% url 'privacy' %}"><i class="fas fa-user-shield"></i> Privacy Policy</a></li>
+
                     </ul>
                 </div>
             </div>
@@ -838,7 +841,53 @@
   </div>
 </div>
 
+<!-- cookie consent -->
+ <!-- ===== Enhanced Cookie Banner ===== -->
+<div id="cookieBanner" class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-sm"
+     style="display:none; z-index:1050;">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+    <div class="small text-center text-md-start">
+      🍪 We use cookies to improve your experience, personalize content, and analyze traffic.
+      Read our <a href="{% url 'privacy' %}" class="text-warning text-decoration-underline">Privacy Policy</a>.
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+      <button id="rejectCookies" class="btn btn-sm btn-outline-light">Reject</button>
+      <button id="cookieSettings" class="btn btn-sm btn-outline-warning">Preferences</button>
+      <button id="acceptCookies" class="btn btn-sm btn-warning fw-semibold">Accept</button>
+    </div>
+  </div>
+</div>
 
+<!-- ===== Cookie Preferences Modal ===== -->
+<div class="modal fade" id="cookieModal" tabindex="-1" aria-labelledby="cookieModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Cookie Preferences</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="cookieForm">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="essentialCookies" checked disabled>
+            <label class="form-check-label" for="essentialCookies">Essential Cookies (always active)</label>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="analyticsCookies">
+            <label class="form-check-label" for="analyticsCookies">Analytics Cookies (help us improve)</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="marketingCookies">
+            <label class="form-check-label" for="marketingCookies">Marketing Cookies (for ads & offers)</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button id="saveCookies" class="btn btn-primary">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+</div>
  
 
     
@@ -896,6 +945,44 @@ document.addEventListener('DOMContentLoaded', function(){
       setTimeout(() => btn.classList.remove('animate__animated','animate__tada'), 1000);
     }, 3000); // shake every 3 seconds
   }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const banner = document.getElementById("cookieBanner");
+  const modal = new bootstrap.Modal(document.getElementById("cookieModal"));
+  const acceptBtn = document.getElementById("acceptCookies");
+  const rejectBtn = document.getElementById("rejectCookies");
+  const settingsBtn = document.getElementById("cookieSettings");
+  const saveBtn = document.getElementById("saveCookies");
+
+  // Show banner if no consent
+  if (!localStorage.getItem("cookie_prefs")) {
+    banner.style.display = "block";
+  }
+
+  acceptBtn.onclick = () => {
+    localStorage.setItem("cookie_prefs", JSON.stringify({analytics:true, marketing:true}));
+    banner.style.display = "none";
+  };
+
+  rejectBtn.onclick = () => {
+    localStorage.setItem("cookie_prefs", JSON.stringify({analytics:false, marketing:false}));
+    banner.style.display = "none";
+  };
+
+  settingsBtn.onclick = () => modal.show();
+
+  saveBtn.onclick = () => {
+    const prefs = {
+      analytics: document.getElementById("analyticsCookies").checked,
+      marketing: document.getElementById("marketingCookies").checked
+    };
+    localStorage.setItem("cookie_prefs", JSON.stringify(prefs));
+    modal.hide();
+    banner.style.display = "none";
+  };
 });
 </script>
 

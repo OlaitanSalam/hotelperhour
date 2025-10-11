@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Booking, ExtraService
 from .forms import BookingForm
-from hotels.models import Room
+from hotels.models import Room, Hotel
 import requests
 import json
 from django.http import JsonResponse
@@ -305,15 +305,24 @@ def booking_confirmation(request, booking_reference):
 
 
 def is_room_available(room, check_in, check_out):
-    return not Booking.objects.filter(
-        room=room,
-        check_in__lt=check_out,
-        check_out__gt=check_in
-    ).exists()
+    """
+    Check if the room is available for booking based on:
+    1. Manual availability toggle (is_available)
+    2. Available units for the given time period
+    """
+    if not room.is_available:
+        return False
+    available_units = room.get_available_units(check_in, check_out)
+    return available_units > 0
 
 @login_required
 def verify_booking(request):
-    if not request.user.is_superuser and not hasattr(request.user, 'hotel'):
+    # Check user permission
+    user = request.user
+    is_superuser = user.is_superuser
+    is_hotel_owner = Hotel.objects.filter(owner=user).exists()
+
+    if not (is_superuser or is_hotel_owner):
         return HttpResponseForbidden("Only hotel owners and superusers can verify bookings.")
 
     if request.method == 'POST':
@@ -325,11 +334,11 @@ def verify_booking(request):
 
         try:
             booking = Booking.objects.get(booking_reference=reference)
-            if not request.user.is_superuser:
-                if booking.room.hotel.owner != request.user:
-                    return render(request, 'bookings/verify.html', {
-                        'error': 'You do not have permission to view this booking.'
-                    })
+            # Restrict to hotels owned by this user
+            if not is_superuser and booking.room.hotel.owner != user:
+                return render(request, 'bookings/verify.html', {
+                    'error': 'This booking does not belong to your hotel.'
+                })
             return render(request, 'bookings/verify.html', {'booking': booking})
         except Booking.DoesNotExist:
             return render(request, 'bookings/verify.html', {
@@ -365,13 +374,22 @@ def check_availability(request, room_id):
     duration = request.GET.get('duration')
     room = get_object_or_404(Room, id=room_id)
 
+    if not room.is_available:
+        return JsonResponse({
+            'available': False,
+            'message': 'This room is currently not available for booking.'
+        })
+
     if check_in_str and duration:
         try:
             check_in = timezone.make_aware(timezone.datetime.strptime(check_in_str, '%Y-%m-%dT%H:%M'))
             duration = int(duration)
             check_out = check_in + timezone.timedelta(hours=duration)
-            available = is_room_available(room, check_in, check_out)
-            return JsonResponse({'available': available})
+            available_units = room.get_available_units(check_in, check_out)
+            return JsonResponse({
+                'available': available_units > 0,
+                'message': f'{available_units} unit(s) available for this period' if available_units > 0 else 'No units available for this period'
+            })
         except (ValueError, TypeError):
             return JsonResponse({'error': 'Invalid input'}, status=400)
     return JsonResponse({'error': 'Missing parameters'}, status=400)

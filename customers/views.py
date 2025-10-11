@@ -32,7 +32,11 @@ def customer_register(request):
     if request.method == 'POST':
         form = CustomerCreationForm(request.POST)
         if form.is_valid():
-            # Use the manager to create customer with hashed password
+            email = form.cleaned_data['email']
+            if CustomUser.objects.filter(email__iexact=email).exists():
+                messages.error(request, 'An account with this email already exists.')
+                return render(request, 'customers/register.html', {'form': form})
+           # Use the manager to create customer with hashed password
             customer = Customer.objects.create_customer(
                 email=form.cleaned_data['email'],
                 password=form.cleaned_data['password1'],
