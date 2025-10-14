@@ -47,9 +47,10 @@ urlpatterns = [
     path('api/v1/bookings/', include('bookings.api.urls')),
     path('api/v1/customers/', include('customers.api.urls')),
     path('api/v1/users/', include('users.api.urls')),
-    # privacy policy and terms of service
+    # privacy policy, refund policy and terms of service
      path('privacy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy'),
      path('terms/', TemplateView.as_view(template_name='terms_&_condition.html'), name='terms'),
+        path('refund-policy/', TemplateView.as_view(template_name='refund_policy.html'), name='refund_policy'),
 
     # OpenAPI schema + Swagger UI
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

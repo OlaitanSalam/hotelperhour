@@ -44,7 +44,8 @@ class Hotel(models.Model):
     def save(self, *args, **kwargs):
         # Generate slug if not present
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.get_public_name())  # Changed from self.name
+            self.slug = base_slug
             original_slug = self.slug
             counter = 1
             while Hotel.objects.filter(slug=self.slug).exclude(id=self.id).exists():

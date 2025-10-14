@@ -85,7 +85,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://hotelsperhour.com',
     'https://api.hotelsperhour.com',
     # Add mobile app schemes for iOS/Android
-    'com.hotelsperhour://',  # for mobile deep linking
 ]
 
 # Security Settings
