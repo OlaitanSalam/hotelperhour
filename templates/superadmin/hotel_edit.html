@@ -1,0 +1,78 @@
+{% extends 'superadmin/base_admin.html' %}
+
+{% block page_title %}Edit {{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-card">
+    <h4 class="mb-4">
+        <i class="fas fa-edit"></i> Edit Hotel: {{ object.name }}
+    </h4>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        To edit this hotel's full details, you can use the main hotel edit form or modify individual fields below.
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h5>Hotel Information</h5>
+            <dl class="row">
+                <dt class="col-sm-4">Name:</dt>
+                <dd class="col-sm-8">{{ object.name }}</dd>
+                
+                <dt class="col-sm-4">Address:</dt>
+                <dd class="col-sm-8">{{ object.address }}</dd>
+                
+                <dt class="col-sm-4">City:</dt>
+                <dd class="col-sm-8">{{ object.city }}</dd>
+                
+                <dt class="col-sm-4">Suburb:</dt>
+                <dd class="col-sm-8">{{ object.suburb }}</dd>
+                
+                <dt class="col-sm-4">Email:</dt>
+                <dd class="col-sm-8">{{ object.hotel_email|default:"-" }}</dd>
+                
+                <dt class="col-sm-4">Phone:</dt>
+                <dd class="col-sm-8">{{ object.hotel_phone|default:"-" }}</dd>
+            </dl>
+        </div>
+        
+        <div class="col-md-6">
+            <h5>Bank Details</h5>
+            <dl class="row">
+                <dt class="col-sm-4">Bank Name:</dt>
+                <dd class="col-sm-8">{{ object.bank_name|default:"-" }}</dd>
+                
+                <dt class="col-sm-4">Account Number:</dt>
+                <dd class="col-sm-8">{{ object.account_number|default:"-" }}</dd>
+                
+                <dt class="col-sm-4">Account Name:</dt>
+                <dd class="col-sm-8">{{ object.account_name|default:"-" }}</dd>
+            </dl>
+            
+            <h5 class="mt-4">Status</h5>
+            <dl class="row">
+                <dt class="col-sm-4">Approved:</dt>
+                <dd class="col-sm-8">
+                    {% if object.is_approved %}
+                        <span class="badge bg-success">Yes</span>
+                    {% else %}
+                        <span class="badge bg-warning">No</span>
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+    
+    <hr class="my-4">
+    
+    <div class="d-flex gap-2">
+        <a href="{% url 'hotel_edit' object.slug %}" class="btn btn-primary" target="_blank">
+            <i class="fas fa-external-link-alt"></i> Open Full Edit Form
+        </a>
+        <a href="{% url 'superadmin_hotel_detail' object.slug %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Details
+        </a>
+    </div>
+</div>
+{% endblock %}

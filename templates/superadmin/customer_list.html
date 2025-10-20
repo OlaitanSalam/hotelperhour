@@ -1,0 +1,125 @@
+{% extends 'superadmin/base_admin.html' %}
+{% load humanize %}
+
+{% block page_title %}Customers Management{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="dashboard-card mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-8">
+            <input type="text" name="search" class="form-control" placeholder="Search by name or email..." value="{{ request.GET.search }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a href="{% url 'superadmin_customer_list' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-redo"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Customers Table -->
+<div class="dashboard-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+            <i class="fas fa-users"></i> All Customers ({{ page_obj.paginator.count }})
+        </h5>
+    </div>
+    
+    {% if customers %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Customer</th>
+                    <th>Username</th>
+                    <th>Phone</th>
+                    <th>Loyalty Points</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>
+                        <div>
+                            <strong>{{ customer.full_name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ customer.email }}</small>
+                        </div>
+                    </td>
+                    <td>{{ customer.username }}</td>
+                    <td>{{ customer.phone_number|default:"-" }}</td>
+                    <td>
+                        <span class="badge bg-info">{{ customer.loyalty_points }} pts</span>
+                    </td>
+                    <td>{{ customer.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        {% if customer.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'superadmin_customer_delete' customer.pk %}" 
+                           class="btn btn-sm btn-outline-danger" 
+                           title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">No customers found</h5>
+        {% if request.GET.search %}
+        <p>Try adjusting your search criteria</p>
+        {% else %}
+        <p>No customers have registered yet</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

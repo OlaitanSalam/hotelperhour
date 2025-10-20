@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HotelPerHour Admin Panel{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&display=swap">
+    <style>
+        :root {
+            --sidebar-bg: #ffffff;
+            --sidebar-text: #001f3f;
+            --sidebar-hover: #f8f9fa;
+            --sidebar-highlight: #001f3f;
+            --main-bg: #f8f9fa;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-color: var(--main-bg);
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-header {
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(0, 31, 63, 0.1);
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            color: var(--sidebar-text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .sidebar-header small {
+            color: rgba(0, 31, 63, 0.7);
+            font-size: 12px;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .sidebar-nav-section {
+            padding: 10px 15px;
+            color: rgba(0, 31, 63, 0.5);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .sidebar-nav-item {
+            padding: 12px 20px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-nav-item:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--sidebar-highlight);
+            border-left-color: var(--sidebar-highlight);
+        }
+        
+        .sidebar-nav-item.active {
+            background-color: var(--sidebar-hover);
+            color: var(--sidebar-highlight);
+            border-left-color: var(--sidebar-highlight);
+        }
+        
+        .sidebar-nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 16px;
+            color: var(--sidebar-highlight);
+        }
+        
+        .sidebar-stats {
+            padding: 20px 15px;
+            border-top: 1px solid rgba(0, 31, 63, 0.1);
+        }
+        
+        .stat-card {
+            background-color: rgba(0, 31, 63, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .stat-card-title {
+            font-size: 11px;
+            color: rgba(0, 31, 63, 0.6);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--sidebar-text);
+        }
+        
+        .stat-card-growth {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .stat-card-growth.positive {
+            color: #4caf50;
+        }
+        
+        .stat-card-growth.negative {
+            color: #f44336;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            background-color: white;
+        }
+        
+        .top-bar {
+            background-color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .top-bar h3 {
+            margin: 0;
+            color: var(--sidebar-highlight);
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--sidebar-highlight);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .content-area {
+            padding: 30px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header h4,
+            .sidebar-header small,
+            .sidebar-nav-item span,
+            .sidebar-stats {
+                display: none;
+            }
+            
+            .sidebar-nav-item {
+                justify-content: center;
+                padding: 12px;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+        
+        /* Cards and Components */
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #001f3f 0%, #004080 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card h6 {
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .metric-card .trend {
+            font-size: 14px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4>HotelPerHour</h4>
+            <small>Admin Panel</small>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="sidebar-nav-section">Main</div>
+            <a href="{% url 'superadmin_dashboard' %}" class="sidebar-nav-item {% if request.resolver_match.url_name == 'superadmin_dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="sidebar-nav-section">Management</div>
+            <a href="{% url 'superadmin_hotel_list' %}" class="sidebar-nav-item {% if 'hotel' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-hotel"></i>
+                <span>Hotels</span>
+            </a>
+            <a href="{% url 'superadmin_customer_list' %}" class="sidebar-nav-item {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </a>
+            <a href="{% url 'superadmin_owner_list' %}" class="sidebar-nav-item {% if 'owner' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-user-tie"></i>
+                <span>Hotel Owners</span>
+            </a>
+            
+            <div class="sidebar-nav-section">Other</div>
+            <a href="{% url 'home' %}" class="sidebar-nav-item">
+                <i class="fas fa-globe"></i>
+                <span>View Website</span>
+            </a>
+            <a href="{% url 'unified_logout' %}" class="sidebar-nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+        
+        {% block sidebar_stats %}{% endblock %}
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h3>{% block page_title %}Dashboard{% endblock %}</h3>
+            <div class="user-info">
+                <div>
+                    <strong>Welcome, {{ request.user.full_name|default:request.user.email }}</strong>
+                    <br>
+                    <small class="text-muted">Superuser</small>
+                </div>
+                <div class="user-avatar">
+                    {{ request.user.full_name|default:request.user.email|slice:":1"|upper }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

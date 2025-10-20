@@ -4,7 +4,7 @@
 {% block title %}Hotel Owner Dashboard{% endblock %}
 
 {% block content %}
-<!-- ...existing code... -->
+
  
 <div class="container mt-5">
     <h2 class="mb-4 text-center" data-aos="fade-up" data-aos-duration="800">Hotel Owner Dashboard</h2>
@@ -21,6 +21,7 @@
         {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
     </div>
     {% endfor %}
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead class="table-dark">

@@ -36,6 +36,7 @@ urlpatterns = [
     path("hotels/", include("hotels.urls")),
     path("bookings/", include("bookings.urls")),
     path("customers/", include("customers.urls")),
+    path("superadmin/", include("superadmin.urls")),
     path('get_loyalty_discount/', get_loyalty_discount, name='get_loyalty_discount'),
     path('about/', hotel_views.about, name='about'),
     path('contacts/', hotel_views.contacts, name='contacts'),

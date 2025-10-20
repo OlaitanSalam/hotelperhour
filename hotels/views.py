@@ -75,6 +75,8 @@ def hotel_create(request):
             if not request.user.is_hotel_owner:
                 request.user.is_hotel_owner = True
                 request.user.save()
+                messages.success(request, "Your hotel has been created successfully. Please allow up to 24 hours for review and approval.")
+
             return redirect('hotel_dashboard')
     else:
         form = HotelForm()
@@ -110,6 +112,7 @@ def hotel_edit(request, slug):
             extra_formset.save()
             image_formset.save()
             policy_formset.save()
+            messages.success(request, "Hotel updated successfully.")
             return redirect('hotel_dashboard')
     else:
         form = HotelForm(instance=hotel)

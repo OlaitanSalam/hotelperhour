@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'hotels.apps.HotelsConfig',
     'bookings.apps.BookingsConfig',
     'customers.apps.CustomersConfig',
+    'superadmin.apps.SuperadminConfig',
     'anymail',
     'widget_tweaks',
     'django.contrib.humanize',

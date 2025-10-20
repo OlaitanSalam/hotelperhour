@@ -2,7 +2,6 @@
 {% load static %}
 {% load widget_tweaks %}
 
-
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -13,54 +12,106 @@
                         {% if is_edit %}Edit Hotel{% else %}Register a Hotel{% endif %}
                     </h2>
                     
+                    {% if form.errors or room_formset.errors or room_formset.non_form_errors or extra_formset.errors or extra_formset.non_form_errors or image_formset.errors or image_formset.non_form_errors or policy_formset.errors or policy_formset.non_form_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show error-summary" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Please correct the following errors:</h5>
+                        <ul class="mb-0">
+                            {% if form.errors %}
+                                <li><strong>Hotel Information:</strong> Please check your hotel details below.</li>
+                            {% endif %}
+                            {% if room_formset.errors or room_formset.non_form_errors %}
+                                <li><strong>Rooms:</strong> Please review the room details in the Rooms section.</li>
+                            {% endif %}
+                            {% if extra_formset.errors or extra_formset.non_form_errors %}
+                                <li><strong>Extra Services:</strong> Please verify the service details in the Extra Services section.</li>
+                            {% endif %}
+                            {% if image_formset.errors or image_formset.non_form_errors %}
+                                <li><strong>Images:</strong> Please check your image uploads in the Hotel Images section.</li>
+                            {% endif %}
+                            {% if policy_formset.errors or policy_formset.non_form_errors %}
+                                <li><strong>Policies:</strong> Please review the policy texts in the Hotel Policies section.</li>
+                            {% endif %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
                     <form method="post" id="hotel_form" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
                         <!-- Hotel Information Section -->
                         <div class="card mb-4 border-0 shadow-sm">
-                            <div class="card-header bg-light">
+                            <div class="card-header bg-light {% if form.errors %}has-errors{% endif %}">
                                 <h4 class="mb-0 fw-semibold"><i class="fas fa-hotel me-2"></i>Hotel Information</h4>
                             </div>
                             <div class="card-body">
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                                {% endif %}
+                                
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_name" class="form-label fw-semibold">Hotel Name *</label>
-                                        {{ form.name |add_class:"form-control"|attr:"required"  }}
+                                        {{ form.name|add_class:"form-control"|attr:"required" }}
+                                        {% if form.name.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-6">
                                         <label for="id_address" class="form-label fw-semibold">Address *</label>
-                                        {{ form.address |add_class:"form-control"|attr:"required"  }}
+                                        {{ form.address|add_class:"form-control"|attr:"required" }}
+                                        {% if form.address.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.address.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="id_city" class="form-label fw-semibold">City</label>
-                                    {{ form.city }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="id_suburb" class="form-label fw-semibold">suburb/zone</label>
-                                    {{ form.suburb }}
-                                </div>
+                                    <div class="col-md-6">
+                                        <label for="id_city" class="form-label fw-semibold">City</label>
+                                        {{ form.city|add_class:"form-control" }}
+                                        {% if form.city.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.city.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="id_suburb" class="form-label fw-semibold">Suburb/Zone</label>
+                                        {{ form.suburb|add_class:"form-control" }}
+                                        {% if form.suburb.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.suburb.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_hotel_email" class="form-label fw-semibold">Hotel Email *</label>
-                                        {{ form.hotel_email |add_class:"form-control"|attr:"required"  }}
+                                        {{ form.hotel_email|add_class:"form-control"|attr:"required" }}
+                                        {% if form.hotel_email.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.hotel_email.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-6">
                                         <label for="id_hotel_phone" class="form-label fw-semibold">Hotel Phone *</label>
-                                        {{ form.hotel_phone|add_class:"form-control"|attr:"required"  }}
+                                        {{ form.hotel_phone|add_class:"form-control"|attr:"required" }}
+                                        {% if form.hotel_phone.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.hotel_phone.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="id_description" class="form-label fw-semibold">Description</label>
-                                    {{ form.description }}
+                                    {{ form.description|add_class:"form-control" }}
+                                    {% if form.description.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                                    {% endif %}
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="id_image" class="form-label fw-semibold">Hotel Image</label>
                                         <div class="image-upload-container">
-                                            {{ form.image }}
+                                            {{ form.image|add_class:"form-control" }}
+                                            {% if form.image.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.image.errors.0 }}</div>
+                                            {% endif %}
                                             <div class="image-preview-container mt-2">
                                                 {% if form.instance.image %}
                                                     <img src="{{ form.instance.image.url }}" alt="Hotel Image" class="img-thumbnail room-image-preview" loading="lazy">
@@ -89,18 +140,27 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3 mb-md-0">
                                         <label for="id_account_number" class="form-label fw-semibold">Account Number</label>
-                                        {{ form.account_number }}
+                                        {{ form.account_number|add_class:"form-control" }}
+                                        {% if form.account_number.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.account_number.errors.0 }}</div>
+                                        {% endif %}
                                         <small class="text-muted">Enter your 10-digit Nigerian bank account number</small>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="id_account_name" class="form-label fw-semibold">Account Name</label>
-                                        {{ form.account_name }}
+                                        {{ form.account_name|add_class:"form-control" }}
+                                        {% if form.account_name.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.account_name.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="id_bank_name" class="form-label fw-semibold">Bank Name</label>
-                                        {{ form.bank_name }}
+                                        {{ form.bank_name|add_class:"form-control" }}
+                                        {% if form.bank_name.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.bank_name.errors.0 }}</div>
+                                        {% endif %}
                                         <small class="text-muted">e.g., GTBank, First Bank, Zenith Bank</small>
                                     </div>
                                 </div>
@@ -115,98 +175,118 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="map-style" class="form-label fw-semibold">Map Style</label>
-                                   <select id="map-style" class="form-select w-auto">
-  <option value="roadmap" selected>Streets</option>
-  <option value="hybrid">Satellite Streets</option>
-  <option value="satellite">Satellite (imagery)</option>
-  <option value="terrain">Terrain</option>
-  <option value="night">Dark (styled)</option>
-</select>
-
-<div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
-
-                                {{ form.latitude }}
-                                {{ form.longitude }}
-                                <small class="text-muted mt-2 d-block"> Drag the pin to set precised location, precision helps guests find your hotel.</small>
+                                    <select id="map-style" class="form-select w-auto">
+                                        <option value="roadmap" selected>Streets</option>
+                                        <option value="hybrid">Satellite Streets</option>
+                                        <option value="satellite">Satellite (imagery)</option>
+                                        <option value="terrain">Terrain</option>
+                                        <option value="night">Dark (styled)</option>
+                                    </select>
+                                    <div id="map" style="height: 350px; width: 100%; border-radius: 8px;" class="mt-3"></div>
+                                    {{ form.latitude|add_class:"form-control" }}
+                                    {% if form.latitude.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.latitude.errors.0 }}</div>
+                                    {% endif %}
+                                    {{ form.longitude|add_class:"form-control" }}
+                                    {% if form.longitude.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.longitude.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="text-muted mt-2 d-block">Drag the pin to set precise location, precision helps guests find your hotel.</small>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Rooms Section -->
                         <div class="card mb-4 border-0 shadow-sm">
-                            <div class="card-header bg-light">
+                            <div class="card-header bg-light {% if room_formset.errors %}has-errors{% endif %}">
                                 <h4 class="mb-0 fw-semibold"><i class="fas fa-bed me-2"></i>Rooms (<span id="room-count">{{ room_formset.forms|length }}</span>)</h4>
                             </div>
                             <div class="card-body">
                                 {{ room_formset.management_form }}
+                                {% if room_formset.non_form_errors %}
+                                    <div class="alert alert-danger">{{ room_formset.non_form_errors }}</div>
+                                {% endif %}
                                 <div id="room-forms">
                                     {% for form in room_formset %}
-                                        <div class="room-form-container mb-3 animate__animated animate__fadeIn">
-                                            <div class="room-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#room-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="room-collapse-{{ forloop.counter }}">
+                                        <div class="room-form-container mb-3 animate__animated animate__fadeIn {% if form.errors %}has-errors{% endif %}">
+                                            <div class="room-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#room-collapse-{{ forloop.counter }}" aria-expanded="{% if form.errors %}true{% else %}false{% endif %}" aria-controls="room-collapse-{{ forloop.counter }}">
                                                 <h6 class="room-form-title mb-0 fw-semibold">
                                                     <i class="fas fa-door-open me-2 text-primary"></i>Room {{ forloop.counter }}: {{ form.room_type.value|default:"Unnamed" }}
                                                 </h6>
                                                 <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
-                                            <div id="room-collapse-{{ forloop.counter }}" class="room-form-content p-3 collapse">
+                                            <div id="room-collapse-{{ forloop.counter }}" class="room-form-content p-3 collapse {% if form.errors %}show{% endif %}">
                                                 {{ form.id }}
-                                                {% if form.errors or form.non_field_errors %}
-                                                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                                                    {{ form.non_field_errors }}
-                                                    {% for field in form %}
-                                                        {{ field.errors }}
-                                                    {% endfor %}
-                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                                </div>
-                                                 {% endif %}
-
-
+                                                {% if form.non_field_errors %}
+                                                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                                                {% endif %}
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.room_type.id_for_label }}" class="form-label fw-semibold">Room Type *</label>
-                                                        {{ form.room_type|add_class:"form-control"|attr:"required"  }}
+                                                        {{ form.room_type|add_class:"form-control"|attr:"required" }}
+                                                        {% if form.room_type.errors %}
+                                                            <div class="invalid-feedback d-block">{{ form.room_type.errors.0 }}</div>
+                                                        {% endif %}
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label for="{{ form.price_per_hour.id_for_label }}" class="form-label fw-semibold">Price per Hour *</label>
                                                         <div class="input-group">
                                                             <span class="input-group-text bg-light">₦</span>
-                                                            {{ form.price_per_hour|add_class:"form-control"|attr:"required"  }}
+                                                            {{ form.price_per_hour|add_class:"form-control"|attr:"required" }}
+                                                            {% if form.price_per_hour.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.price_per_hour.errors.0 }}</div>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
-                                                    <!-- In room formset loop, after price_per_hour -->
-                                                     <div class="row mb-3 py-3">
-                                                <div class="col-md-6 mb-3 mb-md-0">
-                                                    <label class="form-label fw-semibold">Discounted 12-Hour Price (optional)</label>
-                                                    <div class="input-group">
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                        <label class="form-label fw-semibold">Discounted 12-Hour Price (optional)</label>
+                                                        <div class="input-group">
                                                             <span class="input-group-text bg-light">₦</span>
-                                                    {{ form.twelve_hour_price|add_class:"form-control" }}
+                                                            {{ form.twelve_hour_price|add_class:"form-control" }}
+                                                            {% if form.twelve_hour_price.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.twelve_hour_price.errors.0 }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold">Discounted 24-Hour Price (optional)</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">₦</span>
+                                                            {{ form.twenty_four_hour_price|add_class:"form-control" }}
+                                                            {% if form.twenty_four_hour_price.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.twenty_four_hour_price.errors.0 }}</div>
+                                                            {% endif %}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6 mb-3 mb-md-0">
-                                                    <label class="form-label fw-semibold">Discounted 24-Hour Price (optional)</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text bg-light">₦</span>
-                                                        {{ form.twenty_four_hour_price|add_class:"form-control" }}
-                                                    </div>
-                                                </div>
-                                                     </div>
-                                                </div>
-                                                <div class="row mb-3 ">
+                                                <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.capacity.id_for_label }}" class="form-label fw-semibold">Capacity *</label>
                                                         {{ form.capacity|add_class:"form-control"|attr:"required" }}
+                                                        {% if form.capacity.errors %}
+                                                            <div class="invalid-feedback d-block">{{ form.capacity.errors.0 }}</div>
+                                                        {% endif %}
                                                         <small class="form-text text-muted">Maximum number of guests</small>
                                                     </div>
-                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                    <div class="col-md-6">
                                                         <label for="{{ form.total_units.id_for_label }}" class="form-label fw-semibold">Total Units *</label>
                                                         {{ form.total_units|add_class:"form-control"|attr:"required" }}
+                                                        {% if form.total_units.errors %}
+                                                            <div class="invalid-feedback d-block">{{ form.total_units.errors.0 }}</div>
+                                                        {% endif %}
                                                         <small class="form-text text-muted">Total number of rooms available</small>
                                                     </div>
                                                 </div>
-                                                <div class="row mb-3 py-3">
+                                                <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">Room Image</label>
                                                         <div class="image-upload-container">
-                                                            {{ form.image }}
+                                                            {{ form.image|add_class:"form-control" }}
+                                                            {% if form.image.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.image.errors.0 }}</div>
+                                                            {% endif %}
                                                             <div class="image-preview-container mt-2">
                                                                 {% if form.instance.image %}
                                                                     <img src="{{ form.instance.image.url }}" alt="Room Image" class="img-thumbnail room-image-preview" loading="lazy">
@@ -222,27 +302,23 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                
-                                                <div class="col-md-6 mb-3 mb-md-0">
-                                                    <div class="col-12">
+                                                    <div class="col-md-6">
                                                         <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
-                                                        {{ form.description }}
+                                                        {{ form.description|add_class:"form-control" }}
+                                                        {% if form.description.errors %}
+                                                            <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                                                        {% endif %}
                                                         <small class="form-text text-muted">Brief description of room features</small>
                                                     </div>
                                                 </div>
-                                            </div>
-                                                
-
-{% if form.DELETE %}
-    <div class="text-end mt-2">
-        <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
-        <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
-            <i class="fas fa-trash-alt me-1"></i>
-            {% if 'room' in form.prefix %}Delete Room{% elif 'extra' in form.prefix %}Delete Extra Service{% else %}Delete Image{% endif %}
-        </button>
-    </div>
-{% endif %}
-
+                                                {% if form.DELETE %}
+                                                <div class="text-end mt-2">
+                                                    <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
+                                                    <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
+                                                        <i class="fas fa-trash-alt me-1"></i>Delete Room
+                                                    </button>
+                                                </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -265,58 +341,55 @@
                         
                         <!-- Extra Services Section -->
                         <div class="card mb-4 border-0 shadow-sm">
-                            <div class="card-header bg-light">
+                            <div class="card-header bg-light {% if extra_formset.errors %}has-errors{% endif %}">
                                 <h4 class="mb-0 fw-semibold"><i class="fas fa-concierge-bell me-2"></i>Extra Services (<span id="extra-count">{{ extra_formset.forms|length }}</span>)</h4>
                             </div>
                             <div class="card-body">
                                 {{ extra_formset.management_form }}
+                                {% if extra_formset.non_form_errors %}
+                                    <div class="alert alert-danger">{{ extra_formset.non_form_errors }}</div>
+                                {% endif %}
                                 <div id="extra-forms">
                                     {% for form in extra_formset %}
-                                        <div class="extra-form-container mb-3 animate__animated animate__fadeIn">
-                                            <div class="extra-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#extra-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="extra-collapse-{{ forloop.counter }}">
+                                        <div class="extra-form-container mb-3 animate__animated animate__fadeIn {% if form.errors %}has-errors{% endif %}">
+                                            <div class="extra-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#extra-collapse-{{ forloop.counter }}" aria-expanded="{% if form.errors %}true{% else %}false{% endif %}" aria-controls="extra-collapse-{{ forloop.counter }}">
                                                 <h6 class="extra-form-title mb-0 fw-semibold">
                                                     <i class="fas fa-concierge-bell me-2 text-primary"></i>Extra Service {{ forloop.counter }}: {{ form.name.value|default:"Unnamed" }}
                                                 </h6>
                                                 <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
-                                            <div id="extra-collapse-{{ forloop.counter }}" class="extra-form-content p-3 collapse">
+                                            <div id="extra-collapse-{{ forloop.counter }}" class="extra-form-content p-3 collapse {% if form.errors %}show{% endif %}">
                                                 {{ form.id }}
-                                                {% if form.errors or form.non_field_errors %}
-                                                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                                                        {{ form.non_field_errors }}
-                                                        {% for field in form %}
-                                                            {{ field.errors }}
-                                                        {% endfor %}
-                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                                    </div>
+                                                {% if form.non_field_errors %}
+                                                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
                                                 {% endif %}
-
-                                                
                                                 <div class="row mb-3">
                                                     <div class="col-md-6 mb-3 mb-md-0">
                                                         <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">Service Name *</label>
-                                                        {{ form.name }}
+                                                        {{ form.name|add_class:"form-control"|attr:"required" }}
+                                                        {% if form.name.errors %}
+                                                            <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                                                        {% endif %}
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label for="{{ form.price.id_for_label }}" class="form-label fw-semibold">Price *</label>
                                                         <div class="input-group">
                                                             <span class="input-group-text bg-light">₦</span>
-                                                            {{ form.price }}
+                                                            {{ form.price|add_class:"form-control"|attr:"required" }}
+                                                            {% if form.price.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.price.errors.0 }}</div>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- hotel_form.html: Update the Delete section in the image, room, and extra form loops to use a consistent structure with a hidden checkbox and button, ensuring compatibility with the new JS delegation approach. Replace the existing DELETE blocks with this unified version -->
-
-{% if form.DELETE %}
-    <div class="text-end mt-2">
-        <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
-        <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
-            <i class="fas fa-trash-alt me-1"></i>
-            {% if 'room' in form.prefix %}Delete Room{% elif 'extra' in form.prefix %}Delete Extra Service{% else %}Delete Image{% endif %}
-        </button>
-    </div>
-{% endif %}
-
+                                                {% if form.DELETE %}
+                                                <div class="text-end mt-2">
+                                                    <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
+                                                    <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
+                                                        <i class="fas fa-trash-alt me-1"></i>Delete Extra Service
+                                                    </button>
+                                                </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -338,200 +411,196 @@
                         </div>
 
                         <!-- Amenities Section -->
-                         <div class="card mb-4 border-0 shadow-sm">
-  <div class="card-header bg-light">
-      <h4 class="mb-0 fw-semibold"><i class="fas fa-star me-2"></i>Amenities</h4>
-  </div>
-  <div class="card-body">
-      <p class="text-muted mb-3">Select available amenities to highlight your hotel's features.</p>
-
-      <div class="row g-2">
-          {% for amenity in amenities %}
-              <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                  <label for="amenity_{{ amenity.id }}" 
-                         class="d-flex align-items-center  rounded p-2 h-100 amenity-option">
-                      <input type="checkbox" 
-                             name="amenities" 
-                             value="{{ amenity.id }}" 
-                             id="amenity_{{ amenity.id }}" 
-                             {% if amenity in form.instance.amenities.all %}checked{% endif %} 
-                             class="form-check-input me-2 mt-0">
-                      {% if amenity.icon_class %}
-                          <i class="{{ amenity.icon_class }} text-primary me-2"></i>
-                      {% endif %}
-                      <span class="flex-grow-1 ">{{ amenity.name }}</span>
-                  </label>
-              </div>
-          {% endfor %}
-      </div>
-
-      {% if form.amenities.errors %}
-          <div class="alert alert-danger mt-3">{{ form.amenities.errors }}</div>
-      {% endif %}
-  </div>
-</div>
-                    <!-- Hotel Policies Section -->
-                     <div class="card mb-4 border-0 shadow-sm">
-    <div class="card-header bg-light">
-        <h4 class="mb-0 fw-semibold"><i class="fas fa-shield-alt me-2"></i>Hotel Policies(<span id="policy-count">{{ policy_formset.forms|length }}</span>)</h4>
-    </div>
-    <div class="card-body">
-        <p class="text-muted mb-3">Add policies to inform guests about your hotel rules (e.g., Pets not allowed).</p>
-        {{ policy_formset.management_form }}
-        <div id="policy-forms">
-            {% for form in policy_formset %}
-                <div class="policy-form-container mb-3 animate__animated animate__fadeIn" data-form-index="{{ forloop.counter0 }}">
-                    <div class="policy-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#policy-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="policy-collapse-{{ forloop.counter }}">
-                        <h6 class="policy-form-title mb-0 fw-semibold">
-                            <i class="fas fa-shield-alt me-2 text-primary"></i>Policy {{ forloop.counter }}: {% if form.instance.pk %}Set{% else %}Not Set{% endif %}
-                        </h6>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="policy-collapse-{{ forloop.counter }}" class="policy-form-content p-3 collapse">
-                        {{ form.id }}
-                        {% if form.errors or form.non_field_errors %}
-                            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                                {{ form.non_field_errors }}
-                                {% for field in form %}
-                                    {{ field.errors }}
-                                {% endfor %}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-star me-2"></i>Amenities</h4>
                             </div>
-                        {% endif %}
-                        <div class="mb-3">
-                            {{ form.policy_text }}
+                            <div class="card-body">
+                                <p class="text-muted mb-3">Select available amenities to highlight your hotel's features.</p>
+                                <div class="row g-2">
+                                    {% for amenity in amenities %}
+                                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                                            <label for="amenity_{{ amenity.id }}" class="d-flex align-items-center rounded p-2 h-100 amenity-option">
+                                                <input type="checkbox" name="amenities" value="{{ amenity.id }}" id="amenity_{{ amenity.id }}" {% if amenity in form.instance.amenities.all %}checked{% endif %} class="form-check-input me-2 mt-0">
+                                                {% if amenity.icon_class %}
+                                                    <i class="{{ amenity.icon_class }} text-primary me-2"></i>
+                                                {% endif %}
+                                                <span class="flex-grow-1">{{ amenity.name }}</span>
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.amenities.errors %}
+                                    <div class="alert alert-danger mt-3">{{ form.amenities.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                        {% if form.DELETE %}
-                            <div class="text-end mt-2">
-                                <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
-                                <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
-                                    <i class="fas fa-trash-alt me-1"></i> Delete Policy
-                                </button>
+                    
+                        <!-- Hotel Policies Section -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light {% if policy_formset.errors %}has-errors{% endif %}">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-shield-alt me-2"></i>Hotel Policies (<span id="policy-count">{{ policy_formset.forms|length }}</span>)</h4>
                             </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        <div id="no-policies-message" class="text-center py-4" style="display: {% if policy_formset.forms|length == 0 %}block{% else %}none{% endif %};">
-            <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
-            <h6 class="text-muted">No policies added yet</h6>
-            <p class="text-muted mb-3">Add your first policy to inform your guests</p>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('add-policy').click()">
-                <i class="fas fa-plus me-2"></i>Add First Policy
-            </button>
-        </div>
-        <div class="d-flex justify-content-end mt-3">
-            <button type="button" id="add-policy" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add Policy
-            </button>
-        </div>
-    </div>
-</div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">Add policies to inform guests about your hotel rules (e.g., Pets not allowed).</p>
+                                
+                               <!-- <div class="alert alert-info d-flex align-items-center mt-3" role="alert" style="border-left: 5px solid #0d6efd;">
+                                  <i class="fas fa-info-circle me-2 fa-lg text-primary"></i>
+                                  <div>
+                                    <strong>Important Notice for Hotel Owners:</strong>  
+                                    Please make sure to include your hotel’s <strong>refund policy</strong> in your policy section.  
+                                    This helps guests understand your terms clearly before booking.
+                                  </div>
+                                </div>-->
 
+                                {{ policy_formset.management_form }}
+                                <div id="policy-forms">
+                                    {% for form in policy_formset %}
+                                        <div class="policy-form-container mb-3 animate__animated animate__fadeIn {% if form.errors %}has-errors{% endif %}" data-form-index="{{ forloop.counter0 }}">
+                                            <div class="policy-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#policy-collapse-{{ forloop.counter }}" aria-expanded="{% if form.errors %}true{% else %}false{% endif %}" aria-controls="policy-collapse-{{ forloop.counter }}">
+                                                <h6 class="policy-form-title mb-0 fw-semibold">
+                                                    <i class="fas fa-shield-alt me-2 text-primary"></i>Policy {{ forloop.counter }}: {% if form.instance.pk %}Set{% else %}Not Set{% endif %}
+                                                </h6>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
+                                            </div>
+                                            <div id="policy-collapse-{{ forloop.counter }}" class="policy-form-content p-3 collapse {% if form.errors %}show{% endif %}">
+                                                {{ form.id }}
+                                                {% if form.non_field_errors %}
+                                                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                                                {% endif %}
+                                                <div class="mb-3">
+                                                    <label for="{{ form.policy_text.id_for_label }}" class="form-label fw-semibold">Policy Text *</label>
+                                                    {{ form.policy_text|add_class:"form-control"|attr:"required" }}
+                                                    {% if form.policy_text.errors %}
+                                                        <div class="invalid-feedback d-block">{{ form.policy_text.errors.0 }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                {% if form.DELETE %}
+                                                    <div class="text-end mt-2">
+                                                        <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
+                                                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
+                                                            <i class="fas fa-trash-alt me-1"></i>Delete Policy
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div id="no-policies-message" class="text-center py-4" style="display: {% if policy_formset.forms|length == 0 %}block{% else %}none{% endif %};">
+                                    <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No policies added yet</h6>
+                                    <p class="text-muted mb-3">Add your first policy to inform your guests</p>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('add-policy').click()">
+                                        <i class="fas fa-plus me-2"></i>Add First Policy
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="add-policy" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Policy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Hotel Images Section -->
-<div class="card mb-4 border-0 shadow-sm">
-    <div class="card-header bg-light">
-        <h4 class="mb-0 fw-semibold"><i class="fas fa-camera me-2"></i>Hotel Images (<span id="image-count">{{ image_formset.forms|length }}</span> - Max 10)</h4>
-    </div>
-    <div class="card-body">
-        {{ image_formset.management_form }}
-        <div class="mb-3">
-            <p class="text-muted">
-                Upload high-quality images of your hotel to build trust with potential guests—seeing is believing! Compelling photos can attract more viewers and increase bookings.
-            </p>
-        </div>
-        <div id="image-forms">
-            {% for form in image_formset %}
-                <div class="image-form-container mb-3 animate__animated animate__fadeIn" data-form-index="{{ forloop.counter0 }}">
-                    <div class="image-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#image-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="image-collapse-{{ forloop.counter }}">
-                        <h6 class="image-form-title mb-0 fw-semibold">
-                            <i class="fas fa-camera me-2 text-primary"></i>Image {{ forloop.counter }}: {% if form.instance.image %}Uploaded{% else %}Not Uploaded{% endif %}
-                        </h6>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="image-collapse-{{ forloop.counter }}" class="image-form-content p-3 collapse">
-                        {{ form.id }}
-                        {% if form.errors or form.non_field_errors %}
-                            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                                {{ form.non_field_errors }}
-                                {% for field in form %}
-                                   {{ field.errors }}
-                                {% endfor %}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light {% if image_formset.errors %}has-errors{% endif %}">
+                                <h4 class="mb-0 fw-semibold"><i class="fas fa-camera me-2"></i>Hotel Images (<span id="image-count">{{ image_formset.forms|length }}</span> - Max 10)</h4>
                             </div>
-                        {% endif %}
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">Image *</label>
-                                <div class="image-upload-container">
-                                    {{ form.image }}
-                                    <div class="image-preview-container mt-2">
-                                        {% if form.instance.image %}
-                                            <img src="{{ form.instance.image.url }}" alt="Current Image" class="img-thumbnail room-image-preview" loading="lazy">
-                                            <small class="text-muted d-block mt-1">Current image</small>
-                                        {% else %}
-                                            <div class="default-image-placeholder">
-                                                <div class="placeholder-content">
-                                                    <i class="fas fa-image fa-2x text-muted mb-2"></i>
-                                                    <small class="text-muted">No image uploaded</small>
-                                                </div>
+                            <div class="card-body">
+                                {{ image_formset.management_form }}
+                                <div class="mb-3">
+                                    <p class="text-muted">
+                                        Upload high-quality images of your hotel to build trust with potential guests—seeing is believing! Compelling photos can attract more viewers and increase bookings.
+                                    </p>
+                                </div>
+                                <div id="image-forms">
+                                    {% for form in image_formset %}
+                                        <div class="image-form-container mb-3 animate__animated animate__fadeIn {% if form.errors %}has-errors{% endif %}" data-form-index="{{ forloop.counter0 }}">
+                                            <div class="image-form-header bg-light p-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#image-collapse-{{ forloop.counter }}" aria-expanded="{% if form.errors %}true{% else %}false{% endif %}" aria-controls="image-collapse-{{ forloop.counter }}">
+                                                <h6 class="image-form-title mb-0 fw-semibold">
+                                                    <i class="fas fa-camera me-2 text-primary"></i>Image {{ forloop.counter }}: {% if form.instance.image %}Uploaded{% else %}Not Uploaded{% endif %}
+                                                </h6>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
                                             </div>
-                                        {% endif %}
-                                    </div>
+                                            <div id="image-collapse-{{ forloop.counter }}" class="image-form-content p-3 collapse {% if form.errors %}show{% endif %}">
+                                                {{ form.id }}
+                                                {% if form.non_field_errors %}
+                                                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                                                {% endif %}
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 mb-3 mb-md-0">
+                                                        <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">Image *</label>
+                                                        <div class="image-upload-container">
+                                                            {{ form.image|add_class:"form-control"|attr:"required" }}
+                                                            {% if form.image.errors %}
+                                                                <div class="invalid-feedback d-block">{{ form.image.errors.0 }}</div>
+                                                            {% endif %}
+                                                            <div class="image-preview-container mt-2">
+                                                                {% if form.instance.image %}
+                                                                    <img src="{{ form.instance.image.url }}" alt="Current Image" class="img-thumbnail room-image-preview" loading="lazy">
+                                                                    <small class="text-muted d-block mt-1">Current image</small>
+                                                                {% else %}
+                                                                    <div class="default-image-placeholder">
+                                                                        <div class="placeholder-content">
+                                                                            <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                                                                            <small class="text-muted">No image uploaded</small>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="row mb-3">
+                                                            <div class="col-12">
+                                                                <label for="{{ form.alt_text.id_for_label }}" class="form-label fw-semibold">Alt Text</label>
+                                                                {{ form.alt_text|add_class:"form-control"|attr:"placeholder:e.g., Hotel lobby view" }}
+                                                                {% if form.alt_text.errors %}
+                                                                    <div class="invalid-feedback d-block">{{ form.alt_text.errors.0 }}</div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <label for="{{ form.order.id_for_label }}" class="form-label fw-semibold">Order</label>
+                                                                {{ form.order|add_class:"form-control"|attr:"min:0" }}
+                                                                {% if form.order.errors %}
+                                                                    <div class="invalid-feedback d-block">{{ form.order.errors.0 }}</div>
+                                                                {% endif %}
+                                                                <small class="form-text text-muted">Lower numbers appear first in your hotel's image gallery on the detail's page.</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% if form.DELETE %}
+                                                    <div class="text-end mt-2">
+                                                        <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
+                                                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
+                                                            <i class="fas fa-trash-alt me-1"></i>Delete Image
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <label for="{{ form.alt_text.id_for_label }}" class="form-label fw-semibold">Alt Text</label>
-                                        {{ form.alt_text|add_class:"form-control"|attr:"placeholder:e.g., Hotel lobby view" }}
-                                    </div>
+                                <div id="no-images-message" class="text-center py-4" style="display: {% if image_formset.forms|length == 0 %}block{% else %}none{% endif %};">
+                                    <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No images added yet</h6>
+                                    <p class="text-muted mb-3">Add your first image to showcase your hotel</p>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('add-image').click()">
+                                        <i class="fas fa-plus me-2"></i>Add First Image
+                                    </button>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <label for="{{ form.order.id_for_label }}" class="form-label fw-semibold">Order</label>
-                                        
-                                        {{ form.order|add_class:"form-control"|attr:"min:0" }}
-                                        <small class="form-text text-muted">Lower numbers appear first in your hotel's image gallery on the datail's page.</small>
-                                    </div>
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="add-image" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Image
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <!-- hotel_form.html: Update the Delete section in the image, room, and extra form loops to use a consistent structure with a hidden checkbox and button, ensuring compatibility with the new JS delegation approach. Replace the existing DELETE blocks with this unified version -->
-
-{% if form.DELETE %}
-    <div class="text-end mt-2">
-        <input type="checkbox" id="{{ form.DELETE.id_for_label }}" name="{{ form.DELETE.html_name }}" hidden>
-        <button type="button" class="btn btn-sm btn-danger delete-btn" data-target="{{ form.DELETE.id_for_label }}">
-            <i class="fas fa-trash-alt me-1"></i>
-            {% if 'room' in form.prefix %}Delete Room{% elif 'extra' in form.prefix %}Delete Extra Service{% else %}Delete Image{% endif %}
-        </button>
-    </div>
-{% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        <div id="no-images-message" class="text-center py-4" style="display: {% if image_formset.forms|length == 0 %}block{% else %}none{% endif %};">
-            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-            <h6 class="text-muted">No images added yet</h6>
-            <p class="text-muted mb-3">Add your first image to showcase your hotel</p>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('add-image').click()">
-                <i class="fas fa-plus me-2"></i>Add First Image
-            </button>
-        </div>
-        <div class="d-flex justify-content-end mt-3">
-            <button type="button" id="add-image" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add Image
-            </button>
-        </div>
-    </div>
-</div>
-
-
 
                         <!-- Submit Button -->
                         <div class="d-grid gap-2">
@@ -549,35 +618,30 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-danger">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="alert alert-warning">
-          <h6 id="delete-item-title">Are you sure you want to delete this item?</h6>
-          <p class="mb-0">This action will remove <span id="delete-item-name"></span> when you submit the hotel form.</p>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <h6 id="delete-item-title">Are you sure you want to delete this item?</h6>
+                    <p class="mb-0">This action will remove <span id="delete-item-name"></span> when you submit the hotel form.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt me-1"></i>Confirm Delete
+                </button>
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-          <i class="fas fa-trash-alt me-1"></i> Confirm Delete
-        </button>
-      </div>
     </div>
-  </div>
 </div>
-
-
-
-
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
 
 <style>
 .form-control, .form-select {
@@ -592,10 +656,23 @@
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
 .card-header {
     padding: 1rem 1.25rem;
     background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
+}
+
+.card-header.has-errors {
+    border-left: 4px solid #dc3545;
 }
 
 .room-form-container, .extra-form-container, .image-form-container, .policy-form-container {
@@ -603,12 +680,15 @@
     border-radius: 8px;
     background: #ffffff;
     transition: all 0.3s ease;
-    margin-bottom: 1rem !important;
 }
 
-.room-form-container:hover, .extra-form-container:hover, .image-form-container:hover, .policy-form-container:hover{
+.room-form-container:hover, .extra-form-container:hover, .image-form-container:hover, .policy-form-container:hover {
     border-color: #007bff;
     box-shadow: 0 2px 10px rgba(0, 123, 255, 0.1);
+}
+
+.room-form-container.has-errors, .extra-form-container.has-errors, .image-form-container.has-errors, .policy-form-container.has-errors {
+    border-left: 4px solid #dc3545;
 }
 
 .room-form-header, .extra-form-header, .image-form-header, .policy-form-header {
@@ -617,7 +697,7 @@
     cursor: pointer;
 }
 
-.room-form-title, .extra-form-title, .image-form-title, .policy-form-title{
+.room-form-title, .extra-form-title, .image-form-title, .policy-form-title {
     color: #495057;
     font-weight: 600;
 }
@@ -668,12 +748,12 @@ textarea[id$=-description] {
     transition: transform 0.3s ease;
 }
 
-.room-form-header[aria-expanded="true"] .toggle-icon, .extra-form-header[aria-expanded="true"] .toggle-icon,.image-form-header[aria-expanded="true"] .toggle-icon, .policy-form-header[aria-expanded="true"] .toggle-icon {
+.room-form-header[aria-expanded="true"] .toggle-icon, .extra-form-header[aria-expanded="true"] .toggle-icon, .image-form-header[aria-expanded="true"] .toggle-icon, .policy-form-header[aria-expanded="true"] .toggle-icon {
     transform: rotate(180deg);
 }
 
 @media (max-width: 768px) {
-    .room-form-content, .room-form-header, .extra-form-content, .extra-form-header {
+    .room-form-content, .room-form-header, .extra-form-content, .extra-form-header, .image-form-content, .image-form-header, .policy-form-content, .policy-form-header {
         padding: 0.75rem;
     }
     .card-body {
@@ -689,7 +769,7 @@ textarea[id$=-description] {
 }
 
 @media (max-width: 576px) {
-    .room-form-header .d-flex, .extra-form-header .d-flex {
+    .room-form-header .d-flex, .extra-form-header .d-flex, .image-form-header .d-flex, .policy-form-header .d-flex {
         flex-direction: column;
         gap: 0.5rem;
     }
@@ -701,7 +781,7 @@ textarea[id$=-description] {
 }
 
 .btn {
-    border-radius: 0rem;
+    border-radius: 0px;
     font-weight: 500;
     transition: all 0.3s ease;
 }
@@ -710,38 +790,26 @@ textarea[id$=-description] {
     transform: translateY(-1px);
 }
 
-.is-invalid {
-    border-color: #dc3545;
-}
-.is-valid {
-    border-color: #28a745;
-}
-
 .form-check {
     padding: 0.5rem;
 }
 
-/* Make sure checkbox stays aligned at top */
 .form-check-input {
     margin-top: 0.2rem !important;
 }
 
-/* Amenity box styling */
 .amenity-option {
-    align-items: flex-start;   /* Align checkbox + icon at top */
-    word-break: break-word;    /* Allow long names to wrap */
+    align-items: flex-start;
+    word-break: break-word;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 48px;          /* Keeps equal look */
+    min-height: 48px;
 }
 
-/* Hover effect for clarity */
 .amenity-option:hover {
     border-color: #007bff;
     background-color: #f8f9ff;
 }
-
-
 </style>
 
 <script>
@@ -866,9 +934,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    document.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
-        textarea.setAttribute('rows', '2');
-        textarea.classList.add('form-control');
+    // --- Add is-invalid class for fields with errors ---
+    document.querySelectorAll('.invalid-feedback').forEach(feedback => {
+        const input = feedback.previousElementSibling;
+        if (input && (input.tagName === 'INPUT' || input.tagName === 'SELECT' || input.tagName === 'TEXTAREA')) {
+            input.classList.add('is-invalid');
+        }
     });
 
     // --- Room & Extra counts ---
@@ -898,6 +969,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function updateImageCount() {
+        const imageCount = document.querySelectorAll('.image-form-container:not([style*="display: none"])').length;
+        const ic = document.getElementById('image-count');
+        const msg = document.getElementById('no-images-message');
+        if (ic) ic.textContent = imageCount;
+        if (msg) msg.style.display = imageCount === 0 ? 'block' : 'none';
+        document.querySelectorAll('.image-form-title').forEach((title, index) => {
+            const container = title.closest('.image-form-container');
+            const hasImage = container.querySelector('.room-image-preview');
+            const isNewUpload = container.querySelector('input[id$=-image]').files.length > 0;
+            const status = hasImage || isNewUpload ? 'Uploaded' : 'Not Uploaded';
+            title.innerHTML = `<i class="fas fa-camera me-2 text-primary"></i>Image ${index + 1}: ${status}`;
+        });
+    }
+
+    function updatePolicyCount() {
+        const policyCount = document.querySelectorAll('.policy-form-container').length;
+        const pc = document.getElementById('policy-count');
+        const msg = document.getElementById('no-policies-message');
+        if (pc) pc.textContent = policyCount;
+        if (msg) msg.style.display = policyCount === 0 ? 'block' : 'none';
+        document.querySelectorAll('.policy-form-title').forEach((title, index) => {
+            const container = title.closest('.policy-form-container');
+            const policyTextInput = container.querySelector('textarea[id$=-policy_text]');
+            const status = policyTextInput && policyTextInput.value ? 'Set' : 'Not Set';
+            title.innerHTML = `<i class="fas fa-shield-alt me-2 text-primary"></i>Policy ${index + 1}: ${status}`;
+        });
+    }
+
     // --- Add Room ---
     const addRoomBtn = document.getElementById('add-room');
     if (addRoomBtn) {
@@ -917,7 +1017,10 @@ document.addEventListener('DOMContentLoaded', function () {
             newForm.querySelectorAll('input, textarea, select').forEach(input => {
                 input.value = '';
                 if (input.type === 'checkbox') input.checked = false;
+                input.classList.remove('is-invalid');
             });
+
+            newForm.querySelectorAll('.invalid-feedback').forEach(feedback => feedback.remove());
 
             newForm.querySelectorAll('textarea[id$=-description]').forEach(textarea => {
                 textarea.setAttribute('rows', '2');
@@ -966,7 +1069,10 @@ document.addEventListener('DOMContentLoaded', function () {
             newForm.querySelectorAll('input, textarea, select').forEach(input => {
                 input.value = '';
                 if (input.type === 'checkbox') input.checked = false;
+                input.classList.remove('is-invalid');
             });
+
+            newForm.querySelectorAll('.invalid-feedback').forEach(feedback => feedback.remove());
 
             newForm.querySelectorAll('input[id$=-DELETE]').forEach(input => {
                 input.parentElement.remove();
@@ -981,67 +1087,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-
-    updateRoomCount();
-    updateExtraCount();
-});
-</script>
-
-<!-- Load Google Maps once -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-
-    function showError(input, message) {
-        // Remove existing alert if any
-        let existingAlert = input.parentElement.querySelector(".file-size-alert");
-        if (existingAlert) existingAlert.remove();
-
-        // Create new alert
-        let alertDiv = document.createElement("div");
-        alertDiv.className = "alert alert-danger mt-2 file-size-alert";
-        alertDiv.innerText = message;
-
-        // Insert right after the file input
-        input.parentElement.appendChild(alertDiv);
-    }
-
-    function clearError(input) {
-        let existingAlert = input.parentElement.querySelector(".file-size-alert");
-        if (existingAlert) existingAlert.remove();
-    }
-
-    function validateFileInput(input) {
-        const file = input.files[0];
-        if (file && file.size > MAX_SIZE) {
-            showError(input, "⚠️ The selected image is too large. Please upload an image under 2MB.");
-            input.value = ""; // Clear the file input
-        } else {
-            clearError(input);
-        }
-    }
-
-    // Attach to hotel image input
-    const hotelImageInput = document.getElementById("id_image");
-    if (hotelImageInput) {
-        hotelImageInput.addEventListener("change", function () {
-            validateFileInput(this);
-        });
-    }
-
-    // Attach to room form image inputs (handles dynamically added forms too)
-    document.addEventListener("change", function (e) {
-        if (e.target && e.target.matches("input[type='file'][id$='-image']")) {
-            validateFileInput(e.target);
-        }
-    });
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
     // --- Add Image ---
     const addImageBtn = document.getElementById('add-image');
     if (addImageBtn) {
@@ -1066,7 +1111,10 @@ document.addEventListener('DOMContentLoaded', function () {
             newForm.querySelectorAll('input, textarea, select').forEach(input => {
                 input.value = '';
                 if (input.type === 'checkbox') input.checked = false;
+                input.classList.remove('is-invalid');
             });
+
+            newForm.querySelectorAll('.invalid-feedback').forEach(feedback => feedback.remove());
 
             newForm.querySelector('.image-preview-container').innerHTML = `
                 <div class="default-image-placeholder">
@@ -1089,30 +1137,49 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Update Image Count ---
-    function updateImageCount() {
-        const imageCount = document.querySelectorAll('.image-form-container:not([style*="display: none"])').length; // Count only visible (non-deleted) containers
-        const ic = document.getElementById('image-count');
-        const msg = document.getElementById('no-images-message');
-        if (ic) ic.textContent = imageCount;
-        if (msg) msg.style.display = imageCount === 0 ? 'block' : 'none';
-        document.querySelectorAll('.image-form-title').forEach((title, index) => {
-            const container = title.closest('.image-form-container');
-            const hasImage = container.querySelector('.room-image-preview'); // Check for existing <img> preview
-            const isNewUpload = container.querySelector('input[id$=-image]').files.length > 0; // Check if new file selected
-            const status = hasImage || isNewUpload ? 'Uploaded' : 'Not Uploaded';
-            title.innerHTML = `<i class="fas fa-camera me-2 text-primary"></i>Image ${index + 1}: ${status}`;
+    // --- Add Policy ---
+    const addPolicyBtn = document.getElementById('add-policy');
+    if (addPolicyBtn) {
+        addPolicyBtn.addEventListener('click', function() {
+            const formset = document.getElementById('policy-forms');
+            const totalForms = document.querySelector('#id_policy-TOTAL_FORMS');
+            const formCount = parseInt(totalForms.value);
+            const templateForm = formset.querySelector('.policy-form-container');
+            if (!templateForm || formCount >= 10) return;
+
+            const newForm = templateForm.cloneNode(true);
+            newForm.innerHTML = newForm.innerHTML
+                .replace(/policy-\d+-/g, `policy-${formCount}-`)
+                .replace(/policy-collapse-\d+/g, `policy-collapse-${formCount + 1}`);
+            newForm.classList.add('animate__animated', 'animate__fadeIn');
+            newForm.dataset.formIndex = formCount;
+
+            newForm.querySelectorAll('input, textarea, select').forEach(input => {
+                input.value = '';
+                if (input.type === 'checkbox') input.checked = false;
+                input.classList.remove('is-invalid');
+            });
+
+            newForm.querySelectorAll('.invalid-feedback').forEach(feedback => feedback.remove());
+
+            newForm.querySelector('.policy-form-content').classList.remove('show');
+            newForm.querySelector('.policy-form-title').innerHTML = `<i class="fas fa-shield-alt me-2 text-primary"></i>Policy ${formCount + 1}: Not Set`;
+
+            formset.appendChild(newForm);
+            totalForms.value = formCount + 1;
+            updatePolicyCount();
+            newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     }
 
     // --- Delete Buttons ---
     document.addEventListener('click', function(e) {
         if (e.target.closest('.delete-btn')) {
-            e.preventDefault(); // Prevent any default behavior or bubbling that might interfere
+            e.preventDefault();
             const button = e.target.closest('.delete-btn');
             const targetId = button.dataset.target;
             const checkbox = document.getElementById(targetId);
-            if (checkbox && confirm("Are you sure you want to delete this item?")) { // Unified message for all (rooms, extras, images)
+            if (checkbox && confirm("Are you sure you want to delete this item?")) {
                 checkbox.checked = true;
                 const container = button.closest('.room-form-container, .extra-form-container, .image-form-container, .policy-form-container');
                 if (container) {
@@ -1126,56 +1193,61 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else if (container.classList.contains('policy-form-container')) {
                         updatePolicyCount();
                     }
-                    
                 }
             }
         }
-});
+    });
 
-    updateImageCount();
-    newForm.querySelector('.image-form-title').innerHTML = `<i class="fas fa-camera me-2 text-primary"></i>Image ${formCount + 1}: Not Uploaded`;
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- Add Policy ---
-    const addPolicyBtn = document.getElementById('add-policy');
-    if (addPolicyBtn) {
-        addPolicyBtn.addEventListener('click', function() {
-            const formset = document.getElementById('policy-forms');
-            const totalForms = document.querySelector('#id_policy-TOTAL_FORMS');
-            const formCount = parseInt(totalForms.value);
-            const templateForm = formset.querySelector('.policy-form-container');
-            if (!templateForm || formCount >= 10) return; // Limit to 10 policies
+    // --- File Size Validation ---
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
-            const newForm = templateForm.cloneNode(true);
-            newForm.innerHTML = newForm.innerHTML
-                .replace(/policy-\d+-/g, `policy-${formCount}-`)
-                .replace(/policy-collapse-\d+/g, `policy-collapse-${formCount + 1}`);
-            newForm.classList.add('animate__animated', 'animate__fadeIn');
-            newForm.dataset.formIndex = formCount;
+    function showError(input, message) {
+        let existingAlert = input.parentElement.querySelector(".file-size-alert");
+        if (existingAlert) existingAlert.remove();
 
-            newForm.querySelectorAll('input, textarea, select').forEach(input => {
-                input.value = '';
-                if (input.type === 'checkbox') input.checked = false;
-            });
+        let alertDiv = document.createElement("div");
+        alertDiv.className = "invalid-feedback d-block file-size-alert";
+        alertDiv.innerText = message;
+        input.parentElement.appendChild(alertDiv);
+    }
 
-            newForm.querySelector('.policy-form-content').classList.remove('show');
-            newForm.querySelector('.policy-form-title').innerHTML = `<i class="fas fa-shield-alt me-2 text-primary"></i>Policy ${formCount + 1}: Not Set`;
+    function clearError(input) {
+        let existingAlert = input.parentElement.querySelector(".file-size-alert");
+        if (existingAlert) existingAlert.remove();
+    }
 
-            formset.appendChild(newForm);
-            totalForms.value = formCount + 1;
-            newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    function validateFileInput(input) {
+        const file = input.files[0];
+        if (file && file.size > MAX_SIZE) {
+            showError(input, "⚠️ The selected image is too large. Please upload an image under 2MB.");
+            input.value = "";
+            input.classList.add('is-invalid');
+        } else {
+            clearError(input);
+            input.classList.remove('is-invalid');
+        }
+    }
+
+    const hotelImageInput = document.getElementById("id_image");
+    if (hotelImageInput) {
+        hotelImageInput.addEventListener("change", function () {
+            validateFileInput(this);
         });
     }
 
-    // --- Update Policy Count (optional, if needed later) ---
-    function updatePolicyCount() {
-        const policyCount = document.querySelectorAll('.policy-form-container').length;
-        const msg = document.getElementById('no-policies-message');
-        if (msg) msg.style.display = policyCount === 0 ? 'block' : 'none';
-    }
+    document.addEventListener("change", function (e) {
+        if (e.target && e.target.matches("input[type='file'][id$='-image']")) {
+            validateFileInput(e.target);
+        }
+    });
+
+    updateRoomCount();
+    updateExtraCount();
+    updateImageCount();
     updatePolicyCount();
 });
 </script>
+
+<!-- Load Google Maps once -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap"></script>
 {% endblock %}
