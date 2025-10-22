@@ -157,6 +157,14 @@ class HotelDetailView(DetailView):
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hotel = self.object
+        # Filter only images with actual files
+        context['hotel_images'] = hotel.images.exclude(image__isnull=True).exclude(image='').order_by('order')
+        return context
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         hotel = self.get_object()

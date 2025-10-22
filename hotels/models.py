@@ -85,6 +85,10 @@ class Hotel(models.Model):
 
     def get_public_name(self):
         return f"Hotel in {self.city}"
+    
+    def clean(self):
+        if not self.image:
+            raise ValidationError("An image file is required.")
 
     def __str__(self):
         return self.name

@@ -18,7 +18,7 @@ class HotelForm(forms.ModelForm):
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size
         ],
-        required=False
+        required=True
     )
     latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
     longitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
