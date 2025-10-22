@@ -8,8 +8,8 @@
 {% block sidebar_stats %}
 <div class="sidebar-stats">
     <div class="stat-card">
-        <div class="stat-card-title">Monthly Revenue</div>
-        <div class="stat-card-value">₦{{ period_revenue|floatformat:0|intcomma }}</div>
+        <div class="stat-card-title">Monthly Platform Gain</div>
+        <div class="stat-card-value">₦{{ monthly_platform_gain|floatformat:0|intcomma }}</div>
         <div class="stat-card-growth {% if revenue_growth >= 0 %}positive{% else %}negative{% endif %}">
             <i class="fas fa-arrow-{% if revenue_growth >= 0 %}up{% else %}down{% endif %}"></i>
             {{ revenue_growth|floatformat:1 }}% from previous
@@ -48,100 +48,139 @@
             </select>
         </div>
         <div class="col-md-3">
-            <button type="submit" class="btn btn w-100">Filter</button>
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
     </div>
 </form>
 
 <!-- KPI Summary Cards -->
 <div class="row mb-4">
+    <!-- ALL-TIME KPIs -->
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card shadow-sm border-0 text-center">
             <div class="card-body">
-                <h6 class="text-muted">Total Revenue</h6>
-                <h4 class="fw-bold text-dark">₦{{ total_revenue|floatformat:2|intcomma }}</h4>
-                <small class="text-muted">All-time commission</small>
+                <h6 class="text-muted">All-Time Hotel Revenue</h6>
+                <h4 class="fw-bold text-primary">₦{{ all_hotel_revenue|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Before commissions</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card shadow-sm border-0 text-center">
             <div class="card-body">
-                <h6 class="text-muted">Period Revenue</h6>
-                <h4 class="fw-bold text-primary">₦{{ period_revenue|floatformat:2|intcomma }}</h4>
-                <small class="text-muted">Filtered period</small>
+                <h6 class="text-muted">All-Time Service Charge (10% from Customers)</h6>
+                <h4 class="fw-bold text-success">₦{{ all_service_charge|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Platform earnings from bookings</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card shadow-sm border-0 text-center">
             <div class="card-body">
-                <h6 class="text-muted">Total Bookings</h6>
-                <h4 class="fw-bold text-success">{{ total_bookings|intcomma }}</h4>
-                <small class="text-muted">All-time</small>
+                <h6 class="text-muted">All-Time Hotel Commissions (10%)</h6>
+                <h4 class="fw-bold text-danger">₦{{ all_hotel_commission|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Platform earnings from hotels</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card shadow-sm border-0 text-center">
             <div class="card-body">
-                <h6 class="text-muted">Revenue Growth</h6>
-                <h4 class="fw-bold {% if revenue_growth >= 0 %}text-success{% else %}text-danger{% endif %}">{{ revenue_growth|floatformat:1 }}%</h4>
-                <small class="text-muted">vs previous period</small>
+                <h6 class="text-muted">All-Time Platform Gain</h6>
+                <h4 class="fw-bold text-dark">₦{{ all_platform_gain|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Combined commissions + service charge</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTHLY KPIs -->
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Monthly Hotel Revenue</h6>
+                <h4 class="fw-bold text-warning">₦{{ monthly_hotel_revenue|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Before commission (resets monthly)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Monthly Service Charge (10% from Customers)</h6>
+                <h4 class="fw-bold text-info">₦{{ monthly_service_charge|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Platform gain from bookings</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Monthly Hotel Commissions (10%)</h6>
+                <h4 class="fw-bold text-secondary">₦{{ monthly_hotel_commission|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Platform gain from hotels</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Monthly Platform Gain</h6>
+                <h4 class="fw-bold text-success">₦{{ monthly_platform_gain|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Combined commissions + service charge</small>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Chart with toggle (matching sales report) -->
+<!-- Chart with toggle -->
 <div class="card shadow-sm border-0 mb-5">
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <h5 class="card-title mb-0">Revenue Trend</h5>
+            <h5 class="card-title mb-0">Platform Revenue Trend (Combined Gains)</h5>
             <div class="btn-group mt-2 mt-sm-0" role="group">
-                <button class="btn btn-sm btn-outline{% if view_type == 'daily' %}active{% endif %}" onclick="updateChart('daily')">Daily</button>
-                <button class="btn btn-sm btn-outline{% if view_type == 'weekly' %}active{% endif %}" onclick="updateChart('weekly')">Weekly</button>
-                <button class="btn btn-sm btn-outline{% if view_type == 'monthly' %}active{% endif %}" onclick="updateChart('monthly')">Monthly</button>
+                <button class="btn btn-sm btn-outline-primary {% if view_type == 'daily' %}active{% endif %}" onclick="updateChart('daily')">Daily</button>
+                <button class="btn btn-sm btn-outline-primary {% if view_type == 'weekly' %}active{% endif %}" onclick="updateChart('weekly')">Weekly</button>
+                <button class="btn btn-sm btn-outline-primary {% if view_type == 'monthly' %}active{% endif %}" onclick="updateChart('monthly')">Monthly</button>
             </div>
         </div>
         <canvas id="revenueChart" height="120"></canvas>
     </div>
 </div>
 
-<!-- Recent Hotels Table (matching sales report table style) -->
-<div class="table-responsive mb-4">
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Name</th>
-                <th>Owner</th>
-                <th>Status</th>
-                <th>Created</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for hotel in recent_hotels %}
-            <tr>
-                <td>
-                    <a href="{% url 'superadmin_hotel_detail' hotel.slug %}" class="text-decoration-none fw-medium">{{ hotel.name }}</a>
-                </td>
-                <td>{{ hotel.owner.full_name|default:hotel.owner.email }}</td>
-                <td>
-                    {% if hotel.is_approved %}
-                        <span class="badge bg-success">Approved</span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    {% endif %}
-                </td>
-                <td>{{ hotel.created_at|date:"M d, Y" }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center">No recent hotels</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Recent Hotels Custom Table -->
+<div class="custom-table-container">
+    <div class="custom-table-header d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Recent Hotels</h5>
+        <a href="{% url 'superadmin_hotel_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="custom-table">
+        <div class="custom-table-row header">
+            <div class="custom-table-cell">Name</div>
+            <div class="custom-table-cell">Owner</div>
+            <div class="custom-table-cell">Status</div>
+            <div class="custom-table-cell">Created</div>
+        </div>
+        {% for hotel in recent_hotels %}
+        <div class="custom-table-row">
+            <div class="custom-table-cell" data-label="Name">
+                <a href="{% url 'superadmin_hotel_detail' hotel.slug %}" class="text-decoration-none fw-medium">{{ hotel.name }}</a>
+            </div>
+            <div class="custom-table-cell" data-label="Owner">{{ hotel.owner.full_name|default:hotel.owner.email }}</div>
+            <div class="custom-table-cell" data-label="Status">
+                {% if hotel.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                {% endif %}
+            </div>
+            <div class="custom-table-cell" data-label="Created">{{ hotel.created_at|date:"M d, Y" }}</div>
+        </div>
+        {% empty %}
+        <div class="custom-table-row text-center">
+            <div class="custom-table-cell" style="grid-column: 1 / -1;">No recent hotels</div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <!-- Chart.js -->
@@ -157,9 +196,9 @@ function renderChart(labels, data) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Revenue (₦)',
+                label: 'Platform Gain (₦)',
                 data: data,
-                backgroundColor: '#001f3f'
+                backgroundColor: '#121643'
             }]
         },
         options: {
@@ -181,12 +220,10 @@ function renderChart(labels, data) {
     });
 }
 
-// Default load (based on view_type)
-let labels = {{ chart_labels|safe }};
-let data = {{ chart_data|safe }};
-renderChart(labels, data);
+// Default load
+renderChart({{ chart_labels|safe }}, {{ chart_data|safe }});
 
-// Toggle function (submit form with view param)
+// Toggle function
 function updateChart(type) {
     const select = document.querySelector('select[name="view"]');
     select.value = type;
@@ -194,8 +231,88 @@ function updateChart(type) {
 }
 </script>
 
-<!-- Custom Styles (matching sales report) -->
+
+
+<!-- Custom Table Styles -->
 <style>
+.custom-table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.custom-table-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.custom-table {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+}
+
+.custom-table-row {
+    display: contents;
+}
+
+.custom-table-cell {
+    padding: 12px 20px;
+    border-bottom: 1px solid #dee2e6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header .custom-table-cell {
+    background: #121643;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.custom-table-row:last-child .custom-table-cell {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .custom-table {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-table-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        border-bottom: 1px solid #dee2e6;
+        padding: 10px 0;
+    }
+    
+    .custom-table-cell {
+        padding: 8px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-table-cell:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #121643;
+        margin-right: 10px;
+    }
+    
+    .header {
+        display: none;
+    }
+    
+    .custom-table-cell[data-label="Name"] { order: 1; }
+    .custom-table-cell[data-label="Owner"] { order: 2; }
+    .custom-table-cell[data-label="Status"] { order: 3; }
+    .custom-table-cell[data-label="Created"] { order: 4; }
+}
+
 /* Keep cards same height */
 .card {
     min-height: 120px;
@@ -210,15 +327,6 @@ function updateChart(type) {
     font-size: 1.2rem;
     word-break: break-word;
 }
-.btn {
-    border-radius: 0rem;
-    background-color: #121643;
-    color: #ffffff;
-}
-.btn:hover{
-    background-color: #0e123a;
-    color: #ffffff;
-}
 
 /* Chart header responsiveness */
 @media (max-width: 576px) {
@@ -229,7 +337,28 @@ function updateChart(type) {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
     }
-    
+}
+
+/* Button styles to match sales report */
+.btn-primary {
+    background-color: #121643;
+    border-color: #121643;
+    border-radius: 0px;
+}
+.btn-primary:hover {
+    background-color: #0e123a;
+    border-color: #0e123a;
+}
+.btn-outline-primary {
+    color: #121643;
+    border-color: #121643;
+    border-radius: 0px;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary.active {
+    background-color: #121643;
+    color: white;
+    border-radius: 0px;
 }
 </style>
 {% endblock %}

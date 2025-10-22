@@ -31,6 +31,7 @@ import calendar, json
 from datetime import timedelta
 from .forms import DateRangeForm
 from django.template.defaultfilters import register
+from django.db.models import Min
 
 
 
@@ -366,8 +367,8 @@ def hotel_sales_report(request, slug):
     form = DateRangeForm(request.GET or None)
 
     # Default to last 30 days
+    start_date = Booking.objects.filter(room__hotel=hotel).aggregate(first=Min('check_in'))['first'] or timezone.now().date()
     end_date = timezone.now().date()
-    start_date = end_date - timedelta(days=30)
 
     if form.is_valid():
         start_date = form.cleaned_data["start_date"]

@@ -5,127 +5,164 @@
 
 {% block extra_css %}
 <style>
-    .hotel-header {
-        background: linear-gradient(135deg, #121643 0%, #1a1f5c 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-    }
-    .action-buttons .btn {
-        margin-right: 10px;
-        margin-bottom: 10px;
-    }
+.hotel-header {
+    background: linear-gradient(135deg, #121643 0%, #1a1f5c 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+.card { min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+.card h6 { font-size: 0.9rem; }
+.card h4 { font-size: 1.2rem; word-break: break-word; }
+.nav-tabs .nav-link { color: #121643; font-weight: 600; }
+.nav-tabs .nav-link.active { background-color: #121643; color: white; }
+.btn-outline-primary.active { background-color: #121643; color: white; }
+.pagination .page-link {
+    color: #121643;
+    border-color: #121643;
+}
+.pagination .page-link:hover {
+    background-color: #121643;
+    color: #fff;
+}
+.pagination .page-item.active .page-link {
+    background-color: #121643;
+    border-color: #121643;
+    color: #fff;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hotel Header -->
+<!-- Header -->
 <div class="hotel-header">
     <div class="row align-items-center">
         <div class="col-md-8">
             <h2 class="mb-2">{{ hotel.name }}</h2>
-            <p class="mb-2">
-                <i class="fas fa-map-marker-alt"></i> {{ hotel.address }}, {{ hotel.city }}, {{ hotel.suburb }}
-            </p>
-            <p class="mb-0">
-                <i class="fas fa-user"></i> Owner: {{ hotel.owner.full_name|default:hotel.owner.email }} 
-                ({{ hotel.owner.email }})
-            </p>
+            <p class="mb-2"><i class="fas fa-map-marker-alt"></i> {{ hotel.address }}, {{ hotel.city }}, {{ hotel.suburb }}</p>
+            <p class="mb-0"><i class="fas fa-user"></i> Owner: {{ hotel.owner.full_name|default:hotel.owner.email }} ({{ hotel.owner.email }})</p>
         </div>
         <div class="col-md-4 text-end">
             {% if hotel.is_approved %}
-                <span class="badge bg-success fs-6 mb-2">
-                    <i class="fas fa-check-circle"></i> Approved
-                </span>
+                <span class="badge bg-success fs-6 mb-2"><i class="fas fa-check-circle"></i> Approved</span>
             {% else %}
-                <span class="badge bg-warning text-dark fs-6 mb-2">
-                    <i class="fas fa-clock"></i> Pending Approval
-                </span>
+                <span class="badge bg-warning text-dark fs-6 mb-2"><i class="fas fa-clock"></i> Pending Approval</span>
             {% endif %}
-            <br>
-            <small>Created: {{ hotel.created_at|date:"M d, Y" }}</small>
+            <br><small>Created: {{ hotel.created_at|date:"M d, Y" }}</small>
         </div>
     </div>
 </div>
 
 <!-- Action Buttons -->
-<div class="dashboard-card mb-4">
-    <div class="action-buttons">
-        <a href="{% url 'superadmin_hotel_toggle_approve' hotel.pk %}" 
-           class="btn btn-{% if hotel.is_approved %}warning{% else %}success{% endif %}">
-            <i class="fas fa-{% if hotel.is_approved %}times-circle{% else %}check-circle{% endif %}"></i>
-            {% if hotel.is_approved %}Mark as Pending{% else %}Approve Hotel{% endif %}
-        </a>
-        <a href="{% url 'superadmin_hotel_edit' hotel.slug %}" class="btn btn-primary">
-            <i class="fas fa-edit"></i> Edit Hotel
-        </a>
-        <a href="{% url 'superadmin_hotel_delete' hotel.slug %}" class="btn btn-danger">
-            <i class="fas fa-trash"></i> Delete Hotel
-        </a>
-        <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-outline-secondary" target="_blank">
-            <i class="fas fa-external-link-alt"></i> View Public Page
-        </a>
-    </div>
+<div class="mb-4">
+    <a href="{% url 'superadmin_hotel_toggle_approve' hotel.pk %}" class="btn btn-{% if hotel.is_approved %}warning{% else %}success{% endif %}">
+        <i class="fas fa-{% if hotel.is_approved %}times-circle{% else %}check-circle{% endif %}"></i> {% if hotel.is_approved %}Mark as Pending{% else %}Approve Hotel{% endif %}
+    </a>
+    <!--<a href="{% url 'superadmin_hotel_edit' hotel.slug %}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit Hotel</a>-->
+    <a href="{% url 'superadmin_hotel_delete' hotel.slug %}" class="btn btn-danger"><i class="fas fa-trash"></i> Delete Hotel</a>
+    <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-external-link-alt"></i> View Public Page</a>
 </div>
 
-<!-- Revenue Statistics -->
+<!-- KPI Cards -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="metric-card">
-            <h6>Total Revenue</h6>
-            <div class="value">₦{{ total_revenue|floatformat:0|intcomma }}</div>
-            <div class="trend">All-time</div>
+    <!-- Existing KPIs -->
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">All-Time Hotel Revenue</h6>
+                <h4 class="fw-bold text-primary">₦{{ total_revenue|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Before commission</small>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);">
-            <h6>Commission (10%)</h6>
-            <div class="value">₦{{ total_commission|floatformat:0|intcomma }}</div>
-            <div class="trend">Platform earnings</div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">All-Time Commission (10%)</h6>
+                <h4 class="fw-bold text-danger">₦{{ total_commission|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Platform earnings</small>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);">
-            <h6>This Month</h6>
-            <div class="value">₦{{ current_month_revenue|floatformat:0|intcomma }}</div>
-            <div class="trend">Current month revenue</div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Current Month Revenue</h6>
+                <h4 class="fw-bold text-success">₦{{ current_month_revenue|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Resets monthly</small>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
-            <h6>Total Bookings</h6>
-            <div class="value">{{ total_bookings|intcomma }}</div>
-            <div class="trend">All-time paid</div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Current Month Commission</h6>
+                <h4 class="fw-bold text-info">₦{{ current_month_commission|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Resets monthly</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- New KPIs -->
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Monthly Payout</h6>
+                <h4 class="fw-bold text-dark">₦{{ current_month_payout|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">After commission</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Weekly Hotel Revenue</h6>
+                <h4 class="fw-bold text-warning">₦{{ weekly_revenue|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Last 7 days</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Weekly Hotel Payout</h6>
+                <h4 class="fw-bold text-warning">₦{{ weekly_payout|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Last 7 days</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Weekly Hotel Commission</h6>
+                <h4 class="fw-bold text-warning">₦{{ weekly_commission|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">Last 7 days</small>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Revenue Chart -->
-<div class="dashboard-card mb-4">
-    <h5 class="mb-3">
-        <i class="fas fa-chart-line"></i> Revenue Trend (Last 12 Months)
-    </h5>
-    <canvas id="revenueChart" height="80"></canvas>
+<!-- Chart -->
+<div class="card shadow-sm border-0 mb-5">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0"><i class="fas fa-chart-line"></i> Revenue Trend</h5>
+            <div class="btn-group mt-2 mt-sm-0" role="group">
+                <button class="btn btn-sm btn-outline-primary" onclick="updateChart('daily')">Daily</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="updateChart('weekly')">Weekly</button>
+                <button class="btn btn-sm btn-outline-primary active" id="monthlyBtn" onclick="updateChart('monthly')">Monthly</button>
+            </div>
+        </div>
+        <canvas id="revenueChart" height="120"></canvas>
+    </div>
 </div>
 
-<!-- Tabs for Details -->
+<!-- Tabs -->
 <ul class="nav nav-tabs mb-4" id="hotelTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms" type="button">
-            <i class="fas fa-bed"></i> Rooms ({{ rooms.count }})
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
-            <i class="fas fa-star"></i> Reviews ({{ reviews.count }})
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button">
-            <i class="fas fa-info-circle"></i> Hotel Info
-        </button>
-    </li>
+    <li class="nav-item"><button class="nav-link active" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms">Rooms ({{ rooms.count }})</button></li>
+    <li class="nav-item"><button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews">Reviews ({{ reviews.paginator.count }})</button></li>
+    <li class="nav-item"><button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info">Hotel Info</button></li>
 </ul>
 
 <div class="tab-content" id="hotelTabContent">
@@ -149,120 +186,69 @@
                     <tbody>
                         {% for room in rooms %}
                         <tr>
-                            <td>
-                                {% if room.image %}
-                                <img src="{{ room.image.url }}" alt="{{ room.room_type }}" 
-                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;" 
-                                     class="me-2">
-                                {% endif %}
-                                <strong>{{ room.room_type }}</strong>
-                            </td>
-                            <td>{{ room.capacity }} guests</td>
+                            <td><strong class="text-dark">{{ room.room_type }}</strong></td>
+                            <td>{{ room.capacity }}</td>
                             <td>₦{{ room.price_per_hour|floatformat:0|intcomma }}</td>
-                            <td>
-                                {% if room.twelve_hour_price %}
-                                    ₦{{ room.twelve_hour_price|floatformat:0|intcomma }}
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if room.twenty_four_hour_price %}
-                                    ₦{{ room.twenty_four_hour_price|floatformat:0|intcomma }}
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
+                            <td>{% if room.twelve_hour_price %}₦{{ room.twelve_hour_price|floatformat:0|intcomma }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                            <td>{% if room.twenty_four_hour_price %}₦{{ room.twenty_four_hour_price|floatformat:0|intcomma }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
                             <td>{{ room.total_units }}</td>
-                            <td>
-                                {% if room.is_available %}
-                                    <span class="badge bg-success">Available</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Unavailable</span>
-                                {% endif %}
-                            </td>
+                            <td>{% if room.is_available %}<span class="badge bg-success">Available</span>{% else %}<span class="badge bg-danger">Unavailable</span>{% endif %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-bed fa-3x mb-3"></i>
-                <p>No rooms added yet</p>
-            </div>
+            <div class="text-center py-5 text-muted"><i class="fas fa-bed fa-3x mb-3"></i><p>No rooms added yet</p></div>
             {% endif %}
         </div>
     </div>
-    
-    <!-- Reviews Tab -->
+
+    <!-- Reviews -->
     <div class="tab-pane fade" id="reviews" role="tabpanel">
         <div class="dashboard-card">
             {% if reviews %}
-            <div class="mb-3">
-                <strong>Average Rating:</strong> 
-                <span class="text-warning">
-                    {% for i in "12345" %}
-                        {% if forloop.counter <= avg_rating %}
-                            <i class="fas fa-star"></i>
-                        {% else %}
-                            <i class="far fa-star"></i>
-                        {% endif %}
-                    {% endfor %}
-                </span>
-                ({{ avg_rating }}/5)
-            </div>
-            <hr>
-            {% for review in reviews %}
-            <div class="mb-3 pb-3 border-bottom">
-                <div class="d-flex justify-content-between">
+                <div class="mb-3"><strong>Average Rating:</strong>
+                    <span class="text-warning">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    ({{ avg_rating }}/5)
+                </div><hr>
+                {% for review in reviews %}
+                <div class="mb-3 pb-3 border-bottom">
                     <strong>{{ review.name }}</strong>
-                    <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    <small class="text-muted float-end">{{ review.created_at|date:"M d, Y" }}</small>
+                    <div class="text-warning mb-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                        {% endfor %}
+                    </div>
+                    <p>{{ review.review_text }}</p>
                 </div>
-                <div class="text-warning mb-2">
-                    {% for i in "12345" %}
-                        {% if forloop.counter <= review.rating %}
-                            <i class="fas fa-star"></i>
-                        {% else %}
-                            <i class="far fa-star"></i>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                <p class="mb-0">{{ review.review_text }}</p>
-            </div>
-            {% endfor %}
+                {% endfor %}
+                {% include 'pagination.html' with page_obj=reviews query_string=query_string %}
             {% else %}
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-star fa-3x mb-3"></i>
-                <p>No reviews yet</p>
-            </div>
+                <div class="text-center py-5 text-muted"><i class="fas fa-star fa-3x mb-3"></i><p>No reviews yet</p></div>
             {% endif %}
         </div>
     </div>
-    
-    <!-- Hotel Info Tab -->
+
+    <!-- Hotel Info -->
     <div class="tab-pane fade" id="info" role="tabpanel">
         <div class="dashboard-card">
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <strong>Email:</strong> {{ hotel.hotel_email|default:"Not provided" }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    <strong>Phone:</strong> {{ hotel.hotel_phone|default:"Not provided" }}
-                </div>
-                <div class="col-md-12 mb-3">
-                    <strong>Description:</strong>
-                    <p>{{ hotel.description|default:"No description provided" }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <strong>Bank Name:</strong> {{ hotel.bank_name|default:"Not provided" }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    <strong>Account Number:</strong> {{ hotel.account_number|default:"Not provided" }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    <strong>Account Name:</strong> {{ hotel.account_name|default:"Not provided" }}
-                </div>
+                <div class="col-md-6 mb-3"><strong>Email:</strong> {{ hotel.hotel_email|default:"Not provided" }}</div>
+                <div class="col-md-6 mb-3"><strong>Phone:</strong> {{ hotel.hotel_phone|default:"Not provided" }}</div>
+                <div class="col-md-6 mb-3"><strong>Bank Name:</strong> {{ hotel.bank_name|default:"Not provided" }}</div>
+                <div class="col-md-6 mb-3"><strong>Account Name:</strong> {{ hotel.account_name|default:"Not provided" }}</div>
+                <div class="col-md-6 mb-3"><strong>Account Number:</strong> {{ hotel.account_number|default:"Not provided" }}</div>
+                <div class="col-md-12"><strong>Description:</strong><p>{{ hotel.description|default:"No description provided" }}</p></div>
             </div>
         </div>
     </div>
@@ -272,42 +258,67 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Revenue Chart
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ monthly_labels|safe }},
-            datasets: [{
-                label: 'Revenue (₦)',
-                data: {{ monthly_revenue|safe }},
-                borderColor: '#121643',
-                backgroundColor: 'rgba(18, 22, 67, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
+let chart;
+const ctx = document.getElementById('revenueChart').getContext('2d');
+function renderChart(labels, data) {
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: 'Revenue (₦)', data: data, backgroundColor: '#121643' }] },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value) {
-                            if (value >= 1000000) return '₦' + (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 1000) return '₦' + (value / 1000).toFixed(0) + 'K';
-                            return '₦' + value;
-                        }
+                        callback: value => value >= 1e6 ? (value/1e6).toFixed(1)+'M' : value >= 1e3 ? (value/1e3).toFixed(1)+'K' : value
                     }
                 }
             }
         }
     });
+}
+// Default
+renderChart({{ monthly_labels|safe }}, {{ monthly_revenue_data|safe }});
+// Toggle
+function updateChart(type) {
+    document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+    if (type === 'daily') {
+        renderChart({{ daily_labels|safe }}, {{ daily_revenue_data|safe }});
+        event.target.classList.add('active');
+    } else if (type === 'weekly') {
+        renderChart({{ weekly_labels|safe }}, {{ weekly_revenue_data|safe }});
+        event.target.classList.add('active');
+    } else {
+        renderChart({{ monthly_labels|safe }}, {{ monthly_revenue_data|safe }});
+        document.getElementById('monthlyBtn').classList.add('active');
+    }
+}
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Preserve active tab on reload
+    const hash = window.location.hash;
+    if (hash) {
+        const activeTab = document.querySelector(`button[data-bs-target="${hash}"]`);
+        if (activeTab) {
+            const tab = new bootstrap.Tab(activeTab);
+            tab.show();
+            document.querySelector(hash).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // When pagination link is clicked in reviews, add #reviews to URL
+    document.querySelectorAll('#reviews .pagination a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            url.hash = '#reviews';
+            window.location.href = url.toString();
+        });
+    });
+});
+</script>
+
 {% endblock %}

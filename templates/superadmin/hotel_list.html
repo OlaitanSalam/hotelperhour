@@ -4,9 +4,9 @@
 {% block page_title %}Hotels Management{% endblock %}
 
 {% block content %}
-<!-- Search and Filter Bar -->
+<!-- Search & Filter -->
 <div class="dashboard-card mb-4">
-    <form method="get" class="row g-3">
+    <form method="get" class="row g-3 align-items-center">
         <div class="col-md-5">
             <input type="text" name="search" class="form-control" placeholder="Search by hotel name or city..." value="{{ request.GET.search }}">
         </div>
@@ -30,17 +30,17 @@
     </form>
 </div>
 
-<!-- Hotels Table -->
+<!-- Hotels List -->
 <div class="dashboard-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">
             <i class="fas fa-hotel"></i> All Hotels ({{ page_obj.paginator.count }})
         </h5>
     </div>
-    
+
     {% if hotels %}
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle hotel-table mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Hotel</th>
@@ -49,35 +49,31 @@
                     <th>Rooms</th>
                     <th>Status</th>
                     <th>Created</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for hotel in hotels %}
-                <tr>
+                <tr class="hotel-row" onclick="window.location.href='{% url 'superadmin_hotel_detail' hotel.slug %}'" style="cursor:pointer;">
                     <td>
                         <div class="d-flex align-items-center">
                             {% if hotel.image %}
-                            <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" 
-                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" 
-                                 class="me-3">
+                            <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}"
+                                 style="width:50px; height:50px; object-fit:cover; border-radius:8px;" class="me-3">
                             {% else %}
-                            <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 8px;" 
+                            <div style="width:50px; height:50px; background:#e0e0e0; border-radius:8px;"
                                  class="me-3 d-flex align-items-center justify-content-center">
                                 <i class="fas fa-hotel text-muted"></i>
                             </div>
                             {% endif %}
                             <div>
-                                <strong>{{ hotel.name }}</strong>
-                                <br>
+                                <strong class="text-dark">{{ hotel.name }}</strong><br>
                                 <small class="text-muted">{{ hotel.slug }}</small>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div>
-                            {{ hotel.owner.full_name|default:hotel.owner.email }}
-                            <br>
+                            {{ hotel.owner.full_name|default:hotel.owner.email }}<br>
                             <small class="text-muted">{{ hotel.owner.email }}</small>
                         </div>
                     </td>
@@ -85,46 +81,21 @@
                         {{ hotel.city }}<br>
                         <small class="text-muted">{{ hotel.suburb }}</small>
                     </td>
-                    <td>
-                        <span class="badge bg-info">{{ hotel.room_set.count }} rooms</span>
-                    </td>
+                    <td><span class="badge bg-info">{{ hotel.room_set.count }} rooms</span></td>
                     <td>
                         {% if hotel.is_approved %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-check-circle"></i> Approved
-                            </span>
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>
                         {% else %}
-                            <span class="badge bg-warning text-dark">
-                                <i class="fas fa-clock"></i> Pending
-                            </span>
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> Pending</span>
                         {% endif %}
                     </td>
                     <td>{{ hotel.created_at|date:"M d, Y" }}</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a href="{% url 'superadmin_hotel_detail' hotel.slug %}" 
-                               class="btn btn-sm btn-outline-primary" 
-                               title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{% url 'superadmin_hotel_edit' hotel.slug %}" 
-                               class="btn btn-sm btn-outline-warning" 
-                               title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{% url 'superadmin_hotel_delete' hotel.slug %}" 
-                               class="btn btn-sm btn-outline-danger" 
-                               title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    
+
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
     <nav aria-label="Page navigation" class="mt-4">
@@ -137,11 +108,9 @@
                 <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
             </li>
             {% endif %}
-            
             <li class="page-item active">
                 <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
             </li>
-            
             {% if page_obj.has_next %}
             <li class="page-item">
                 <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
@@ -153,7 +122,6 @@
         </ul>
     </nav>
     {% endif %}
-    
     {% else %}
     <div class="text-center py-5">
         <i class="fas fa-hotel fa-4x text-muted mb-3"></i>
@@ -166,4 +134,36 @@
     </div>
     {% endif %}
 </div>
+
+<style>
+.hotel-table th {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    color: #001f3f;
+}
+.hotel-table td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+.hotel-row:hover {
+    background-color: rgba(0, 31, 63, 0.05);
+    transition: background 0.2s ease;
+}
+.badge {
+    font-size: 0.75rem;
+}
+.pagination .page-link {
+    color: #001f3f;
+    border-radius: 0;
+}
+.pagination .page-item.active .page-link {
+    background-color: #001f3f;
+    border-color: #001f3f;
+}
+.pagination .page-link:hover {
+    color: #001f3f;
+    background-color: rgba(0, 31, 63, 0.08);
+}
+</style>
 {% endblock %}

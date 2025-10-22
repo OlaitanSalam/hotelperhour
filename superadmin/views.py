@@ -3,7 +3,8 @@ from django.views.generic import ListView, DetailView, DeleteView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, Count, Avg
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.http import urlencode
 from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
 from django.utils import timezone
 from django.urls import reverse_lazy
@@ -15,12 +16,13 @@ from datetime import timedelta, date
 from dateutil.relativedelta import relativedelta
 import json
 import calendar
-
+from django.db.models import F, ExpressionWrapper, DecimalField, Q
 from hotels.forms import DateRangeForm
 from hotels.models import Hotel, Room, Review
 from customers.models import Customer
 from users.models import CustomUser
 from bookings.models import Booking
+
 
 
 class SuperuserRequiredMixin(UserPassesTestMixin):
@@ -36,11 +38,12 @@ class SuperuserRequiredMixin(UserPassesTestMixin):
         return redirect('home')
 
 
+# superadmin/views.py
 class DashboardView(SuperuserRequiredMixin, ListView):
     template_name = 'superadmin/dashboard.html'
     model = Hotel
     context_object_name = 'recent_hotels'
-    
+
     def get_queryset(self):
         return Hotel.objects.select_related('owner').order_by('-created_at')[:5]
 
@@ -48,106 +51,113 @@ class DashboardView(SuperuserRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         form = DateRangeForm(self.request.GET or None)
         now = timezone.now()
-        
-        # Default to current month if no form data
+
         if form.is_valid():
-            start_date = form.cleaned_data.get('start_date') or (now - timedelta(days=30))
+            start_date = form.cleaned_data.get('start_date') or (now - timedelta(days=365))
             end_date = form.cleaned_data.get('end_date') or now
         else:
-            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
             end_date = now
-        
-        # Optimized Queries for Counts (O(1) time)
+
+        current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # ====== BASE BOOKINGS ======
+        all_bookings = Booking.objects.filter(is_paid=True).annotate(
+            hotel_revenue=ExpressionWrapper(F('total_amount') - F('service_charge'), output_field=DecimalField())
+        )
+
+        # ====== ALL-TIME KPI ======
+        all_service_charge = all_bookings.aggregate(total=Sum('service_charge'))['total'] or Decimal('0.00')
+        all_hotel_revenue = all_bookings.aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+        all_hotel_commission = all_hotel_revenue * Decimal('0.10')
+        all_platform_gain = all_service_charge + all_hotel_commission
+
+        # ====== MONTHLY KPI ======
+        monthly_bookings = all_bookings.filter(created_at__gte=current_month_start)
+        monthly_service_charge = monthly_bookings.aggregate(total=Sum('service_charge'))['total'] or Decimal('0.00')
+        monthly_hotel_revenue = monthly_bookings.aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+        monthly_hotel_commission = monthly_hotel_revenue * Decimal('0.10')
+        monthly_platform_gain = monthly_service_charge + monthly_hotel_commission
+
+        # ====== COUNTS ======
         total_hotels = Hotel.objects.count()
         total_customers = Customer.objects.count()
         total_owners = CustomUser.objects.filter(is_hotel_owner=True).count()
         total_users = total_customers + total_owners
-        total_bookings = Booking.objects.filter(is_paid=True).count()
-        
-        # Revenue (commission = service_charge)
-        total_revenue = Booking.objects.filter(is_paid=True).aggregate(
-            total=Sum('service_charge')
-        )['total'] or Decimal('0.00')
-        
-        # Period-specific revenue/commission/service_charge (same as revenue here)
-        period_revenue = Booking.objects.filter(
-            is_paid=True,
-            created_at__range=(start_date, end_date)
-        ).aggregate(
-            total=Sum('service_charge')
-        )['total'] or Decimal('0.00')
-        
-        # Previous period for growth comparison
-        prev_start = start_date - (end_date - start_date)
-        prev_end = end_date - (end_date - start_date)
-        prev_revenue = Booking.objects.filter(
-            is_paid=True,
-            created_at__range=(prev_start, prev_end)
-        ).aggregate(
-            total=Sum('service_charge')
-        )['total'] or Decimal('0.00')
-        
-        revenue_growth = ((period_revenue - prev_revenue) / prev_revenue * 100) if prev_revenue > 0 else (100 if period_revenue > 0 else 0)
-        
-        # Chart Data - Dynamic based on filter (optimized with annotations)
+
+        # ====== REVENUE GROWTH ======
+        prev_month_start = current_month_start - relativedelta(months=1)
+        prev_month_end = current_month_start - timedelta(seconds=1)
+        prev_bookings = all_bookings.filter(created_at__range=(prev_month_start, prev_month_end))
+        prev_service_charge = prev_bookings.aggregate(total=Sum('service_charge'))['total'] or Decimal('0.00')
+        revenue_growth = ((monthly_service_charge - prev_service_charge) / prev_service_charge * 100) if prev_service_charge > 0 else (100 if monthly_service_charge > 0 else 0)
+
+        # ====== CHART DATA (Platform Gain per month) ======
         view_type = self.request.GET.get('view', 'monthly')
-        
+        labels, data = [], []
+
         if view_type == 'daily':
-            # Last 30 days
-            chart_data = Booking.objects.filter(
-                is_paid=True,
-                created_at__gte=now - timedelta(days=30)
-            ).annotate(
-                period=TruncDay('created_at')
-            ).values('period').annotate(
-                revenue=Sum('service_charge')
+            chart_data = all_bookings.filter(created_at__gte=now - timedelta(days=30)).annotate(period=TruncDay('created_at')).values('period').annotate(
+                service=Sum('service_charge'),
+                revenue=Sum(F('total_amount') - F('service_charge'))
             ).order_by('period')
-            labels = [item['period'].strftime('%b %d') for item in chart_data]
-            data = [float(item['revenue'] or 0) for item in chart_data]
-        
+            for row in chart_data:
+                labels.append(row['period'].strftime('%b %d'))
+                commission = (row['revenue'] or 0) * Decimal('0.10')
+                total_gain = (row['service'] or 0) + commission
+                data.append(float(total_gain))
         elif view_type == 'weekly':
-            # Last 12 weeks
-            chart_data = []
             for i in range(11, -1, -1):
-                week_start = now - timedelta(days=now.weekday() + 7*i)
-                week_end = week_start + timedelta(days=6)
-                revenue = Booking.objects.filter(
-                    is_paid=True,
-                    created_at__range=(week_start, week_end)
-                ).aggregate(total=Sum('service_charge'))['total'] or 0
-                chart_data.append({
-                    'label': f"Week of {week_start.strftime('%b %d')}",
-                    'revenue': float(revenue)
-                })
-            labels = [item['label'] for item in chart_data]
-            data = [item['revenue'] for item in chart_data]
-        
-        else:  # Monthly, last 12 months
-            chart_data = Booking.objects.filter(
-                is_paid=True,
-                created_at__gte=now - relativedelta(months=12)
-            ).annotate(
-                period=TruncMonth('created_at')
-            ).values('period').annotate(
-                revenue=Sum('service_charge')
-            ).order_by('period')
-            labels = [item['period'].strftime('%b %Y') for item in chart_data]
-            data = [float(item['revenue'] or 0) for item in chart_data]
-        
+                week_end = now - timedelta(days=now.weekday() + 1 + 7*i)
+                week_start = week_end - timedelta(days=6)
+                agg = all_bookings.filter(created_at__range=(week_start, week_end)).aggregate(
+                    service=Sum('service_charge'),
+                    revenue=Sum(F('total_amount') - F('service_charge'))
+                )
+                commission = (agg['revenue'] or 0) * Decimal('0.10')
+                total_gain = (agg['service'] or 0) + commission
+                labels.append(f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d')}")
+                data.append(float(total_gain))
+        else:
+            current_month = now.replace(day=1)
+            for i in range(11, -1, -1):
+                month = current_month - relativedelta(months=i)
+                agg = all_bookings.filter(created_at__year=month.year, created_at__month=month.month).aggregate(
+                    service=Sum('service_charge'),
+                    revenue=Sum(F('total_amount') - F('service_charge'))
+                )
+                commission = (agg['revenue'] or 0) * Decimal('0.10')
+                total_gain = (agg['service'] or 0) + commission
+                labels.append(month.strftime('%b %Y'))
+                data.append(float(total_gain))
+
+        # ====== CONTEXT ======
         context.update({
             'form': form,
             'total_hotels': total_hotels,
             'total_users': total_users,
-            'total_bookings': total_bookings,
             'total_customers': total_customers,
-            'total_revenue': total_revenue,
-            'period_revenue': period_revenue,
             'revenue_growth': round(revenue_growth, 2),
+
+            # --- ALL-TIME KPI ---
+            'all_hotel_revenue': all_hotel_revenue,
+            'all_service_charge': all_service_charge,
+            'all_hotel_commission': all_hotel_commission,
+            'all_platform_gain': all_platform_gain,
+
+            # --- MONTHLY KPI ---
+            'monthly_hotel_revenue': monthly_hotel_revenue,
+            'monthly_service_charge': monthly_service_charge,
+            'monthly_hotel_commission': monthly_hotel_commission,
+            'monthly_platform_gain': monthly_platform_gain,
+
+            # --- CHART ---
             'chart_labels': json.dumps(labels),
             'chart_data': json.dumps(data),
             'view_type': view_type,
         })
         return context
+
 
 
 class HotelListView(SuperuserRequiredMixin, ListView):
@@ -179,12 +189,6 @@ class HotelListView(SuperuserRequiredMixin, ListView):
 
 
 class HotelDetailView(SuperuserRequiredMixin, DetailView):
-    """
-    Shows detailed hotel information including:
-    - Sales statistics
-    - Revenue charts
-    - Rooms and bookings
-    """
     template_name = 'superadmin/hotel_detail.html'
     model = Hotel
     context_object_name = 'hotel'
@@ -195,58 +199,106 @@ class HotelDetailView(SuperuserRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         hotel = self.object
         now = timezone.now()
-        
-        # Get all bookings for this hotel
-        bookings = Booking.objects.filter(room__hotel=hotel, is_paid=True)
-        
-        # REVENUE CALCULATIONS
-        total_revenue = bookings.aggregate(
-            total=Sum('total_amount')
-        )['total'] or Decimal('0.00')
-        
-        total_commission = bookings.aggregate(
-            total=Sum('service_charge')
-        )['total'] or Decimal('0.00')
-        
-        # Current month revenue
-        current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        current_month_revenue = bookings.filter(
-            created_at__gte=current_month_start
-        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-        
-        # MONTHLY CHART DATA (last 12 months)
-        monthly_labels = []
-        monthly_revenue = []
+
+        # All paid bookings for this hotel
+        bookings = Booking.objects.filter(room__hotel=hotel, is_paid=True).annotate(
+            hotel_revenue=ExpressionWrapper(F('total_amount') - F('service_charge'), output_field=DecimalField())
+        )
+
+        # ===== KPI CALCULATIONS =====
+        total_revenue = bookings.aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+        total_commission = total_revenue * Decimal('0.10')
+        total_bookings = bookings.count()
+
+        # Current month stats (using check_in date)
+        current_year, current_month = now.year, now.month
+        monthly_bookings = bookings.filter(check_in__year=current_year, check_in__month=current_month)
+        current_month_revenue = monthly_bookings.aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+        current_month_commission = current_month_revenue * Decimal('0.10')
+        current_month_payout = current_month_revenue * Decimal('0.90')
+
+        # Weekly hotel revenue (last 7 days using check_in date)
+        week_start = now.date() - timedelta(days=6)
+        week_end = now.date()
+        weekly_bookings = bookings.filter(check_in__date__range=(week_start, week_end))
+        weekly_revenue = weekly_bookings.aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+        weekly_payout = weekly_revenue * Decimal('0.90')
+        weekly_commission = weekly_revenue * Decimal('0.10')
+
+        # ===== CHART DATA =====
+        # Monthly (using check_in date)
+        monthly_labels = [calendar.month_abbr[m] for m in range(1, 13)]
+        monthly_revenue_data = []
+        for month in range(1, 13):
+            rev = bookings.filter(check_in__year=now.year, check_in__month=month).aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+            monthly_revenue_data.append(float(rev))
+
+        # Weekly (last 12 weeks using check_in date)
+        weekly_labels, weekly_revenue_data = [], []
         for i in range(11, -1, -1):
-            month_date = now - timedelta(days=30*i)
-            month_name = calendar.month_abbr[month_date.month]
-            month_rev = bookings.filter(
-                created_at__year=month_date.year,
-                created_at__month=month_date.month
-            ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-            
-            monthly_labels.append(month_name)
-            monthly_revenue.append(float(month_rev))
-        
-        # ROOMS
+            week_start = now.date() - timedelta(weeks=i, days=now.date().weekday())
+            week_end = week_start + timedelta(days=6)
+            label = f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d')}"
+            revenue = bookings.filter(check_in__date__range=(week_start, week_end)).aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+            weekly_labels.append(label)
+            weekly_revenue_data.append(float(revenue))
+
+        # Daily (last 30 days using check_in date)
+        last_30_days = [now.date() - timedelta(days=i) for i in range(29, -1, -1)]
+        daily_labels = [d.strftime("%b %d") for d in last_30_days]
+        daily_revenue_data = []
+        for d in last_30_days:
+            rev = bookings.filter(check_in__date=d).aggregate(total=Sum('hotel_revenue'))['total'] or Decimal('0.00')
+            daily_revenue_data.append(float(rev))
+
+        # ===== PAGINATION for Reviews =====
+        reviews_qs = Review.objects.filter(hotel=hotel).order_by('-created_at')
+        paginator = Paginator(reviews_qs, 5)
+        page = self.request.GET.get("page")
+        try:
+            reviews = paginator.page(page)
+        except PageNotAnInteger:
+            reviews = paginator.page(1)
+        except EmptyPage:
+            reviews = paginator.page(paginator.num_pages)
+
+        query_params = self.request.GET.copy()
+        if "page" in query_params:
+            del query_params["page"]
+        query_string = urlencode(query_params)
+
+        avg_rating = reviews_qs.aggregate(avg=Avg('rating'))['avg'] or 0
         rooms = Room.objects.filter(hotel=hotel)
-        
-        # REVIEWS
-        reviews = Review.objects.filter(hotel=hotel).order_by('-created_at')[:5]
-        avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        
+
         context.update({
+            # KPIs
             'total_revenue': total_revenue,
             'total_commission': total_commission,
+            'total_bookings': total_bookings,
             'current_month_revenue': current_month_revenue,
-            'total_bookings': bookings.count(),
+            'current_month_commission': current_month_commission,
+            'current_month_payout': current_month_payout,
+            'weekly_revenue': weekly_revenue,
+            'weekly_commission': weekly_commission,
+            'weekly_payout': weekly_payout,
+
+            # Chart data
+            'daily_labels': json.dumps(daily_labels),
+            'daily_revenue_data': json.dumps(daily_revenue_data),
+            'weekly_labels': json.dumps(weekly_labels),
+            'weekly_revenue_data': json.dumps(weekly_revenue_data),
+            'monthly_labels': json.dumps(monthly_labels),
+            'monthly_revenue_data': json.dumps(monthly_revenue_data),
+
+            # Data
             'rooms': rooms,
             'reviews': reviews,
             'avg_rating': round(avg_rating, 2),
-            'monthly_labels': json.dumps(monthly_labels),
-            'monthly_revenue': json.dumps(monthly_revenue),
+            'query_string': query_string,
         })
         return context
+
+
 
 
 class HotelUpdateView(SuperuserRequiredMixin, DetailView):
@@ -329,22 +381,38 @@ class CustomerDeleteView(SuperuserRequiredMixin, DeleteView):
 
 class OwnerListView(SuperuserRequiredMixin, ListView):
     """
-    Lists all hotel owners with pagination and search.
+    Lists all hotel owners and superadmins with pagination and search.
     """
     template_name = 'superadmin/owner_list.html'
     model = CustomUser
     context_object_name = 'owners'
     paginate_by = 20
-    
+
     def get_queryset(self):
-        queryset = CustomUser.objects.filter(is_hotel_owner=True).order_by('-date_joined')
-        
-        # Search by name or email
+        queryset = CustomUser.objects.filter(
+            Q(is_hotel_owner=True) | Q(is_superuser=True)
+        ).order_by('-date_joined')
+
+        # Search by full name, email, or phone
         search = self.request.GET.get('search')
         if search:
-            queryset = queryset.filter(full_name__icontains=search) | queryset.filter(email__icontains=search)
-        
+            queryset = queryset.filter(
+                Q(full_name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone_number__icontains=search)
+            )
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query_params = self.request.GET.copy()
+        if "page" in query_params:
+            del query_params["page"]
+        query_string = query_params.urlencode()
+        context["query_string"] = query_string
+        return context
+
 
 
 class OwnerDeleteView(SuperuserRequiredMixin, DeleteView):
