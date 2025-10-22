@@ -3,7 +3,7 @@ from users.models import CustomUser
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-from PIL import Image
+from PIL import Image, ImageOps
 import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -71,6 +71,7 @@ class Hotel(models.Model):
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
+            img = ImageOps.exif_transpose(img)
             max_size = (1200, 1200)
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"
@@ -133,6 +134,7 @@ class Room(models.Model):
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
+            img = ImageOps.exif_transpose(img)
             max_size = (1200, 1200)
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"
@@ -228,12 +230,14 @@ class HotelImage(models.Model):
         
         self.image.field.upload_to = f'hotels/images/{self.hotel.slug}/'
         super().save(*args, **kwargs)
-        if self.image:
+        if self.image and hasattr(self.image, 'path') and os.path.exists(self.image.path):
             self._convert_image_to_webp(self.image.path)
+
 
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
+            img = ImageOps.exif_transpose(img)
             max_size = (1200, 1200)
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"
