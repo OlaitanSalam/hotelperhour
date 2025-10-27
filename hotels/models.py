@@ -120,6 +120,10 @@ class Room(models.Model):
         if self.twenty_four_hour_price and self.price_per_hour and self.twenty_four_hour_price >= self.price_per_hour * 24:
             logger.warning(f"Validation failed for room {self.id}: twenty_four_hour_price ({self.twenty_four_hour_price}) >= price_per_hour * 24 ({self.price_per_hour * 24})")
             raise ValidationError("24-hour price must be less than 24 * hourly rate for discount.")
+        
+        # New: Require image (but allow default for existing)
+        if not self.image and not self.pk:  # Only enforce for new instances; existing can keep default
+            raise ValidationError("An image file is required for new rooms.")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Validate before saving
@@ -227,10 +231,23 @@ class HotelImage(models.Model):
     @property
     def hotel_slug(self):
         return self.hotel.slug  
+    
+    def clean(self):
+        # New: Require image for all (prevent alt_text-only submissions)
+        if not self.image:
+            raise ValidationError("An image file is required.")
 
     def save(self, *args, **kwargs):
         if not self.hotel_id:
             raise ValueError("Hotel must be set before saving HotelImage")
+        
+
+        # New: Auto-set order if not provided (incremental)
+        if not self.order and self.hotel:
+            max_order = HotelImage.objects.filter(hotel=self.hotel).aggregate(models.Max('order'))['order__max']
+            self.order = (max_order or 0) + 1
+        
+        self.full_clean()  # New: Trigger validation
         
         self.image.field.upload_to = f'hotels/images/{self.hotel.slug}/'
         super().save(*args, **kwargs)

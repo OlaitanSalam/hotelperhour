@@ -106,7 +106,7 @@
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label for="id_image" class="form-label fw-semibold">Hotel Image</label>
+                                        <label for="id_image" class="form-label fw-semibold">Hotel Image*</label>
                                         <div class="image-upload-container">
                                             {{ form.image|add_class:"form-control" }}
                                             {% if form.image.errors %}
@@ -562,16 +562,6 @@
                                                                 {% endif %}
                                                             </div>
                                                         </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label for="{{ form.order.id_for_label }}" class="form-label fw-semibold">Order</label>
-                                                                {{ form.order|add_class:"form-control"|attr:"min:0" }}
-                                                                {% if form.order.errors %}
-                                                                    <div class="invalid-feedback d-block">{{ form.order.errors.0 }}</div>
-                                                                {% endif %}
-                                                                <small class="form-text text-muted">Lower numbers appear first in your hotel's image gallery on the detail's page.</small>
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 {% if form.DELETE %}
@@ -863,7 +853,7 @@ function initMap() {
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Search hotels in Nigeria...";
+    input.placeholder = "Search locations in Nigeria...";
     input.classList.add("form-control");
     input.style.margin = "10px";
     input.style.width = "300px";

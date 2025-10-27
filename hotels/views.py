@@ -62,9 +62,22 @@ def hotel_create(request):
         image_formset = HotelImageFormSet(request.POST, request.FILES, prefix='image')
         policy_formset = HotelPolicyFormSet(request.POST, prefix='policy')
         if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
+            # Check if at least one room is provided
+            if not any(form.is_valid() and not form.cleaned_data.get('DELETE', False) for form in room_formset.forms):
+                messages.error(request, "At least one room is required to create a hotel.")
+                return render(request, 'hotels/hotel_form.html', {
+                    'form': form,
+                    'room_formset': room_formset,
+                    'extra_formset': extra_formset,
+                    'image_formset': image_formset,
+                    'policy_formset': policy_formset,
+                    'amenities': Amenity.objects.order_by('name'),
+                    'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+                })
             hotel = form.save(commit=False)
             hotel.owner = request.user
             hotel.save()
+            form.save_m2m()
             room_formset.instance = hotel
             room_formset.save()
             extra_formset.instance = hotel
@@ -108,6 +121,20 @@ def hotel_edit(request, slug):
         image_formset = HotelImageFormSet(request.POST, request.FILES, instance=hotel, prefix='image')
         policy_formset = HotelPolicyFormSet(request.POST, prefix='policy', instance=hotel)
         if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
+            # Check if at least one room remains after edits
+            if not any(form.is_valid() and not form.cleaned_data.get('DELETE', False) for form in room_formset.forms):
+                messages.error(request, "At least one room is required to update the hotel.")
+                return render(request, 'hotels/hotel_form.html', {
+                    'form': form,
+                    'room_formset': room_formset,
+                    'extra_formset': extra_formset,
+                    'image_formset': image_formset,
+                    'policy_formset': policy_formset,
+                    'amenities': Amenity.objects.order_by('name'),
+                    'is_edit': True,
+                    'hotel': hotel,
+                    'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+                })
             form.save()
             room_formset.save()
             extra_formset.save()
@@ -162,7 +189,7 @@ class HotelDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         hotel = self.object
         # Filter only images with actual files
-        context['hotel_images'] = hotel.images.exclude(image__isnull=True).exclude(image='').order_by('order')
+        context['hotel_images'] = hotel.images.exclude(Q(image__isnull=True) | Q(image='')).order_by('order')
         return context
 
     def get_context_data(self, **kwargs):

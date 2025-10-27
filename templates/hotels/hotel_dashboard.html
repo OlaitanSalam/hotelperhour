@@ -17,7 +17,7 @@
         </div>
     </div>
     {% for message in messages %}
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-success" role="alert">
         {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
     </div>
     {% endfor %}

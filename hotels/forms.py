@@ -62,7 +62,7 @@ class RoomForm(forms.ModelForm):
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size
         ],
-        required=False
+        required=True
     )
 
     class Meta:
@@ -107,7 +107,9 @@ RoomFormSet = inlineformset_factory(
     Room,
     fields=('room_type', 'price_per_hour', 'description','capacity', 'total_units', 'image', 'twelve_hour_price', 'twenty_four_hour_price'),
     extra=1,
-    can_delete=True
+    can_delete=True,
+    min_num=1,  # Require at least one room
+    validate_min=True
 )
 
 ExtraServiceFormSet = inlineformset_factory(
@@ -152,22 +154,21 @@ class HotelImageForm(forms.ModelForm):
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
             validate_image_size  
         ],
-        required=False
+        required=True
     )
 
     class Meta:
         model = HotelImage
-        fields = ('image', 'alt_text', 'order')
+        fields = ('image', 'alt_text')
         widgets = {
-            'alt_text': forms.TextInput(attrs={'placeholder': 'e.g., Hotel lobby view'}),
-            'order': forms.NumberInput(attrs={'min': 0}),
+            'alt_text': forms.TextInput(attrs={'placeholder': 'e.g., Hotel lobby view'})
         }
 
 HotelImageFormSet = inlineformset_factory(
     Hotel,
     HotelImage,
     form=HotelImageForm,
-    fields=('image', 'alt_text', 'order'),
+    fields=('image', 'alt_text'),
     extra=1,  # Start with 1 empty form
     can_delete=True,
     max_num=10,  # Limit to 10 images
