@@ -35,6 +35,7 @@ from django.db.models import Min
 
 
 
+
 def hotel_owner_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_hotel_owner:

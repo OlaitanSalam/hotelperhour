@@ -40,6 +40,9 @@ urlpatterns = [
     path('get_loyalty_discount/', get_loyalty_discount, name='get_loyalty_discount'),
     path('about/', hotel_views.about, name='about'),
     path('contacts/', hotel_views.contacts, name='contacts'),
+    # PDF terms and conditions
+    
+
     # API URLs
     path('api/v1/hotels/', include('hotels.api.urls')),  # Include hotels API
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT refresh
