@@ -64,12 +64,15 @@ function toggleFavorite(slug, button) {
                 button.dataset.tooltip = 'Save to favorites';
                 showToast('Removed from favorites', 'info');
 
-                // Remove card instantly
-                const card = button.closest('.col');
-                if (card) {
-                    card.remove();
-                    updateEmptyState();
-                }
+               const isFavoritesPage =
+                   window.location.pathname.includes('/customer_favorites') ||
+                   window.location.pathname.includes('/guest_favorites');
+
+               if (isFavoritesPage && card) {
+                   card.remove();
+                   updateEmptyState();
+               }
+
             }
         })
         .catch(() => showToast('Something went wrong. Please try again shortly.', 'danger'));
@@ -87,11 +90,14 @@ function toggleFavorite(slug, button) {
         button.dataset.tooltip = 'Save to favorites';
         showToast('Removed from your favorites.', 'info');
 
-        const card = button.closest('.col');
-        if (card) {
-            card.remove();
-            updateEmptyState();
-        }
+        const isFavoritesPage =
+                   window.location.pathname.includes('/customer_favorites') ||
+                   window.location.pathname.includes('/guest_favorites');
+
+               if (isFavoritesPage && card) {
+                   card.remove();
+                   updateEmptyState();
+               }
     } else { // ADD
         wishlist.push(slug);
         button.classList.add('favorited');
