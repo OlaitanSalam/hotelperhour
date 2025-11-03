@@ -23,6 +23,14 @@
         {% for hotel in hotels %}
         <div class="col">
             <div class="card h-100">
+
+                <div class="position-absolute top-0 end-0 m-3">
+    <button class="favorite-btn {% if user.is_authenticated and user.is_customer and hotel in user.favorite_hotels.all %}favorited{% endif %}"
+            onclick="toggleFavorite('{{ hotel.slug }}', this)"
+            data-tooltip="{% if hotel in user.favorite_hotels.all %}Remove from favorites{% else %}Save to favorites{% endif %}">
+        <i class="fa-heart {% if user.is_authenticated and user.is_customer and hotel in user.favorite_hotels.all %}fas{% else %}far{% endif %}"></i>
+    </button>
+</div>
                 {% if hotel.image %}
                 <img src="{{ hotel.image.url }}" class="card-img-top hotel-list-image" 
                      alt="{{ hotel.get_public_name }}" style="height: 200px; object-fit: cover;">

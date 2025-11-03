@@ -26,6 +26,10 @@ from django.core.mail import send_mail
 from django.views.generic import FormView
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.urls import reverse_lazy
+from hotels.models import Hotel
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404, redirect
 
 
 def customer_register(request):
@@ -129,6 +133,7 @@ def customer_login(request):
             if user.is_hotel_owner:
                 return redirect('hotel_dashboard')
             elif user.is_customer:
+                request.session['sync_favorites'] = True
                 return redirect('customer_dashboard')
             return redirect('home')
     else:
@@ -267,3 +272,81 @@ def customer_password_reset_done(request):
 
 def customer_password_reset_complete(request):
     return render(request, "customers/password_reset_complete.html")
+
+
+@login_required
+def toggle_favorite(request, slug):
+    if not request.user.is_customer:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    hotel = get_object_or_404(Hotel, slug=slug)
+    customer = request.user
+
+    if customer.favorite_hotels.filter(slug=slug).exists():
+        customer.favorite_hotels.remove(hotel)
+        added = False
+    else:
+        customer.favorite_hotels.add(hotel)
+        added = True
+
+    return JsonResponse({
+        'added': added,
+        'count': customer.favorite_hotels.count()
+    })
+
+
+@login_required
+def customer_favorites(request):
+    if not request.user.is_customer:
+        return redirect('home')
+
+    favorite_hotels = request.user.favorite_hotels.select_related().prefetch_related('reviews').order_by('-id')
+    return render(request, 'customers/favorites.html', {
+        'favorite_hotels': favorite_hotels
+    })
+
+
+@login_required
+def sync_favorites(request):
+    if not request.user.is_customer:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    if request.method == 'POST':
+        data = request.POST.getlist('slugs[]', [])
+        added = 0
+        for slug in data:
+            hotel = Hotel.objects.filter(slug=slug).first()
+            if hotel and not request.user.favorite_hotels.filter(slug=slug).exists():
+                request.user.favorite_hotels.add(hotel)
+                added += 1
+        return JsonResponse({'added': added})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def guest_favorites(request):
+    """
+    Renders the guest_favorites.html template.
+    No context needed — JS fetches data from API.
+    """
+    return render(request, 'customers/guest_favorites.html')
+
+
+def guest_favorite_data(request):
+    """
+    Returns a JSON dict:  { "<slug>": { "name": "...", "location": "...", "image": "url" } }
+    Only approved hotels are included.
+    """
+    data = {}
+    # Use 'is_approved=True' instead of 'is_active'
+    for h in Hotel.objects.filter(is_approved=True).only(
+        'slug', 'name', 'suburb', 'city', 'image'
+    ):
+        location = h.suburb or h.city or 'Location not specified'
+        image_url = h.image.url if h.image else None
+
+        data[h.slug] = {
+            "name": h.get_public_name(),   # safe method you already use
+            "location": location,
+            "image": image_url,
+        }
+
+    return JsonResponse(data)

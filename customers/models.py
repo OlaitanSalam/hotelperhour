@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from hotels.models import Hotel
 
 class CustomerManager(BaseUserManager):
     def create_customer(self, email, password, **extra_fields):
@@ -22,6 +23,12 @@ class Customer(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     loyalty_points = models.IntegerField(default=0)
+    favorite_hotels = models.ManyToManyField(
+        Hotel,
+        related_name='favorited_by',
+        blank=True,
+        help_text="Hotels this customer has favorited"
+    )
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', 'phone_number']

@@ -93,6 +93,14 @@ def hotel_create(request):
                 messages.success(request, "Your hotel has been created successfully. Please allow up to 24 hours for review and approval.")
 
             return redirect('hotel_dashboard')
+        else:
+            # If the POST failed validation, provide a clearer message when
+            # address is missing but coordinates were submitted by the map JS.
+            if request.method == 'POST':
+                lat = request.POST.get('latitude')
+                lng = request.POST.get('longitude')
+                if 'address' in form.errors and lat and lng:
+                    form.add_error('address', 'Address is required. We detected coordinates but the address field is empty. Please confirm the address using the map search or "Use My Current Location" before submitting.')
     else:
         form = HotelForm()
         room_formset = RoomFormSet(prefix='room')

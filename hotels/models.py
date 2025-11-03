@@ -3,7 +3,7 @@ from users.models import CustomUser
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-from PIL import Image, ImageOps
+from PIL import Image
 import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -42,64 +42,47 @@ class Hotel(models.Model):
     
 
     def save(self, *args, **kwargs):
-    # Generate slug first
+        # Generate slug if not present
         if not self.slug:
-            base_slug = slugify(self.get_public_name())
-            self.slug = base_slug
+            self.slug = slugify(self.name)
             original_slug = self.slug
             counter = 1
             while Hotel.objects.filter(slug=self.slug).exclude(id=self.id).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
-
+        # Set city from address if not provided
         if not self.city and self.address:
             parts = self.address.split(',')
             self.city = parts[1].strip() if len(parts) > 1 else "Unknown"
 
-        super().save(*args, **kwargs)  # initial save to get file path
+        super().save(*args, **kwargs)  # Save to generate slug if new
 
-        if self.image and os.path.exists(self.image.path):
-            # Ensure hotel-specific folder
-            slug_folder = f"hotels/{self.slug}/images/"
-            file_name = os.path.basename(self.image.name)
-            new_path = os.path.join(settings.MEDIA_ROOT, slug_folder, file_name)
-            os.makedirs(os.path.dirname(new_path), exist_ok=True)
-
-            # Move file if not already in correct path
-            old_path = self.image.path
-            if old_path != new_path:
-                os.rename(old_path, new_path)
-                self.image.name = os.path.join(slug_folder, file_name)
+        # Update image path to hotel-specific folder and convert to WebP
+        if self.image and 'default' in self.image.name:  # Skip default image
+            pass
+        elif self.image:
+            new_path = f'hotels/{self.slug}/images/{os.path.basename(self.image.name)}'
+            if self.image.name != new_path:
+                self.image.name = new_path
                 super().save(update_fields=['image'])
-
-            # Convert and compress
             self._convert_image_to_webp(self.image.path)
-
 
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
-            img = ImageOps.exif_transpose(img)
-            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+            max_size = (1200, 1200)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-
-            # Update model image field if new path differs
-            if webp_path != img_path:
-                self.image.name = os.path.relpath(webp_path, settings.MEDIA_ROOT)
-                super().save(update_fields=["image"])
-                if os.path.exists(img_path):
-                    os.remove(img_path)
+            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
+            super().save(update_fields=["image"])
+            if img_path != webp_path and os.path.exists(img_path):
+                os.remove(img_path)
         except Exception as e:
-            logger.error(f"Image processing failed for {self}: {e}")
-
+            print("Image processing failed:", e)
 
     def get_public_name(self):
         return f"Hotel in {self.city}"
-    
-    def clean(self):
-        if not self.image:
-            raise ValidationError("An image file is required.")
 
     def __str__(self):
         return self.name
@@ -131,47 +114,34 @@ class Room(models.Model):
         if self.twenty_four_hour_price and self.price_per_hour and self.twenty_four_hour_price >= self.price_per_hour * 24:
             logger.warning(f"Validation failed for room {self.id}: twenty_four_hour_price ({self.twenty_four_hour_price}) >= price_per_hour * 24 ({self.price_per_hour * 24})")
             raise ValidationError("24-hour price must be less than 24 * hourly rate for discount.")
-        
-        # New: Require image (but allow default for existing)
-        if not self.image and not self.pk:  # Only enforce for new instances; existing can keep default
-            raise ValidationError("An image file is required for new rooms.")
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.full_clean()  # Validate before saving
         super().save(*args, **kwargs)
 
-        if self.image and os.path.exists(self.image.path):
-            slug_folder = f"hotels/{self.hotel.slug}/rooms/images/"
-            file_name = os.path.basename(self.image.name)
-            new_path = os.path.join(settings.MEDIA_ROOT, slug_folder, file_name)
-            os.makedirs(os.path.dirname(new_path), exist_ok=True)
-
-            old_path = self.image.path
-            if old_path != new_path:
-                os.rename(old_path, new_path)
-                self.image.name = os.path.join(slug_folder, file_name)
+        # Update image path to hotel-specific folder and convert to WebP
+        if self.image and 'default' in self.image.name:  # Skip default image
+            pass
+        elif self.image:
+            new_path = f'hotels/{self.hotel.slug}/rooms/images/{os.path.basename(self.image.name)}'
+            if self.image.name != new_path:
+                self.image.name = new_path
                 super().save(update_fields=['image'])
-
             self._convert_image_to_webp(self.image.path)
-
 
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
-            img = ImageOps.exif_transpose(img)
-            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+            max_size = (1200, 1200)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-
-            # Update model image field if new path differs
-            if webp_path != img_path:
-                self.image.name = os.path.relpath(webp_path, settings.MEDIA_ROOT)
-                super().save(update_fields=["image"])
-                if os.path.exists(img_path):
-                    os.remove(img_path)
+            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
+            super().save(update_fields=["image"])
+            if img_path != webp_path and os.path.exists(img_path):
+                os.remove(img_path)
         except Exception as e:
-            logger.error(f"Image processing failed for {self}: {e}")
-
+            print("Room image processing failed:", e)
 
     def __str__(self):
         return f"{self.room_type} - {self.hotel.name}"
@@ -250,34 +220,19 @@ class HotelImage(models.Model):
     @property
     def hotel_slug(self):
         return self.hotel.slug  
-    
-    def clean(self):
-        # New: Require image for all (prevent alt_text-only submissions)
-        if not self.image:
-            raise ValidationError("An image file is required.")
 
     def save(self, *args, **kwargs):
         if not self.hotel_id:
             raise ValueError("Hotel must be set before saving HotelImage")
         
-
-        # New: Auto-set order if not provided (incremental)
-        if not self.order and self.hotel:
-            max_order = HotelImage.objects.filter(hotel=self.hotel).aggregate(models.Max('order'))['order__max']
-            self.order = (max_order or 0) + 1
-        
-        self.full_clean()  # New: Trigger validation
-        
         self.image.field.upload_to = f'hotels/images/{self.hotel.slug}/'
         super().save(*args, **kwargs)
-        if self.image and hasattr(self.image, 'path') and os.path.exists(self.image.path):
+        if self.image:
             self._convert_image_to_webp(self.image.path)
-
 
     def _convert_image_to_webp(self, img_path):
         try:
             img = Image.open(img_path)
-            img = ImageOps.exif_transpose(img)
             max_size = (1200, 1200)
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             webp_path = os.path.splitext(img_path)[0] + ".webp"

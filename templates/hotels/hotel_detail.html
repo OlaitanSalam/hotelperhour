@@ -28,141 +28,115 @@
 
 <!-- ======= HERO + GRID / CAROUSEL SECTION ======= -->
 <div class="container mt-4">
+
   <!-- ======= Hotel Info (Above Grid - Unified Styling) ======= -->
-  <div class="card shadow-sm border-0 mb-4" style="border-radius: 10px; background-color: #f8f9fa;">
-    <div class="card-body py-3 px-4">
-      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
-        <div class="hotel-info-text">
-          <h1 class="fw-bold mb-2" style="font-size: 1.8rem; color: #121643;">{{ hotel.get_public_name }}</h1>
-          <div class="d-flex align-items-center mb-2">
-            <div class="me-2">
-              {% for i in "12345"|make_list %}
-                {% if hotel.average_rating|floatformat:0 >= i|add:"0" %}
-                  <i class="fas fa-star text-warning"></i>
-                {% else %}
-                  <i class="far fa-star text-warning"></i>
-                {% endif %}
-              {% endfor %}
-            </div>
-            <small class="text-muted">{{ hotel.average_rating|floatformat:1 }} ({{ hotel.review_count }} reviews)</small>
+<div class="card shadow-sm border-0 mb-4" style="border-radius: 10px; background-color: #f8f9fa;">
+  <div class="card-body py-3 px-4">
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+      <div class="hotel-info-text">
+        <h1 class="fw-bold mb-2" style="font-size: 1.8rem; color: #121643;">{{ hotel.get_public_name }}</h1>
+        <div class="d-flex align-items-center mb-2">
+          <div class="me-2">
+            {% for i in "12345"|make_list %}
+              {% if hotel.average_rating|floatformat:0 >= i|add:"0" %}
+                <i class="fas fa-star text-warning"></i>
+              {% else %}
+                <i class="far fa-star text-warning"></i>
+              {% endif %}
+            {% endfor %}
           </div>
-          <p class="text-muted mb-0">
-            <i class="fas fa-map-marker-alt text-danger me-2"></i>
-            {{ hotel.suburb|default:hotel.city }}
-          </p>
+          <small class="text-muted">{{ hotel.average_rating|floatformat:1 }} ({{ hotel.review_count }} reviews)</small>
+        </div>
+        <p class="text-muted mb-0">
+          <i class="fas fa-map-marker-alt text-danger me-2"></i>
+          {{ hotel.suburb|default:hotel.city }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- ======= Desktop / Tablet View (Dynamic Grid) ======= -->
+{% with count=hotel_images.count %}
+  {% if count == 0 %}
+    <!-- No images -->
+    <div class="card border-0 shadow-sm">
+      <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
+    </div>
+
+  {% elif count == 1 %}
+    <!-- Single image fills full width -->
+    <div class="card border-0 shadow-sm">
+      <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
+    </div>
+
+  {% elif count == 2 %}
+    <!-- Two side-by-side -->
+    <div class="row g-3">
+      {% for img in hotel_images %}
+        <div class="col-6">
+          <div class="card border-0 shadow-sm">
+            <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px;height:420px;object-fit:cover;">
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% elif count == 3 %}
+  <!-- 3-image layout: 1 big left, 2 stacked right -->
+  <div class="row g-3 desktop-grid-section">
+    <div class="col-lg-6">
+      <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel.name }}"
+           class="hotel-grid-img" style="height:420px;">
+    </div>
+    <div class="col-lg-6">
+      <div class="row g-3">
+        <div class="col-12">
+          <img src="{{ hotel_images.1.image.url }}" alt="{{ hotel.name }}"
+               class="hotel-grid-img" style="height:205px;">
+        </div>
+        <div class="col-12">
+          <img src="{{ hotel_images.2.image.url }}" alt="{{ hotel.name }}"
+               class="hotel-grid-img" style="height:205px;">
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ======= Desktop / Tablet View (Dynamic Grid) ======= -->
-  {% with count=hotel_images.count %}
-    {% if count == 0 %}
-      <!-- No images -->
-      <div class="card border-0 shadow-sm">
-        {% if hotel.image %}
-          <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-        {% else %}
-          <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-        {% endif %}
-      </div>
 
-    {% elif count == 1 %}
-      <!-- Single image fills full width -->
-      <div class="card border-0 shadow-sm">
-        {% if hotel_images.0.image %}
-          <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-        {% else %}
-          <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-        {% endif %}
+  {% elif count >= 4 %}
+    <!-- Standard grid (your original layout) -->
+    <div class="row g-3 align-items-start">
+      <div class="col-lg-6">
+        <img src="{{ hotel_images.0.image.url }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
       </div>
-
-    {% elif count == 2 %}
-      <!-- Two side-by-side -->
-      <div class="row g-3">
-        {% for img in hotel_images %}
-          <div class="col-6">
-            <div class="card border-0 shadow-sm">
-              {% if img.image %}
-                <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px;height:420px;object-fit:cover;">
-              {% else %}
-                <img src="{% static 'images/default_hotel.webp' %}" alt="{{ img.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px;height:420px;object-fit:cover;">
-              {% endif %}
+      <div class="col-lg-6">
+        <div class="row g-3">
+          {% for img in hotel_images|slice:"1:5" %}
+            <div class="col-6">
+              <img src="{{ img.image.url }}" class="w-100 rounded-3" style="border-radius:8px; height:205px;object-fit:cover;">
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
+    </div>
+  {% endif %}
+{% endwith %}
 
-    {% elif count == 3 %}
-      <!-- 3-image layout: 1 big left, 2 stacked right -->
-      <div class="row g-3 desktop-grid-section">
-        <div class="col-lg-6">
-          {% if hotel_images.0.image %}
-            <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}" class="hotel-grid-img" style="height:420px;">
-          {% else %}
-            <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="hotel-grid-img" style="height:420px;">
-          {% endif %}
-        </div>
-        <div class="col-lg-6">
-          <div class="row g-3">
-            <div class="col-12">
-              {% if hotel_images.1.image %}
-                <img src="{{ hotel_images.1.image.url }}" alt="{{ hotel_images.1.alt_text|default:hotel.name }}" class="hotel-grid-img" style="height:205px;">
-              {% else %}
-                <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="hotel-grid-img" style="height:205px;">
-              {% endif %}
-            </div>
-            <div class="col-12">
-              {% if hotel_images.2.image %}
-                <img src="{{ hotel_images.2.image.url }}" alt="{{ hotel_images.2.alt_text|default:hotel.name }}" class="hotel-grid-img" style="height:205px;">
-              {% else %}
-                <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="hotel-grid-img" style="height:205px;">
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-    {% elif count >= 4 %}
-      <!-- Standard grid -->
-      <div class="row g-3 align-items-start">
-        <div class="col-lg-6">
-          {% if hotel_images.0.image %}
-            <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-          {% else %}
-            <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:420px;object-fit:cover;">
-          {% endif %}
-        </div>
-        <div class="col-lg-6">
-          <div class="row g-3">
-            {% for img in hotel_images|slice:"1:5" %}
-              <div class="col-6">
-                {% if img.image %}
-                  <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:205px;object-fit:cover;">
-                {% else %}
-                  <img src="{% static 'images/default_hotel.webp' %}" alt="{{ img.alt_text|default:hotel.name }}" class="w-100 rounded-3" style="border-radius:8px; height:205px;object-fit:cover;">
-                {% endif %}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <!-- ======= Small Thumbnails (desktop only) ======= -->
   <div class="row mt-3 g-2 d-none d-md-flex">
     {% with total=hotel_images.count %}
       {% for img in hotel_images|slice:":6" %}
         <div class="col-6 col-sm-4 col-md-2">
-          <div class="position-relative gallery-thumb" role="button" data-bs-toggle="modal" data-bs-target="#photosModal" data-index="{{ forloop.counter0 }}">
-            {% if img.image %}
-              <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="img-fluid thumb-img" loading="lazy">
-            {% else %}
-              <img src="{% static 'images/default_hotel.webp' %}" alt="{{ img.alt_text|default:hotel.name }}" class="img-fluid thumb-img" loading="lazy">
-            {% endif %}
+          <div class="position-relative gallery-thumb" role="button"
+               data-bs-toggle="modal" data-bs-target="#photosModal" data-index="{{ forloop.counter0 }}">
+            <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}"
+                 class="img-fluid thumb-img" loading="lazy">
             {% if forloop.last and total > 6 %}
-              <div class="overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.45); color:#fff;">
+              <div class="overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                   style="background: rgba(0,0,0,0.45); color:#fff;">
                 <div class="text-center">
                   <div class="h4 mb-0">+{{ total|add:-6 }}</div>
                   <small>more</small>
@@ -176,82 +150,78 @@
   </div>
 
   <!-- ======= Mobile Carousel - FIXED ======= -->
-  <div class="d-md-none mt-3">
-    <div class="card border-0 shadow-sm" style="border-radius:8px; overflow:hidden;">
-      {% with count=hotel_images.count %}
-        {% if count > 1 %}
-          <!-- Carousel for multiple images -->
-          <div id="hotelMobileCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-              {% for img in hotel_images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  {% if img.image %}
-                    <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="d-block w-100" style="height:320px;object-fit:cover;" loading="lazy">
-                  {% else %}
-                    <img src="{% static 'images/default_hotel.webp' %}" alt="{{ img.alt_text|default:hotel.name }}" class="d-block w-100" style="height:320px;object-fit:cover;" loading="lazy">
-                  {% endif %}
-                </div>
-              {% endfor %}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#hotelMobileCarousel" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon bg-dark rounded-circle"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#hotelMobileCarousel" data-bs-slide="next">
-              <span class="carousel-control-next-icon bg-dark rounded-circle"></span>
-            </button>
-            <div class="carousel-caption position-absolute bottom-0 end-0 p-2 bg-dark bg-opacity-50 text-white rounded-start">
-              <small id="carousel-counter">1 / {{ count }}</small>
-            </div>
+<div class="d-md-none mt-3">
+  <div class="card border-0 shadow-sm" style="border-radius:8px; overflow:hidden;">
+    {% with count=hotel_images.count %}
+      {% if count > 1 %}
+        <!-- Carousel for multiple images -->
+        <div id="hotelMobileCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% for img in hotel_images %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}"
+                     class="d-block w-100" style="height:320px;object-fit:cover;" loading="lazy">
+              </div>
+            {% endfor %}
           </div>
-        {% else %}
-          <!-- Single image display -->
-          <div class="single-image-container">
-            {% if count == 1 %}
-              {% if hotel_images.0.image %}
-                <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}" class="w-100" style="height:320px;object-fit:cover;" loading="lazy">
-              {% else %}
-                <img src="{% static 'images/default_hotel.webp' %}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}" class="w-100" style="height:320px;object-fit:cover;" loading="lazy">
-              {% endif %}
-            {% endif %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#hotelMobileCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#hotelMobileCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle"></span>
+          </button>
+          <div class="carousel-caption position-absolute bottom-0 end-0 p-2 bg-dark bg-opacity-50 text-white rounded-start">
+            <small id="carousel-counter">1 / {{ count }}</small>
           </div>
-        {% endif %}
-      {% endwith %}
-    </div>
+        </div>
+      {% else %}
+        <!-- Single image display -->
+        <div class="single-image-container">
+          {% if count == 1 %}
+            <img src="{{ hotel_images.0.image.url }}" alt="{{ hotel_images.0.alt_text|default:hotel.name }}"
+                 class="w-100" style="height:320px;object-fit:cover;" loading="lazy">
+          
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endwith %}
   </div>
+</div>
 
-  <!-- ======= SEE MORE MODAL ======= -->
-  <div class="modal fade" id="photosModal" tabindex="-1" aria-labelledby="photosModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-      <div class="modal-content bg-dark">
-        <div class="modal-body p-0 position-relative">
-          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-          <div id="hotelPhotosCarousel" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-              {% for img in hotel_images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  <div class="d-flex justify-content-center align-items-center" style="height: 80vh; background-color: #000;">
-                    {% if img.image %}
-                      <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" class="img-fluid rounded shadow-lg" style="max-height: 75vh; width: auto; object-fit: contain;">
-                    {% else %}
-                      <img src="{% static 'images/default_hotel.webp' %}" alt="{{ img.alt_text|default:hotel.name }}" class="img-fluid rounded shadow-lg" style="max-height: 75vh; width: auto; object-fit: contain;">
-                    {% endif %}
-                  </div>
+<!-- ======= SEE MORE MODAL ======= -->
+<div class="modal fade" id="photosModal" tabindex="-1" aria-labelledby="photosModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content bg-dark">
+      <div class="modal-body p-0 position-relative">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div id="hotelPhotosCarousel" class="carousel slide" data-bs-ride="false">
+          <div class="carousel-inner">
+            {% for img in hotel_images %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <div class="d-flex justify-content-center align-items-center" style="height: 80vh; background-color: #000;">
+                  <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:hotel.name }}" 
+                       class="img-fluid rounded shadow-lg"
+                       style="max-height: 75vh; width: auto; object-fit: contain;">
                 </div>
-              {% empty %}
-                <div class="carousel-item active">
-                  <div class="d-flex justify-content-center align-items-center" style="height: 80vh; background-color: #000;">
-                    <img src="{% static 'images/default_hotel.webp' %}" alt="No image available" class="img-fluid rounded shadow-lg" style="max-height: 75vh; width: auto; object-fit: contain;">
-                  </div>
+              </div>
+            {% empty %}
+              <div class="carousel-item active">
+                <div class="d-flex justify-content-center align-items-center" style="height: 80vh; background-color: #000;">
+                  <img src="{% static 'images/default_hotel.webp' %}" alt="No image available" 
+                       class="img-fluid rounded shadow-lg"
+                       style="max-height: 75vh; width: auto; object-fit: contain;">
                 </div>
-              {% endfor %}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#hotelPhotosCarousel" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#hotelPhotosCarousel" data-bs-slide="next">
-              <span class="carousel-control-next-icon bg-dark rounded-circle p-3"></span>
-            </button>
+              </div>
+            {% endfor %}
           </div>
+
+          <!-- Carousel Controls -->
+          <button class="carousel-control-prev" type="button" data-bs-target="#hotelPhotosCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#hotelPhotosCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle p-3"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -521,15 +491,17 @@
     </div>
 </div>
 
-                <!-- Amenities with CSS Grid -->
-<div class="mb-4">
+                <!-- Amenities -->
+                <div class="mb-4">
   <h4 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Amenities</h4>
   <div class="amenities-content">
-    <div class="amenities-grid">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
       {% for amenity in hotel.amenities.all %}
-        <div class="d-flex align-items-center">
-          <i class="{{ amenity.icon_class|default:'fas fa-check' }} me-2 text-primary"></i>
-          <span class="text-dark">{{ amenity.name }}</span>
+        <div class="col">
+          <div class="d-flex align-items-center">
+            <i class="{{ amenity.icon_class|default:'fas fa-check' }} me-2 text-primary"></i>
+            <span class="text-dark">{{ amenity.name }}</span>
+          </div>
         </div>
       {% empty %}
         <p class="text-muted">No amenities listed.</p>
@@ -537,6 +509,7 @@
     </div>
   </div>
 </div>
+
 
 
                 <!-- Policies -->
@@ -887,27 +860,7 @@ h4 {
         align-items: center;
         gap: 0.25rem;
     }
-    /* Amenities Fixes for Small Screens */
-/* CSS Grid approach for amenities */
-.amenities-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .amenities-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 992px) {
-    .amenities-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-   
-
+    
     /* Price Styles */
     .price {
         font-size: 1.25rem;

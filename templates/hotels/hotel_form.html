@@ -248,10 +248,9 @@
 </div>
 
 
-    <!-- Hidden Fields -->
+    <!-- Hidden Fields: keep lat/lng only. Address is the visible form field above and must be the single source of truth -->
     <input type="hidden" id="id_latitude" name="latitude" value="{{ hotel.latitude|default:'' }}">
     <input type="hidden" id="id_longitude" name="longitude" value="{{ hotel.longitude|default:'' }}">
-    <input type="hidden" id="id_address" name="address" value="{{ hotel.address|default:'' }}">
 
     <!-- Why This Matters -->
     <div class="impact-info mt-4 p-3 bg-light rounded">
@@ -1145,6 +1144,7 @@ function initMap() {
   reverseGeocode(existingPos);
   {% endif %}
 
+  
   // --- Update Location Helper
   function updateLocation(position, address = null) {
     const pos =
@@ -1156,7 +1156,12 @@ function initMap() {
     document.getElementById("id_latitude").value = pos.lat();
     document.getElementById("id_longitude").value = pos.lng();
 
-    if (address) document.getElementById("id_address").value = address;
+    if (address) {
+      const addrEl = document.getElementById("id_address");
+      addrEl.value = address;
+      // Dispatch input event so listeners (refreshSubmitState) run when JS sets the value.
+      addrEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 
     showConfirmationCard(address || "Coordinates updated", pos);
 
@@ -1173,7 +1178,10 @@ function initMap() {
     geocoder.geocode({ location: pos }, function (results, status) {
       if (status === "OK" && results && results.length > 0) {
         const formatted = results[0].formatted_address;
-        document.getElementById("id_address").value = formatted;
+        const addrEl = document.getElementById("id_address");
+        addrEl.value = formatted;
+        // Dispatch input event so listeners (refreshSubmitState) run when JS sets the value.
+        addrEl.dispatchEvent(new Event('input', { bubbles: true }));
         showConfirmationCard(formatted, pos);
       }
     });
@@ -1192,6 +1200,7 @@ function initMap() {
     coordSpan.textContent = `Lat: ${pos.lat().toFixed(6)}, Lng: ${pos.lng().toFixed(6)}`;
   }
 }
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1519,6 +1528,35 @@ document.addEventListener('DOMContentLoaded', function () {
     updateExtraCount();
     updateImageCount();
     updatePolicyCount();
+
+    // --- Enforce address is set before allowing submit ---
+    const hotelFormEl = document.getElementById('hotel_form');
+    const addressInputEl = document.getElementById('id_address');
+    const submitBtn = hotelFormEl ? hotelFormEl.querySelector('button[type="submit"]') : null;
+
+    function refreshSubmitState() {
+        if (!addressInputEl || !submitBtn) return;
+        const hasAddress = addressInputEl.value && addressInputEl.value.trim().length > 0;
+        submitBtn.disabled = !hasAddress;
+    }
+
+    // Initial state
+    refreshSubmitState();
+
+    if (addressInputEl) {
+        addressInputEl.addEventListener('input', refreshSubmitState);
+    }
+
+    if (hotelFormEl) {
+        hotelFormEl.addEventListener('submit', function (e) {
+            if (!addressInputEl || !addressInputEl.value || !addressInputEl.value.trim()) {
+                e.preventDefault();
+                addressInputEl && addressInputEl.focus();
+                // Friendly UX message
+                alert('Please set the hotel address using the map search or "Use My Current Location" before submitting.');
+            }
+        });
+    }
 });
 </script>
 

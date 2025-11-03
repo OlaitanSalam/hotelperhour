@@ -27,5 +27,12 @@ urlpatterns = [
     path("customer/reset/<uidb64>/<token>/", CustomerPasswordResetConfirmView.as_view(), name="customer_password_reset_confirm"),
     path("customer/reset/done/", customer_password_reset_complete, name="customer_password_reset_complete"),
 
+    # customers favorites
+
+    path('favorite/<str:slug>/', views.toggle_favorite, name='toggle_favorite'),
+    path('favorites/', views.customer_favorites, name='customer_favorites'),
+    path('sync_favorites/', views.sync_favorites, name='sync_favorites'),
+    path('guest-favorites/', views.guest_favorites, name='guest_favorites'),
+    path('guest-favorite-data/', views.guest_favorite_data, name='guest_favorite_data'),
     
 ]

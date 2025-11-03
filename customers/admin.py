@@ -14,6 +14,7 @@ class CustomerAdmin(admin.ModelAdmin):
         'is_staff',
         'date_joined',
         'colored_status',
+        'favorite_count'
     )
     list_filter = ('is_active', 'is_staff', 'date_joined')
     search_fields = ('email', 'full_name', 'phone_number')
@@ -23,7 +24,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Personal Info', {
-            'fields': ('email', 'full_name', 'username', 'phone_number')
+            'fields': ('email', 'full_name', 'username', 'phone_number', 'favorite_hotels')
         }),
         ('Account Details', {
             'fields': ('is_active', 'is_staff', 'password')
@@ -56,6 +57,10 @@ class CustomerAdmin(admin.ModelAdmin):
         if raw_password and not raw_password.startswith("pbkdf2_"):
             obj.set_password(raw_password)
         obj.save()
+
+    def favorite_count(self, obj):
+        return obj.favorite_hotels.count()
+    favorite_count.short_description = "Favorites"
 
 
 @admin.register(LoyaltyRule)

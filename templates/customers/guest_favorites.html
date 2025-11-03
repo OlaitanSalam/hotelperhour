@@ -1,0 +1,95 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}My Local Wishlist{% endblock %}
+
+{% block content %}
+<style>
+    h2 { color: #121643; }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-heart text-danger"></i> My Favorites</h2>
+        <a href="{% url 'hotel_list' %}" class="btn btn-outline-primary">Browse More</a>
+    </div>
+
+    <div id="guestList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- JS will fill this -->
+    </div>
+
+    <div id="emptyState" class="text-center py-5" style="display:none;">
+        <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+        <p class="text-muted">You haven't saved any hotels yet.</p>
+        <a href="{% url 'hotel_list' %}" class="btn btn-primary">Explore Hotels</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    const container = document.getElementById('guestList');
+    const empty = document.getElementById('emptyState');
+
+    if (!wishlist.length) {
+        container.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+    }
+
+    const hotelDetailBase = '{% url "hotel_detail" "placeholder" %}'.replace('placeholder', '');
+
+    fetch('{% url "guest_favorite_data" %}')
+        .then(r => r.json())
+        .then(allHotels => {
+            let hasAny = false;
+            wishlist.forEach(slug => {
+                const hotel = allHotels[slug];
+                if (!hotel) return;
+                hasAny = true;
+
+                const col = document.createElement('div');
+                col.className = 'col';
+                col.dataset.hotelSlug = slug;
+
+                col.innerHTML = `
+                <div class="card h-100 position-relative shadow-sm">
+                    ${hotel.image ? `<img src="${hotel.image}" class="card-img-top" style="height:200px;object-fit:cover;">` : ''}
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <button class="favorite-btn favorited"
+                                onclick="toggleFavorite('${slug}', this)"
+                                data-tooltip="Remove from favorites">
+                            <i class="fa-heart fas"></i>
+                        </button>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${hotel.name}</h5>
+                        <p class="text-muted">${hotel.location}</p>
+                        <div class="mt-auto">
+                            <a href="${hotelDetailBase}${slug}/" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>`;
+
+                container.appendChild(col);
+            });
+
+            if (!hasAny) {
+                container.style.display = 'none';
+                empty.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            wishlist.forEach(slug => {
+                const col = document.createElement('div');
+                col.className = 'col';
+                col.innerHTML = `<div class="card h-100"><div class="card-body">Hotel: ${slug}</div></div>`;
+                container.appendChild(col);
+            });
+        })
+        .finally(() => {
+            updateEmptyState(); // ← Ensure correct state
+        });
+});
+</script>
+{% endblock %}

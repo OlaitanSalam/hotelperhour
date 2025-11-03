@@ -8,6 +8,13 @@
     <title>{% block title %}Hotelperhour{% endblock %}</title>
     <link rel="icon" href="{% static 'images/2.png' %}" type="image/png">
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <!-- In base2.html, just before </body> -->
+<script>
+    window.isLoggedIn = {{ user.is_authenticated|lower }};
+    window.isCustomer = {{ user.is_customer|lower }};
+    window.isHotelOwner = {{ user.is_hotel_owner|lower }};
+</script>
+<script src="{% static 'js/favorites.js' %}"></script>
     
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&display=swap">
     <link rel="stylesheet" href="{% static 'css/aos.min.css' %}">
@@ -467,6 +474,48 @@
   font-size: 1.2rem;
 }
 
+/* Favorite Button - Booking.com Style */
+.favorite-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.favorite-btn:hover {
+    border-color: #ccc;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.favorite-btn i {
+    font-size: 18px;
+    color: #d32f2f;
+    transition: color 0.2s ease;
+}
+
+.favorite-btn.favorited   { background:#d32f2f; border-color:#d32f2f; }
+.favorite-btn.favorited i { color:#fff !important; }
+
+.favorite-btn::after { display: none !important; }
+
+.favorite-btn:hover::after {
+    opacity: 1;
+}
+
+.favorite-btn.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 
 @keyframes bounce {
     0% { transform: translateY(0); }
@@ -578,6 +627,7 @@
                                 {% if user.is_customer %}
                                     <li><a class="dropdown-item" href="{% url 'customer_profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
                                     <li><a class="dropdown-item" href="{% url 'customer_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'customer_favorites' %}"><i class="fas fa-heart me-2"></i>Favourites</a></li>
                                 {% elif user.is_hotel_owner %}
                                     <li><a class="dropdown-item" href="{% url 'hotel_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
                                 {% endif %}
@@ -605,7 +655,11 @@
           <i class="fas fa-hotel me-2"></i>Hotel Owner Login
         </a>
       </li>
-      
+      <li>
+        <a class="dropdown-item" href="{% url 'guest_favorites' %}">
+          <i class="fas fa-heart me-2"></i>Favorites
+        </a>
+      </li>
     </ul>
   </div>
 {% endif %}
@@ -630,7 +684,9 @@
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}"><i class="fas fa-info-circle"></i><strong>About Us</strong></a></li>
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'hotel_list' %}active{% endif %}" href="{% url 'hotel_list' %}"><i class="fas fa-hotel"></i><strong>Book a Room</strong></a></li>
                 <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'contacts' %}"><i class="fas fa-address-book"></i><strong>Contact Us</strong></a></li>
+                
                 {% if user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'customer_favorites' %}active{% endif %}" href="{% url 'customer_favorites' %}"><i class="fas fa-heart"></i><strong>Favorites</strong></a></li>
                 <li class="nav-item">
                     <a class="nav-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}" href="
                         {% if user.is_customer %}
@@ -642,6 +698,8 @@
                         {% endif %}
                     "><i class="fas fa-tachometer-alt"></i><strong>Dashboard</strong></a>
                 </li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'guest_favorites' %}active{% endif %}" href="{% url 'guest_favorites' %}"><i class="fas fa-heart"></i><strong>Favorites</strong></a></li>
                 {% endif %}
             </ul>
             
@@ -731,6 +789,7 @@
                             {% if user.is_customer %}
                                 <li><a href="{% url 'customer_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                                 <li><a href="{% url 'customer_profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+                                <li><a href="{% url 'customer_favorites' %}"><i class="fas fa-heart"></i> Favourites</a></li>
                             {% elif user.is_hotel_owner %}
                                 <li><a href="{% url 'hotel_dashboard' %}"><i class="fas fa-building"></i> Dashboard</a></li>
                             {% endif %}
@@ -1002,3 +1061,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </body>
 </html>
+
