@@ -24,7 +24,24 @@
                 <tr><td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">Check-out:</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{ booking.check_out|date:"M d, Y - g:i A" }}</td></tr>
                 <tr>
   <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
-    Original Room Cost:
+    Hours Paid For:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    {{ hours_paid }} hour{{ hours_paid|pluralize }}
+  </td>
+</tr>
+<tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Rate per Hour:
+  </td>
+  <td style="padding: 8px; border: 1px solid #dee2e6;">
+    ₦{{ price_per_hour_display|floatformat:2|intcomma }}
+    {% if hours_paid == 12 or hours_paid == 24 %}({{ hours_paid }}-hour package){% endif %}
+  </td>
+</tr>
+                <tr>
+  <td style="padding: 8px; border: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">
+    Total Room Cost:
   </td>
   <td style="padding: 8px; border: 1px solid #dee2e6;">
     ₦{{ base_room_cost|floatformat:2|intcomma }}

@@ -1,0 +1,148 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Booking Alert - Admin</title>
+</head>
+<body style="margin:0; padding:20px; background-color:#f8f9fa; font-family: Arial, sans-serif; line-height:1.6;">
+
+  <!-- Main container -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width:600px; background-color:#ffffff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    <tr>
+      <td style="padding:0;">
+
+        <!-- Header - Same as Hotel Owner -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#28a745,#20c997); color:#ffffff; text-align:center;">
+          <tr>
+            <td style="padding:30px 20px;">
+              <h1 style="margin:0; font-size:28px; font-weight:600; font-family:Arial, sans-serif;">Hotel per Hour</h1>
+              <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Admin Booking Alert</p>
+              <div style="background-color:rgba(255,255,255,0.2); width:80px; height:80px; border-radius:50%; text-align:center; line-height:80px; font-size:40px; margin:20px auto 0;">
+                ✓
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Content -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:40px 30px; text-align:center;">
+              <h2 style="color:#28a745; font-size:32px; margin:0 0 20px; font-weight:700;">New Booking!</h2>
+              <p style="color:#495057; font-size:16px; margin:15px 0;">
+                Booking <strong>#{{ booking.booking_reference }}</strong> confirmed at:
+              </p>
+              <div style="font-size:20px; font-weight:600; color:#2c3e50; margin:10px 0;">
+                {{ booking.room.hotel.name }}
+              </div>
+
+              <!-- Booking Info -->
+              <div style="background-color:#f8f9fa; border-radius:8px; padding:20px; margin:25px 0; border-left:4px solid #28a745; text-align:left;">
+                
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                  <strong style="color:#2c3e50;">Customer:</strong> {{ booking.name }}
+                </p>
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                  <strong style="color:#2c3e50;">Email:</strong> {{ booking.email }}
+                </p>
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                  <strong style="color:#2c3e50;">Phone:</strong> {{ booking.phone_number }}
+                </p>
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                  <strong style="color:#2c3e50;">Check-in:</strong> {{ booking.check_in|date:"d M Y, H:i" }}
+                </p>
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                  <strong style="color:#2c3e50;">Check-out:</strong> {{ booking.check_out|date:"d M Y, H:i" }}
+                </p>
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+  <strong style="color:#2c3e50;">Hours Paid For:</strong> {{ hours_paid }} hour{{ hours_paid|pluralize }}
+</p>
+<p style="margin:10px 0; font-size:16px; color:#495057;">
+  <strong style="color:#2c3e50;">Rate per Hour:</strong>
+  ₦{{ price_per_hour_display|floatformat:2|intcomma }}
+  {% if hours_paid == 12 or hours_paid == 24 %}({{ hours_paid }}-hour package){% endif %}
+</p>
+
+                <p style="margin:10px 0; font-size:16px; color:#495057;">
+                   <strong style="color:#2c3e50;">Room Type:</strong> {{ booking.room.room_type }}
+                </p>
+
+                <!-- Financial Breakdown -->
+                <div style="margin-top:20px; padding-top:15px; border-top:1px dashed #dee2e6;">
+                  <p style="margin:10px 0; font-size:16px; color:#495057;">
+                    <strong style="color:#2c3e50;">Total Room Cost:</strong>
+                    ₦{{ base_room_cost|floatformat:2|intcomma }}
+                  </p>
+
+                  {% if booking.discount_applied > 0 %}
+                  <p style="margin:10px 0; font-size:16px; color:#495057;">
+                    <strong style="color:#2c3e50;">Discount Applied:</strong>
+                    -₦{{ booking.discount_applied|floatformat:2|intcomma }}
+                    ({{ discount_percentage|floatformat:1 }}% off)
+                  </p>
+                  {% endif %}
+
+                  <p style="margin:10px 0; font-size:16px; color:#495057;">
+                    <strong style="color:#2c3e50;">Room Cost (after discount):</strong>
+                    ₦{{ final_room_cost|floatformat:2|intcomma }}
+                  </p>
+
+                  {% if booking.extras.exists %}
+                  <div style="margin:15px 0; padding:15px; background-color:#e9ecef; border-radius:6px;">
+                    <p style="margin:5px 0; font-size:15px;">
+                      <strong style="color:#2c3e50;">Extra Services:</strong>
+                    </p>
+                    {% for extra in booking.extras.all %}
+                    <p style="margin:5px 0; font-size:15px; color:#495057;">
+                      {{ extra.name }}: ₦{{ extra.price|floatformat:2|intcomma }}
+                    </p>
+                    {% endfor %}
+                    <p style="margin:8px 0 0; font-size:14px; color:#28a745; font-weight:600;">
+                      Total Extras: ₦{{ extras_cost|floatformat:2|intcomma }}
+                    </p>
+                  </div>
+                  {% endif %}
+
+                  <p style="margin:10px 0; font-size:16px; color:#495057;">
+                    <strong style="color:#2c3e50;">Service Charge (10%):</strong>
+                    ₦{{ service_charge|floatformat:2|intcomma }}
+                  </p>
+
+                  <p style="margin:15px 0 5px; font-size:18px; color:#28a745; font-weight:700;">
+                    Total Paid by Customer:
+                    ₦{{ total_amount|floatformat:2|intcomma }}
+                  </p>
+
+                  <p style="margin:15px 0; font-size:16px; color:#2c3e50; font-weight:600;">
+                    <strong>Hotel Revenue (room + extras):</strong>
+                    ₦{{ hotel_revenue|floatformat:2|intcomma }}
+                  </p>
+                </div>
+              </div>
+
+              <p style="color:#495057; font-size:16px; margin:20px 0 0;">
+                This is an automated admin alert.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #dee2e6; background-color:#f8f9fa; text-align:center;">
+          <tr>
+            <td style="padding:25px;">
+              <p style="margin:5px 0; font-weight:600; color:#2c3e50;">Hotel per Hour Admin</p>
+              <p style="margin:5px 0; color:#6c757d; font-size:14px;">© {{ now|date:"Y" }} Hotel per Hour. All rights reserved.</p>
+              <p style="font-size:12px; margin-top:15px; color:#6c757d;">
+                Do not reply to this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

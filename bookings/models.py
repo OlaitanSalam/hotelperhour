@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from customers.models import Customer
 
 
+
 class BookingDuration(models.Model):
     hours = models.PositiveIntegerField(unique=True, help_text="Duration in hours (e.g., 3, 6, 9)")
     

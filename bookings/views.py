@@ -20,6 +20,10 @@ from django.contrib.contenttypes.models import ContentType
 from customers.models import Customer, LoyaltyRule
 from users.models import CustomUser
 
+import hmac
+import hashlib
+
+
 # Setup logging
 logger = logging.getLogger(__name__)
 
@@ -27,41 +31,94 @@ logger = logging.getLogger(__name__)
 
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
+    hotel = room.hotel
     is_customer = request.user.is_authenticated and isinstance(request.user, Customer)
+    
+    if hotel.duration_mode in ['12_only', '12_and_24']:
+        if not room.twelve_hour_price:
+            from django.contrib import messages
+            messages.error(
+                request, 
+                f"This room is not properly configured for 12-hour bookings. "
+                f"Please contact {hotel.name} for assistance."
+            )
+            return redirect('hotel_detail', hotel_id=hotel.id)
+    
+    if hotel.duration_mode in ['24_only', '12_and_24']:
+        if not room.twenty_four_hour_price:
+            from django.contrib import messages
+            messages.error(
+                request,
+                f"This room is not properly configured for 24-hour bookings. "
+                f"Please contact {hotel.name} for assistance."
+            )
+            return redirect('hotel_detail', hotel_id=hotel.id)
+    
+    # Check if hourly rate is needed but missing
+    if hotel.duration_mode == 'all' and not room.price_per_hour:
+        from django.contrib import messages
+        messages.error(
+            request,
+            f"This room is not properly configured for hourly bookings. "
+            f"Please contact {hotel.name} for assistance."
+        )
+        return redirect('hotel_detail', hotel_id=hotel.id)
     
     if request.method == 'POST':
         form = BookingForm(request.POST, room=room, user=request.user)
         if form.is_valid():
             # Calculate totals
             check_in = form.cleaned_data['check_in']
+            
+            # BLACKOUT CHECK
+            if room.hotel.blackout_start and room.hotel.blackout_end:
+                if room.hotel.is_in_blackout(check_in):
+                    form.add_error(
+                        'check_in',
+                        f"App check-ins are not allowed from "
+                        f"{room.hotel.blackout_start.strftime('%I:%M %p')} to "
+                        f"{room.hotel.blackout_end.strftime('%I:%M %p')}. "
+                        "Please book at the front desk or choose a different time."
+                    )
+                    return render(request, 'bookings/book_room.html', {
+                        'form': form, 'room': room, 'is_customer': is_customer
+                    })
+            
             check_out = form.cleaned_data['check_out']
             duration = form.cleaned_data['duration']
             extras = form.cleaned_data['extras']
             total_hours = duration
-            # Use special pricing for 12/24 hours if set, else standard
-            if total_hours in [12, 24] and getattr(room, f"{'twelve' if total_hours == 12 else 'twenty_four'}_hour_price", None):
-                room_cost = room.twelve_hour_price if total_hours == 12 else room.twenty_four_hour_price
+            
+            if total_hours == 12 and room.twelve_hour_price:
+                room_cost = room.twelve_hour_price
+            elif total_hours == 24 and room.twenty_four_hour_price:
+                room_cost = room.twenty_four_hour_price
             else:
+                # Fall back to hourly rate (must exist for this mode)
+                if not room.price_per_hour:
+                    from django.contrib import messages
+                    messages.error(request, "Room pricing is not configured properly.")
+                    return redirect('hotel_detail', hotel_id=hotel.id)
                 room_cost = room.price_per_hour * Decimal(str(total_hours))
+            
             service_charge = room_cost * Decimal('0.10')
             extras_cost = sum(extra.price for extra in extras)
             discount_amount = Decimal('0.00')
             points_used = 0
+            
             if is_customer and form.cleaned_data.get('use_points'):
                 discount_percentage = form.cleaned_data.get('discount', 0)
                 points_used = form.cleaned_data.get('points_to_use', 0)
                 if discount_percentage > 0 and points_used > 0:
                     discount_amount = room_cost * (Decimal(discount_percentage) / Decimal('100'))
+            
             total_price_with_discount = room_cost - discount_amount
             total_amount = total_price_with_discount + service_charge + extras_cost
             
-
             # Determine user model for content type
             user_content_type_id = None
             if request.user.is_authenticated:
-                # Force resolution of SimpleLazyObject
-                _ = request.user.pk  # Access pk to ensure user is resolved
-                # Explicitly determine model based on user properties
+                _ = request.user.pk
                 if hasattr(request.user, 'is_hotel_owner') and request.user.is_hotel_owner:
                     user_model = CustomUser
                 else:
@@ -86,14 +143,18 @@ def book_room(request, room_id):
                 'user_object_id': request.user.id if request.user.is_authenticated else None,
             }
             request.session['pending_booking_data'] = booking_data
-            # Generate reference early
             reference = Booking.generate_booking_reference()
             request.session['pending_booking_reference'] = reference
 
             return redirect('initiate_payment', booking_reference=reference)
     else:
         form = BookingForm(room=room, user=request.user)
-    return render(request, 'bookings/book_room.html', {'form': form, 'room': room, 'is_customer': is_customer})
+    
+    return render(request, 'bookings/book_room.html', {
+        'form': form, 
+        'room': room, 
+        'is_customer': is_customer
+    })
 
 def initiate_payment(request, booking_reference):
     booking_data = request.session.get('pending_booking_data')
@@ -209,6 +270,11 @@ def payment_callback(request):
     extras_cost = sum(extra.price for extra in extras)
     final_room_cost = base_room_cost - booking.discount_applied
     hotel_revenue = final_room_cost + extras_cost
+    price_per_hour_display = (
+        room.twelve_hour_price if booking.total_hours == 12 and room.twelve_hour_price else
+        room.twenty_four_hour_price if booking.total_hours == 24 and room.twenty_four_hour_price else
+        room.price_per_hour
+    )
 
     # Notifications
     try:
@@ -220,6 +286,8 @@ def payment_callback(request):
             'extras_cost': extras_cost,
             'final_room_cost': final_room_cost,
             'hotel_revenue': hotel_revenue,
+            'price_per_hour_display': price_per_hour_display,
+            'hours_paid': booking.total_hours,
         }
         message = render_to_string('bookings/booking_notification.html', context)
         send_mail(subject, '', None, [booking.room.hotel.owner.email], html_message=message)
@@ -236,9 +304,37 @@ def payment_callback(request):
                 'base_room_cost': base_room_cost,
                 'final_room_cost': final_room_cost,
                 'discount_percentage': discount_percentage,
+                'price_per_hour_display': price_per_hour_display,
+                'hours_paid': booking.total_hours,
             }
             customer_html = render_to_string('bookings/customer_confirmation_email.html', context)
             send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [booking.email], html_message=customer_html, fail_silently=False)
+
+            # ADMIN Email
+            subject_admin = f'New Booking #{booking.booking_reference} – {booking.room.hotel.name}'
+            context_admin = {
+                'booking': booking,
+                'base_room_cost': base_room_cost,
+                'final_room_cost': final_room_cost,
+                'extras_cost': extras_cost,
+                'hotel_revenue': hotel_revenue,
+                'service_charge': booking.service_charge,
+                'total_amount': booking.total_amount,
+                'discount_percentage': (
+                    (booking.discount_applied / base_room_cost * 100) if base_room_cost > 0 else Decimal('0')
+                ),
+                'price_per_hour_display': price_per_hour_display,
+                'hours_paid': booking.total_hours,
+            }
+            admin_html = render_to_string('bookings/admin_booking_notification.html', context_admin)
+            send_mail(
+                subject_admin,
+                '',
+                settings.DEFAULT_FROM_EMAIL,
+                ['admin@inovacaong.com'],
+                html_message=admin_html,
+                fail_silently=False
+            )
     except Exception as e:
         logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
 
@@ -251,22 +347,38 @@ def payment_callback(request):
 
 @csrf_exempt
 def paystack_webhook(request):
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+    signature = request.headers.get('x-paystack-signature')
+    if not signature:
+        logger.warning("Paystack webhook: Missing signature")
+        return JsonResponse({'status': 'missing signature'}, status=400)
+    expected = hmac.new(
+        settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
+        request.body,
+        hashlib.sha512
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        logger.warning("Paystack webhook: Invalid signature")
+        return JsonResponse({'status': 'invalid signature'}, status=400)
+    try:
         payload = json.loads(request.body)
         if payload['event'] == 'charge.success':
             reference = payload['data']['reference']
-            # Check if booking exists; if not, log (since created in callback)
             try:
                 booking = Booking.objects.get(booking_reference=reference)
                 if not booking.is_paid:
                     booking.is_paid = True
                     booking.payment_reference = reference
                     booking.save()
-                    # Send notifications if needed (but already sent in callback)
+                    logger.info(f"Webhook: Booking {reference} marked as paid")
             except Booking.DoesNotExist:
-                logger.warning(f"Webhook received for non-existent booking reference: {reference}")
+                logger.warning(f"Webhook: Booking {reference} not found")
         return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
+    except Exception as e:
+        logger.error(f"Webhook processing error: {e}")
+        return JsonResponse({'status': 'error'}, status=500)
 
 def verify_payment(reference):
     url = f'https://api.paystack.co/transaction/verify/{reference}'
@@ -385,14 +497,29 @@ def check_availability(request, room_id):
             check_in = timezone.make_aware(timezone.datetime.strptime(check_in_str, '%Y-%m-%dT%H:%M'))
             duration = int(duration)
             check_out = check_in + timezone.timedelta(hours=duration)
+
+            # BLACKOUT CHECK
+            if room.hotel.blackout_start and room.hotel.blackout_end:
+                if room.hotel.is_in_blackout(check_in):
+                    return JsonResponse({
+                        'available': False,
+                        'message': f"This hotel doesn't accept check-ins between "
+                                 f"{room.hotel.blackout_start.strftime('%I:%M %p')} and "
+                                 f"{room.hotel.blackout_end.strftime('%I:%M %p')}."
+                                 f"Please choose a different time."
+                    })
+
             available_units = room.get_available_units(check_in, check_out)
             return JsonResponse({
                 'available': available_units > 0,
-                'message': f'{available_units} unit(s) available for this period' if available_units > 0 else 'No units available for this period'
+                'message': f'{available_units} unit(s) available for this period'
+                           if available_units > 0 else 'No units available for this period'
             })
-        except (ValueError, TypeError):
-            return JsonResponse({'error': 'Invalid input'}, status=400)
-    return JsonResponse({'error': 'Missing parameters'}, status=400)
+
+        except (ValueError, TypeError) as e:
+            return JsonResponse({'error': 'Invalid date/time format'}, status=400)
+
+    return JsonResponse({'error': 'Missing check_in or duration'}, status=400)
 
 def get_loyalty_discount(request):
     if not request.user.is_authenticated or not isinstance(request.user, Customer):

@@ -32,7 +32,7 @@
                 <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
                 <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
                 <p><strong>Total Hours:</strong> {{ booking.total_hours }}</p>
-                <p><strong>Total Price:</strong> ₦{{ booking.hotel_revenue }}</p>
+                <p><strong>Total Price:</strong> ₦{{ booking.total_price|floatformat:2 }}</p>
                 {% if booking.extras.exists %}
                  <p><strong>Extras:</strong></p>
                  <ul>

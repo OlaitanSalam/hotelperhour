@@ -56,12 +56,15 @@ def hotel_create(request):
     if Hotel.objects.filter(owner=request.user).exists():
         messages.error(request, "You can only register one hotel per account.")
         return redirect('hotel_dashboard')
+    
     if request.method == 'POST':
         form = HotelForm(request.POST, request.FILES)
-        room_formset = RoomFormSet(request.POST, request.FILES, prefix='room')
+        # Initialize room formset with parent_form BEFORE validation
+        room_formset = RoomFormSet(request.POST, request.FILES, prefix='room', parent_form=form)
         extra_formset = ExtraServiceFormSet(request.POST, prefix='extra')
         image_formset = HotelImageFormSet(request.POST, request.FILES, prefix='image')
         policy_formset = HotelPolicyFormSet(request.POST, prefix='policy')
+        
         if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
             # Check if at least one room is provided
             if not any(form.is_valid() and not form.cleaned_data.get('DELETE', False) for form in room_formset.forms):
@@ -75,10 +78,12 @@ def hotel_create(request):
                     'amenities': Amenity.objects.order_by('name'),
                     'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
                 })
+            
             hotel = form.save(commit=False)
             hotel.owner = request.user
             hotel.save()
             form.save_m2m()
+            
             room_formset.instance = hotel
             room_formset.save()
             extra_formset.instance = hotel
@@ -87,6 +92,7 @@ def hotel_create(request):
             image_formset.save()
             policy_formset.instance = hotel
             policy_formset.save()
+            
             if not request.user.is_hotel_owner:
                 request.user.is_hotel_owner = True
                 request.user.save()
@@ -96,17 +102,17 @@ def hotel_create(request):
         else:
             # If the POST failed validation, provide a clearer message when
             # address is missing but coordinates were submitted by the map JS.
-            if request.method == 'POST':
-                lat = request.POST.get('latitude')
-                lng = request.POST.get('longitude')
-                if 'address' in form.errors and lat and lng:
-                    form.add_error('address', 'Address is required. We detected coordinates but the address field is empty. Please confirm the address using the map search or "Use My Current Location" before submitting.')
+            lat = request.POST.get('latitude')
+            lng = request.POST.get('longitude')
+            if 'address' in form.errors and lat and lng:
+                form.add_error('address', 'Address is required. We detected coordinates but the address field is empty. Please confirm the address using the map search or "Use My Current Location" before submitting.')
     else:
         form = HotelForm()
-        room_formset = RoomFormSet(prefix='room')
+        room_formset = RoomFormSet(prefix='room', parent_form=form)
         extra_formset = ExtraServiceFormSet(prefix='extra')
         image_formset = HotelImageFormSet(prefix='image')
         policy_formset = HotelPolicyFormSet(prefix='policy')
+    
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
         'room_formset': room_formset,
@@ -115,20 +121,20 @@ def hotel_create(request):
         'image_formset': image_formset,
         'amenities': Amenity.objects.order_by('name'),
         'policy_formset': policy_formset,
-        
-
     })
 
 @login_required
 @hotel_owner_required
 def hotel_edit(request, slug):
     hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    
     if request.method == 'POST':
         form = HotelForm(request.POST, request.FILES, instance=hotel)
-        room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room')
+        room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room', parent_form=form)
         extra_formset = ExtraServiceFormSet(request.POST, instance=hotel, prefix='extra')
         image_formset = HotelImageFormSet(request.POST, request.FILES, instance=hotel, prefix='image')
         policy_formset = HotelPolicyFormSet(request.POST, prefix='policy', instance=hotel)
+        
         if form.is_valid() and room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
             # Check if at least one room remains after edits
             if not any(form.is_valid() and not form.cleaned_data.get('DELETE', False) for form in room_formset.forms):
@@ -153,10 +159,71 @@ def hotel_edit(request, slug):
             return redirect('hotel_dashboard')
     else:
         form = HotelForm(instance=hotel)
-        room_formset = RoomFormSet(instance=hotel, prefix='room')
+        room_formset = RoomFormSet(instance=hotel, prefix='room', parent_form=form)
         extra_formset = ExtraServiceFormSet(instance=hotel, prefix='extra')
         image_formset = HotelImageFormSet(instance=hotel, prefix='image')
         policy_formset = HotelPolicyFormSet(prefix='policy', instance=hotel)
+    
+    return render(request, 'hotels/hotel_form.html', {
+        'form': form,
+        'room_formset': room_formset,
+        'extra_formset': extra_formset,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        'image_formset': image_formset,
+        'is_edit': True,
+        'hotel': hotel,
+        'amenities': Amenity.objects.order_by('name'),
+        'policy_formset': policy_formset,
+    })
+
+@login_required
+@hotel_owner_required
+def hotel_edit(request, slug):
+    hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    
+    if request.method == 'POST':
+        form = HotelForm(request.POST, request.FILES, instance=hotel)
+        room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room')
+        extra_formset = ExtraServiceFormSet(request.POST, instance=hotel, prefix='extra')
+        image_formset = HotelImageFormSet(request.POST, request.FILES, instance=hotel, prefix='image')
+        policy_formset = HotelPolicyFormSet(request.POST, prefix='policy', instance=hotel)
+        
+        # Set parent form reference BEFORE validation
+        room_formset.parent_form = form
+        
+        if form.is_valid():
+            # Re-initialize room formset with the validated parent form
+            room_formset = RoomFormSet(request.POST, request.FILES, instance=hotel, prefix='room', parent_form=form)
+            
+            if room_formset.is_valid() and extra_formset.is_valid() and image_formset.is_valid() and policy_formset.is_valid():
+                # Check if at least one room remains after edits
+                if not any(form.is_valid() and not form.cleaned_data.get('DELETE', False) for form in room_formset.forms):
+                    messages.error(request, "At least one room is required to update the hotel.")
+                    return render(request, 'hotels/hotel_form.html', {
+                        'form': form,
+                        'room_formset': room_formset,
+                        'extra_formset': extra_formset,
+                        'image_formset': image_formset,
+                        'policy_formset': policy_formset,
+                        'amenities': Amenity.objects.order_by('name'),
+                        'is_edit': True,
+                        'hotel': hotel,
+                        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+                    })
+                form.save()
+                room_formset.save()
+                extra_formset.save()
+                image_formset.save()
+                policy_formset.save()
+                messages.success(request, "Hotel updated successfully.")
+                return redirect('hotel_dashboard')
+    else:
+        form = HotelForm(instance=hotel)
+        room_formset = RoomFormSet(instance=hotel, prefix='room', parent_form=form)
+        extra_formset = ExtraServiceFormSet(instance=hotel, prefix='extra')
+        image_formset = HotelImageFormSet(instance=hotel, prefix='image')
+        policy_formset = HotelPolicyFormSet(prefix='policy', instance=hotel)
+    
     return render(request, 'hotels/hotel_form.html', {
         'form': form,
         'room_formset': room_formset,
@@ -193,45 +260,60 @@ class HotelDetailView(DetailView):
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         hotel = self.object
-        # Filter only images with actual files
-        context['hotel_images'] = hotel.images.exclude(Q(image__isnull=True) | Q(image='')).order_by('order')
-        return context
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        hotel = self.get_object()
+        # ✅ Images (filtered correctly)
+        hotel_images = hotel.images.exclude(
+            Q(image__isnull=True) | Q(image='')
+        ).order_by('order')
+
+        # ✅ Reviews
         reviews = Review.objects.filter(hotel=hotel).order_by('-created_at')
 
-        stats = reviews.aggregate(avg_rating=Avg('rating'), count=Count('id'))
+        # ✅ Stats
+        stats = reviews.aggregate(
+            avg_rating=Avg('rating'),
+            count=Count('id')
+        )
+        hotel.average_rating = stats['avg_rating'] or 0
+        hotel.review_count = stats['count'] or 0
+
+        # ✅ Rating breakdown
         rating_breakdown = {}
-        for rating in range(5, 0, -1):  # Start from 5 to 1
-            count = reviews.filter(rating=rating).count()
-            percent = (count / stats['count'] * 100) if stats['count'] > 0 else 0
-            rating_breakdown[rating] = {'value': count, 'percent': percent}
-        context['rating_breakdown'] = rating_breakdown
-        context['reviews'] = reviews[:5]  # Initial 5 reviews
-        context['all_reviews'] = reviews[5:]  # Remaining for "See More"
-        context['review_form'] = ReviewForm()
-        context['hotel'].average_rating = stats['avg_rating']
-        context['hotel'].review_count = stats['count']
-        context['rating_breakdown'] = rating_breakdown
-        context['hotel_images'] = hotel.images.all().order_by('order')
+        total_reviews = stats['count'] or 0
+
+        for rating in range(5, 0, -1):
+            c = reviews.filter(rating=rating).count()
+            pct = (c / total_reviews * 100) if total_reviews else 0
+            rating_breakdown[rating] = {
+                'value': c,
+                'percent': pct
+            }
+
+        # ✅ Add price info to rooms
+        for room in hotel.rooms.all():
+            room.price_info = room.get_display_price_info()
+
+        # ✅ Build final context (NO overwriting)
+        context.update({
+            'hotel_images': hotel_images,
+            'reviews': reviews[:5],
+            'all_reviews': reviews[5:],
+            'rating_breakdown': rating_breakdown,
+            'review_form': ReviewForm(),
+        })
 
         return context
 
     def post(self, request, *args, **kwargs):
         hotel = self.get_object()
 
-        # ✅ Require authentication
         if not request.user.is_authenticated:
             messages.error(request, "You must be logged in to leave a review.")
             return redirect('hotel_detail', slug=hotel.slug)
 
-        # ✅ Prevent hotel owner from reviewing own hotel
         if hasattr(request.user, "is_hotel_owner") and request.user.is_hotel_owner:
             if hotel.owner == request.user:
                 messages.error(request, "Hotel owners cannot review their own hotels.")
@@ -239,16 +321,19 @@ class HotelDetailView(DetailView):
 
         form = ReviewForm(request.POST)
         if form.is_valid():
-            # ✅ Limit reviews (1 per hotel per 24h)
-            last_review = Review.objects.filter(hotel=hotel, email=request.user.email).order_by("-created_at").first()
+            last_review = Review.objects.filter(
+                hotel=hotel,
+                email=request.user.email
+            ).order_by('-created_at').first()
+
             if last_review and (now() - last_review.created_at) < timedelta(hours=24):
                 messages.error(request, "You can only leave one review per hotel per day.")
                 return redirect('hotel_detail', slug=hotel.slug)
 
             review = form.save(commit=False)
             review.hotel = hotel
-            review.email = request.user.email  # enforce auth email
-            review.name = request.user.full_name if hasattr(request.user, "full_name") else request.user.email
+            review.email = request.user.email
+            review.name = getattr(request.user, "full_name", request.user.email)
             review.save()
 
             messages.success(request, "Thank you for your review!")
@@ -261,16 +346,24 @@ class HotelDetailView(DetailView):
 
 
 def hotel_list(request):
-    query = request.GET.get('q')
+    query = request.GET.get('q', '')
+    
+    # Base queryset with annotations
     hotels = Hotel.objects.filter(is_approved=True).annotate(
         average_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
     )
+    
+    # Apply search filter
     if query:
-        hotels = hotels.filter(Q(city__icontains=query) | Q(suburb__icontains=query))
+        hotels = hotels.filter(
+            Q(city__icontains=query) | Q(suburb__icontains=query)
+        )
 
+    # Pagination
     paginator = Paginator(hotels.order_by('name'), 9)
     page = request.GET.get('page')
+    
     try:
         hotels_page = paginator.page(page)
     except PageNotAnInteger:
@@ -278,13 +371,17 @@ def hotel_list(request):
     except EmptyPage:
         hotels_page = paginator.page(paginator.num_pages)
 
+    # Build query string
     query_params = request.GET.copy()
     if 'page' in query_params:
         del query_params['page']
     query_string = urlencode(query_params)
+    
+    for hotel in hotels_page:
+        hotel.pricing_info = hotel.get_display_pricing_info()
 
     return render(request, 'hotels/hotel_list.html', {
-        'hotels': hotels_page,
+        'hotels': hotels_page,  # Paginated queryset
         'query_string': query_string
     })
 

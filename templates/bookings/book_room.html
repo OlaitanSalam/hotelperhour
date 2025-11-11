@@ -9,7 +9,25 @@
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h2 class="mb-0">Book Room: {{ room.room_type }}</h2>
-                        <span class="badge bg-primary fs-6">₦{{ room.price_per_hour|floatformat:2|intcomma }}/hour</span>
+                        {% if room.hotel.duration_mode == 'all' and room.price_per_hour and room.price_per_hour > 0 %}
+                            <span class="badge bg-primary fs-6">₦{{ room.price_per_hour|floatformat:2|intcomma }}/hour</span>
+                        {% elif room.hotel.duration_mode == '12_only' and room.twelve_hour_price and room.twelve_hour_price > 0 %}
+                            <span class="badge bg-info fs-6">₦{{ room.twelve_hour_price|floatformat:2|intcomma }} / 12 hrs</span>
+                        {% elif room.hotel.duration_mode == '24_only' and room.twenty_four_hour_price and room.twenty_four_hour_price > 0 %}
+                            <span class="badge bg-warning fs-6">₦{{ room.twenty_four_hour_price|floatformat:2|intcomma }} / day</span>
+                        {% elif room.hotel.duration_mode == '12_and_24' %}
+                            {% if room.twelve_hour_price and room.twenty_four_hour_price %}
+                                <span class="badge bg-success fs-6">From ₦{{ room.twelve_hour_price|floatformat:2|intcomma }}</span>
+                            {% elif room.twelve_hour_price %}
+                                <span class="badge bg-info fs-6">₦{{ room.twelve_hour_price|floatformat:2|intcomma }} / 12 hrs</span>
+                            {% elif room.twenty_four_hour_price %}
+                                <span class="badge bg-warning fs-6">₦{{ room.twenty_four_hour_price|floatformat:2|intcomma }} / day</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Contact Hotel</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">Pricing N/A</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -100,30 +118,81 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <small class="form-text text-danger">Note: The least duration you can book is 3 hours.</small>
-        <div class="input-group">
-            <span class="input-group-text bg-light border-end-0">
-                <i class="fas fa-hourglass"></i>
-            </span>
-            <select name="duration" id="id_duration" class="form-select border-start-0" required>
-    <option value="" selected disabled>-- Pick your duration --</option>
-    {% for duration in form.duration.field.choices %}
-        <option value="{{ duration.0 }}">
-            {{ duration.1 }}
-        </option>
-    {% endfor %}
-</select>
-
+    <!-- Duration Mode Info Banner (if hotel has restrictions) -->
+    {% if room.hotel.duration_mode != 'all' %}
+    <div class="alert alert-info d-flex align-items-center mb-3" style="padding: 0.75rem 1rem;">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+            <strong>This hotel offers:</strong>
+            {% if room.hotel.duration_mode == '12_only' %}
+                12-hour bookings only
+            {% elif room.hotel.duration_mode == '24_only' %}
+                24-hour (full day) bookings only
+            {% elif room.hotel.duration_mode == '12_and_24' %}
+                12-hour or 24-hour bookings
+            {% endif %}
         </div>
-        {% if form.duration.errors %}
-            <div class="text-danger small mt-1">
-                {{ form.duration.errors }}
-            </div>
-        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Minimum Duration Note (only for 'all' mode) -->
+    {% if room.hotel.duration_mode == 'all' %}
+    <small class="form-text text-danger d-block mb-2">
+        Note: The minimum booking duration is 3 hours.
+    </small>
+    {% endif %}
+    
+    <!-- Duration Dropdown -->
+    <div class="input-group">
+        <span class="input-group-text bg-light border-end-0">
+            <i class="fas fa-hourglass"></i>
+        </span>
+        <select name="duration" id="id_duration" class="form-select border-start-0" required>
+            <option value="" selected disabled>
+                {% if room.hotel.duration_mode == 'all' %}
+                    -- Pick your duration --
+                {% elif room.hotel.duration_mode == '12_only' %}
+                    -- Select 12-Hour Booking --
+                {% elif room.hotel.duration_mode == '24_only' %}
+                    -- Select 24-Hour Booking --
+                {% elif room.hotel.duration_mode == '12_and_24' %}
+                    -- Choose 12 or 24 Hours --
+                {% endif %}
+            </option>
+            {% for duration in form.duration.field.choices %}
+                <option value="{{ duration.0 }}">
+                    {{ duration.1 }}
+                </option>
+            {% endfor %}
+        </select>
     </div>
     
-    <div id="availability-message" class="alert d-none"></div>
+    {% if form.duration.errors %}
+        <div class="text-danger small mt-1">
+            {{ form.duration.errors }}
+        </div>
+    {% endif %}
+    
+    <!-- Helpful Tip Based on Duration Mode -->
+    {% if room.hotel.duration_mode == '12_and_24' %}
+        <small class="text-muted d-block mt-2">
+            <i class="fas fa-star text-warning"></i> 
+            Choose 12 hours for a half-day stay or 24 hours for a full day
+        </small>
+    {% elif room.hotel.duration_mode == '12_only' %}
+        <small class="text-muted d-block mt-2">
+            <i class="fas fa-clock text-info"></i> 
+            Perfect for half-day stays - check in anytime, enjoy 12 hours
+        </small>
+    {% elif room.hotel.duration_mode == '24_only' %}
+        <small class="text-muted d-block mt-2">
+            <i class="fas fa-calendar-check text-success"></i> 
+            Full 24-hour access from your check-in time
+        </small>
+    {% endif %}
+</div>
 
+<div id="availability-message" class="alert d-none"></div>
                         </div>
 
                         <!-- Loyalty Points Section -->
@@ -177,10 +246,43 @@
                                     <div class="col-6">Total Units:</div>
                                     <div class="col-6 text-end fw-bold">{{ room.total_units }}</div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-6">Rate per Hour:</div>
-                                    <div class="col-6 text-end fw-bold">₦{{ room.price_per_hour|floatformat:2|intcomma }}</div>
-                                </div>
+                                {% if room.hotel.duration_mode == 'all' and room.price_per_hour and room.price_per_hour > 0 %}
+                                    <div class="row">
+                                        <div class="col-6">Rate per Hour:</div>
+                                        <div class="col-6 text-end fw-bold">₦{{ room.price_per_hour|floatformat:2|intcomma }}</div>
+                                    </div>
+                                {% elif room.hotel.duration_mode == '12_only' and room.twelve_hour_price and room.twelve_hour_price > 0 %}
+                                    <div class="row">
+                                        <div class="col-6">12-Hour Rate:</div>
+                                        <div class="col-6 text-end fw-bold">₦{{ room.twelve_hour_price|floatformat:2|intcomma }}</div>
+                                    </div>
+                                {% elif room.hotel.duration_mode == '24_only' and room.twenty_four_hour_price and room.twenty_four_hour_price > 0 %}
+                                    <div class="row">
+                                        <div class="col-6">24-Hour Rate:</div>
+                                        <div class="col-6 text-end fw-bold">₦{{ room.twenty_four_hour_price|floatformat:2|intcomma }}</div>
+                                    </div>
+                                {% elif room.hotel.duration_mode == '12_and_24' %}
+                                    {% if room.twelve_hour_price and room.twenty_four_hour_price %}
+                                        <div class="row">
+                                            <div class="col-6">12-Hour Rate:</div>
+                                            <div class="col-6 text-end fw-bold">₦{{ room.twelve_hour_price|floatformat:2|intcomma }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">24-Hour Rate:</div>
+                                            <div class="col-6 text-end fw-bold">₦{{ room.twenty_four_hour_price|floatformat:2|intcomma }}</div>
+                                        </div>
+                                    {% elif room.twelve_hour_price %}
+                                        <div class="row">
+                                            <div class="col-6">12-Hour Rate:</div>
+                                            <div class="col-6 text-end fw-bold">₦{{ room.twelve_hour_price|floatformat:2|intcomma }}</div>
+                                        </div>
+                                    {% elif room.twenty_four_hour_price %}
+                                        <div class="row">
+                                            <div class="col-6">24-Hour Rate:</div>
+                                            <div class="col-6 text-end fw-bold">₦{{ room.twenty_four_hour_price|floatformat:2|intcomma }}</div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
                                 <div class="row">
                                     <div class="col-6">Duration:</div>
                                     <div class="col-6 text-end fw-bold" id="duration">-- hours</div>
@@ -271,6 +373,13 @@
             padding-right: 20px;
         }
     }
+
+    .alert-info {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+    color: #0d47a1;
+    border-radius: 6px;
+}
 </style>
 
 <script>
@@ -289,7 +398,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const originalTotalElement = document.getElementById('original-total');
     const discountAmountElement = document.getElementById('discount-amount');
     const usePointsCheckbox = document.getElementById('id_use_points');
-    const pricePerHour = {{ room.price_per_hour }};
+    
+    // ========== UPDATED: Get pricing data from template context ==========
+    const roomData = {
+        pricePerHour: {{ room.price_per_hour|default:"null" }},
+        twelveHourPrice: {{ room.twelve_hour_price|default:"null" }},
+        twentyFourHourPrice: {{ room.twenty_four_hour_price|default:"null" }},
+        hotelMode: "{{ room.hotel.duration_mode }}"
+    };
+    // =====================================================================
+    
     const extraCheckboxes = document.querySelectorAll('.extra-checkbox');
 
     checkInDateInput.setAttribute('min', today);
@@ -306,15 +424,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (duration) {
-            let baseAmount;
+            let baseAmount = 0;
 
-            if (duration === 12 && {{ room.twelve_hour_price|default:"null" }}) {
-                baseAmount = parseFloat("{{ room.twelve_hour_price|default:0 }}");
-            } else if (duration === 24 && {{ room.twenty_four_hour_price|default:"null" }}) {
-                baseAmount = parseFloat("{{ room.twenty_four_hour_price|default:0 }}");
+            // ========== UPDATED: Smart pricing calculation ==========
+            if (duration === 12 && roomData.twelveHourPrice) {
+                baseAmount = roomData.twelveHourPrice;
+            } else if (duration === 24 && roomData.twentyFourHourPrice) {
+                baseAmount = roomData.twentyFourHourPrice;
             } else {
-                baseAmount = duration * pricePerHour;
+                // Use hourly rate (with null check)
+                if (roomData.pricePerHour) {
+                    baseAmount = duration * roomData.pricePerHour;
+                } else {
+                    // This shouldn't happen if validation is correct
+                    console.error('Missing pricing data for selected duration');
+                    roomCostElement.textContent = "₦-- (Pricing Error)";
+                    return;
+                }
             }
+            // =======================================================
 
             const serviceCharge = baseAmount * 0.10;
             let originalTotal = baseAmount + serviceCharge + extrasCost;
@@ -326,7 +454,6 @@ document.addEventListener('DOMContentLoaded', function () {
             extrasCostElement.textContent = `₦${extrasCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             originalTotalElement.textContent = `₦${originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             roomCostElement.textContent = `₦${baseAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
 
             {% if is_customer %}
                 fetch('{% url 'get_loyalty_discount' %}')
@@ -374,17 +501,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 originalTotalElement.style.color = '';
                 originalTotalElement.style.textDecoration = 'none';
             {% endif %}
-        } 
-        else {
+        } else {
             roomCostElement.textContent = "₦0";
             serviceChargeElement.textContent = "₦0";
             extrasCostElement.textContent = "₦0";
             originalTotalElement.textContent = "₦0";
             totalAmountElement.textContent = "₦0";
         }
-
-        
-
     }
 
     function checkAvailability() {

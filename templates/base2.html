@@ -8,7 +8,9 @@
     <title>{% block title %}Hotelperhour{% endblock %}</title>
     <link rel="icon" href="{% static 'images/2.png' %}" type="image/png">
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <!-- In base2.html, just before </body> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
 <script>
     window.isLoggedIn = {{ user.is_authenticated|lower }};
     window.isCustomer = {{ user.is_customer|lower }};
@@ -825,7 +827,7 @@
             <div class="text-center pb-3">
   <p class="mb-0 small text-muted">
     Powered by 
-    <a href="https://inovacao.com" target="_blank" class="fw-bold text-decoration-none" style="color: var(--primary);">
+    <a href="https://inovacaong.com" target="_blank" class="fw-bold text-decoration-none" style="color: var(--primary);">
       <img src="{% static 'images/inovacoa logoHPH.png' %}" alt="Inovação Logo" 
            style="height: 30px; margin-top: -2px; margin-right: 5px;">
       Inovação Limited

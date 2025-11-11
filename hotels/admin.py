@@ -78,7 +78,7 @@ class HotelAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Additional Information', {
-            'fields': ('created_at',)
+            'fields': ('created_at', 'blackout_start', 'blackout_end')
         }),
     )
     formfield_overrides = {

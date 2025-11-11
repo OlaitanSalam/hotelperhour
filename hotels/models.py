@@ -5,12 +5,37 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 from PIL import Image
 import os
+from django.utils.deconstruct import deconstructible
 from django.conf import settings
 from django.core.exceptions import ValidationError
 import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+DURATION_MODE_CHOICES = [
+    ('all', 'All Durations Available'),
+    ('12_only', '12-Hour Bookings Only'),
+    ('24_only', '24-Hour Bookings Only'),
+    ('12_and_24', '12-Hour and 24-Hour Only'),
+]
+
+def validate_image_size(value):
+    if value.size > 2 * 1024 * 1024:  # 2 MB
+        raise ValidationError("Image must be under 2MB")
+    
+@deconstructible
+class UploadToPath:
+    def __init__(self, subfolder):
+        self.subfolder = subfolder.rstrip('/')
+
+    def __call__(self, instance, filename):
+        hotel = instance if hasattr(instance, 'slug') else instance.hotel
+        slug = getattr(hotel, 'slug', 'unsaved')
+        name, ext = os.path.splitext(filename)
+        safe_name = name.replace(' ', '_')
+        return f"hotels/{slug}/{self.subfolder}/{safe_name}{ext.lower()}"
 
 class Amenity(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -29,7 +54,7 @@ class Hotel(models.Model):
     hotel_phone = models.CharField(max_length=20, null=True, blank=True)
     hotel_email = models.EmailField(max_length=255, null=True, blank=True)
     description = models.TextField()
-    image = models.ImageField(upload_to='hotels/images/default/', null=True, blank=True, default='images/default_hotel.webp')
+    image = models.ImageField(upload_to=UploadToPath('cover'), null=True, blank=True, default='images/default_hotel.webp', validators=[validate_image_size],)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
@@ -39,47 +64,68 @@ class Hotel(models.Model):
     account_name = models.CharField(max_length=255, null=True, blank=True)
     bank_name = models.CharField(max_length=255, null=True, blank=True)
     amenities = models.ManyToManyField(Amenity, related_name='hotels', blank=True)
+    blackout_start = models.TimeField(
+        null=True, blank=True,
+        help_text="Start of blackout (e.g. 22:00). App bookings blocked during this window."
+    )
+    blackout_end = models.TimeField(
+        null=True, blank=True,
+        help_text="End of blackout (e.g. 06:00). Supports overnight (e.g. 22:00 → 06:00)."
+    )
+    duration_mode = models.CharField(
+    max_length=20,
+    choices=DURATION_MODE_CHOICES,
+    default='all',
+    help_text="Control which booking durations guests can select"
+    )
     
 
     def save(self, *args, **kwargs):
-        # Generate slug if not present
         if not self.slug:
             self.slug = slugify(self.name)
             original_slug = self.slug
             counter = 1
-            while Hotel.objects.filter(slug=self.slug).exclude(id=self.id).exists():
+            while Hotel.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
-        # Set city from address if not provided
+
         if not self.city and self.address:
             parts = self.address.split(',')
             self.city = parts[1].strip() if len(parts) > 1 else "Unknown"
 
-        super().save(*args, **kwargs)  # Save to generate slug if new
+        super().save(*args, **kwargs)  # Save first → file is on disk
 
-        # Update image path to hotel-specific folder and convert to WebP
-        if self.image and 'default' in self.image.name:  # Skip default image
-            pass
-        elif self.image:
-            new_path = f'hotels/{self.slug}/images/{os.path.basename(self.image.name)}'
-            if self.image.name != new_path:
-                self.image.name = new_path
-                super().save(update_fields=['image'])
-            self._convert_image_to_webp(self.image.path)
+        # === PROCESS IMAGE (only if uploaded and not WebP) ===
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
 
-    def _convert_image_to_webp(self, img_path):
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            print("Image processing failed:", e)
+            logger.error(f"Image processing failed: {e}")
+
 
     def get_public_name(self):
         return f"Hotel in {self.city}"
@@ -92,6 +138,173 @@ class Hotel(models.Model):
             return self.image
         images = self.images.all()
         return images.first().image if images.exists() else 'images/default_hotel.webp'
+    
+    def clean(self):
+        if self.blackout_start and self.blackout_end:
+            if self.blackout_start == self.blackout_end:
+                raise ValidationError("Blackout start and end times cannot be the same.")
+        super().clean()
+
+    def is_in_blackout(self, dt=None):
+        """
+        Returns True if `dt` (datetime) falls in blackout window.
+        If dt is None, uses current time.
+        Handles overnight (e.g. 22:00 → 06:00).
+        """
+        if not self.blackout_start or not self.blackout_end:
+            return False
+
+        dt = dt or timezone.localtime()
+        time_now = dt.time()
+        start = self.blackout_start
+        end = self.blackout_end
+
+        if start < end:
+            return start <= time_now < end
+        else:  # overnight
+            return time_now >= start or time_now < end
+
+    def __str__(self):
+        if self.blackout_start and self.blackout_end:
+            s = self.blackout_start.strftime("%I:%M %p")
+            e = self.blackout_end.strftime("%I:%M %p")
+            return f"{self.name} (Blackout: {s} – {e})"
+        return self.name
+    
+    def get_available_durations(self):
+        """
+        Returns list of (hours, display_name) based on hotel mode.
+        Shows price if ANY room has it set.
+        """
+        try:
+            from bookings.models import BookingDuration
+        except ImportError:
+            logger.error("Could not import BookingDuration")
+            return []
+
+        durations = []
+
+        # Use correct reverse relation
+        rooms = self.rooms.all()  # ← CHANGE THIS LINE
+
+        if self.duration_mode == 'all':
+            # 1. Standard hourly durations
+            for d in BookingDuration.objects.all():
+                durations.append((d.hours, f"{d.hours} hours"))
+
+            # 2. 12-hour: show if ANY room has price
+            if rooms.filter(twelve_hour_price__isnull=False, twelve_hour_price__gt=0).exists():
+                sample = rooms.filter(twelve_hour_price__isnull=False).first()
+                durations.append((12, f"12 hours (₦{sample.twelve_hour_price})"))
+
+            # 3. 24-hour: show if ANY room has price
+            if rooms.filter(twenty_four_hour_price__isnull=False, twenty_four_hour_price__gt=0).exists():
+                sample = rooms.filter(twenty_four_hour_price__isnull=False).first()
+                durations.append((24, f"24 hours (₦{sample.twenty_four_hour_price})"))
+
+        elif self.duration_mode == '12_only':
+            room = rooms.filter(twelve_hour_price__isnull=False).first()
+            if room and room.twelve_hour_price:
+                durations = [(12, f"12 hours (₦{room.twelve_hour_price})")]
+            else:
+                durations = [(12, "12 hours")]
+
+        elif self.duration_mode == '24_only':
+            room = rooms.filter(twenty_four_hour_price__isnull=False).first()
+            if room and room.twenty_four_hour_price:
+                durations = [(24, f"24 hours (₦{room.twenty_four_hour_price})")]
+            else:
+                durations = [(24, "24 hours (Full Day)")]
+
+        elif self.duration_mode == '12_and_24':
+            room_12 = rooms.filter(twelve_hour_price__isnull=False).first()
+            room_24 = rooms.filter(twenty_four_hour_price__isnull=False).first()
+
+            if room_12 and room_12.twelve_hour_price:
+                durations.append((12, f"12 hours (₦{room_12.twelve_hour_price})"))
+            else:
+                durations.append((12, "12 hours"))
+
+            if room_24 and room_24.twenty_four_hour_price:
+                durations.append((24, f"24 hours (₦{room_24.twenty_four_hour_price})"))
+            else:
+                durations.append((24, "24 hours (Full Day)"))
+
+        return durations
+    def get_display_pricing_info(self):
+       
+       """
+       Returns the appropriate pricing information to display based on duration mode.
+       Returns: dict with 'price', 'unit', 'mode_label', 'mode_badge_color', 'description'
+       """
+       rooms = self.rooms.all()
+       if not rooms.exists():
+           return {
+               'price': 'N/A',
+               'unit': '',
+               'mode_label': 'No rooms',
+               'mode_badge_color': 'secondary',
+               'description': 'Contact hotel for pricing'
+           }
+
+       # === SAFE: Always define sample_room before using it ===
+       sample_room = None
+
+       if self.duration_mode == 'all':
+           sample_room = rooms.filter(price_per_hour__gt=0).first()
+           if not sample_room:
+               sample_room = rooms.first()
+           price = sample_room.price_per_hour or 0
+           return {
+               'price': f"₦{price:,.0f}" if price else "N/A",
+               'unit': '/hour' if price else '',
+               'mode_label': 'Flexible Booking',
+               'mode_badge_color': 'success',
+               'description': '3, 6, 9 hours + optional 12/24'
+           }
+
+       elif self.duration_mode == '12_only':
+           sample_room = rooms.filter(twelve_hour_price__gt=0).first() or rooms.first()
+           price = (sample_room.twelve_hour_price or 0) if sample_room else 0
+           return {
+               'price': f"₦{price:,.0f}" if price else "N/A",
+               'unit': '/12 hours' if price else '',
+               'mode_label': '12-Hour Stays',
+               'mode_badge_color': 'info',
+               'description': 'Half-day bookings only'
+           }
+
+       elif self.duration_mode == '24_only':
+           sample_room = rooms.filter(twenty_four_hour_price__gt=0).first() or rooms.first()
+           price = (sample_room.twenty_four_hour_price or 0) if sample_room else 0
+           return {
+               'price': f"₦{price:,.0f}" if price else "N/A",
+               'unit': '/day' if price else '',
+               'mode_label': 'Full Day',
+               'mode_badge_color': 'warning',
+               'description': '24-hour bookings only'
+           }
+
+       elif self.duration_mode == '12_and_24':
+           sample_room = rooms.filter(twelve_hour_price__gt=0).first() or rooms.first()
+           price_12 = (sample_room.twelve_hour_price or 0) if sample_room else 0
+           return {
+               'price': f"From ₦{price_12:,.0f}" if price_12 else "N/A",
+               'unit': '',
+               'mode_label': '12 & 24 Hours',
+               'mode_badge_color': 'primary',
+               'description': 'Choose 12 or 24-hour stays'
+           }
+
+       # Fallback
+       return {
+           'price': 'Contact Hotel',
+           'unit': '',
+           'mode_label': 'Contact Hotel',
+           'mode_badge_color': 'secondary',
+           'description': 'Call for pricing information'
+       }
+    
 
 
 
@@ -99,49 +312,51 @@ class Room(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='rooms')
     room_type = models.CharField(max_length=100)
     total_units = models.PositiveIntegerField(default=1, help_text="Number of physical rooms for this category")
-    price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    image = models.ImageField(upload_to='hotels/rooms/images/default/', null=True, blank=True, default='images/default_room.webp')
+    price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, null=True,  blank=True, validators=[MinValueValidator(0)], help_text="Hourly rate (required only if offering 3, 6, 9 hour bookings)")
+    image = models.ImageField(upload_to=UploadToPath('rooms'), null=True, blank=True, default='images/default_room.webp', validators=[validate_image_size])
     description = models.TextField()
     capacity = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    twelve_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Discounted price for 12 hours (optional)')
-    twenty_four_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Discounted price for 24 hours (optional)')
+    twelve_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 12-hour booking')
+    twenty_four_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 24-hour booking')
 
-    def clean(self):
-        if self.twelve_hour_price and self.price_per_hour and self.twelve_hour_price >= self.price_per_hour * 12:
-            logger.warning(f"Validation failed for room {self.id}: twelve_hour_price ({self.twelve_hour_price}) >= price_per_hour * 12 ({self.price_per_hour * 12})")
-            raise ValidationError("12-hour price must be less than 12 * hourly rate for discount.")
-        if self.twenty_four_hour_price and self.price_per_hour and self.twenty_four_hour_price >= self.price_per_hour * 24:
-            logger.warning(f"Validation failed for room {self.id}: twenty_four_hour_price ({self.twenty_four_hour_price}) >= price_per_hour * 24 ({self.price_per_hour * 24})")
-            raise ValidationError("24-hour price must be less than 24 * hourly rate for discount.")
+    
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Validate before saving
+        self.full_clean()
         super().save(*args, **kwargs)
 
-        # Update image path to hotel-specific folder and convert to WebP
-        if self.image and 'default' in self.image.name:  # Skip default image
-            pass
-        elif self.image:
-            new_path = f'hotels/{self.hotel.slug}/rooms/images/{os.path.basename(self.image.name)}'
-            if self.image.name != new_path:
-                self.image.name = new_path
-                super().save(update_fields=['image'])
-            self._convert_image_to_webp(self.image.path)
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
 
-    def _convert_image_to_webp(self, img_path):
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            print("Room image processing failed:", e)
+            logger.error(f"Image processing failed: {e}")
+
+
 
     def __str__(self):
         return f"{self.room_type} - {self.hotel.name}"
@@ -169,6 +384,67 @@ class Room(models.Model):
         # Count maximum concurrent bookings in the requested period
         max_concurrent_bookings = overlapping_bookings.count()
         return max(0, self.total_units - max_concurrent_bookings)
+    
+    def get_display_price_info(self):
+        """
+        Returns room pricing info based on parent hotel's duration mode.
+        Returns: dict with 'primary_price', 'primary_unit', 'secondary_info'
+        """
+        hotel_mode = self.hotel.duration_mode
+        
+        if hotel_mode == 'all':
+            if not self.price_per_hour or self.price_per_hour <= 0:
+                return {
+                    'primary_price': 'N/A',
+                    'primary_unit': '',
+                    'secondary_info': None
+                }
+            # Show hourly rate prominently
+            return {
+                'primary_price': f"₦{self.price_per_hour:,.0f}" if self.price_per_hour else "N/A",
+                'primary_unit': '/hour',
+                'secondary_info': self._get_discount_info()
+            }
+        
+        elif hotel_mode == '12_only':
+            return {
+                'primary_price': f"₦{self.twelve_hour_price:,.0f}" if self.twelve_hour_price else "N/A",
+                'primary_unit': '/12 hours',
+                'secondary_info': None
+            }
+        
+        elif hotel_mode == '24_only':
+            return {
+                'primary_price': f"₦{self.twenty_four_hour_price:,.0f}" if self.twenty_four_hour_price else "N/A",
+                'primary_unit': '/day',
+                'secondary_info': None
+            }
+        
+        elif hotel_mode == '12_and_24':
+            # Show both prices
+            price_12 = f"₦{self.twelve_hour_price:,.0f}" if self.twelve_hour_price else "N/A"
+            price_24 = f"₦{self.twenty_four_hour_price:,.0f}" if self.twenty_four_hour_price else "N/A"
+            return {
+                'primary_price': price_12,
+                'primary_unit': '/12 hrs',
+                'secondary_info': f"{price_24} /24 hrs"
+            }
+        
+        return {
+            'primary_price': 'Contact Hotel',
+            'primary_unit': '',
+            'secondary_info': None
+        }
+    
+    def _get_discount_info(self):
+        """Helper to show discount prices if available"""
+        info_parts = []
+        if self.twelve_hour_price:
+            info_parts.append(f"₦{self.twelve_hour_price:,.0f}/12hrs")
+        if self.twenty_four_hour_price:
+            info_parts.append(f"₦{self.twenty_four_hour_price:,.0f}/24hrs")
+        
+        return " • ".join(info_parts) if info_parts else None
 
 
 class ExtraService(models.Model):
@@ -210,7 +486,7 @@ class AppFeedback(models.Model):
 
 class HotelImage(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='hotels/images/default/', null=True, blank=True)
+    image = models.ImageField(upload_to=UploadToPath('gallery'), null=True, blank=True, validators=[validate_image_size],)
     alt_text = models.CharField(max_length=255, blank=True, help_text="Optional description for accessibility")
     order = models.PositiveIntegerField(default=0, help_text="Order for display (lower first)")
 
@@ -222,27 +498,37 @@ class HotelImage(models.Model):
         return self.hotel.slug  
 
     def save(self, *args, **kwargs):
-        if not self.hotel_id:
-            raise ValueError("Hotel must be set before saving HotelImage")
-        
-        self.image.field.upload_to = f'hotels/images/{self.hotel.slug}/'
         super().save(*args, **kwargs)
-        if self.image:
-            self._convert_image_to_webp(self.image.path)
 
-    def _convert_image_to_webp(self, img_path):
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
+
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            logger.error(f"HotelImage processing failed: {e}")
+            logger.error(f"Image processing failed: {e}")
 
     def __str__(self):
         return f"Image for {self.hotel.name} ({self.order})"

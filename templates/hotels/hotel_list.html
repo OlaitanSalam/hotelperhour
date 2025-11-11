@@ -22,9 +22,15 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for hotel in hotels %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 hotel-card">
+                 <!-- Duration Mode Badge - Top Left -->
+                <div class="position-absolute top-0 start-0 m-2 badge-wrapper">
+                    <span class="badge bg-{{ hotel.pricing_info.mode_badge_color }} duration-badge">
+                        <i class="fas fa-clock me-1"></i>{{ hotel.pricing_info.mode_label }}
+                    </span>
+                </div>
 
-                <div class="position-absolute top-0 end-0 m-3">
+                <div class="position-absolute top-0 end-0 m-3 favorite-wrapper">
     <button class="favorite-btn {% if user.is_authenticated and user.is_customer and hotel in user.favorite_hotels.all %}favorited{% endif %}"
             onclick="toggleFavorite('{{ hotel.slug }}', this)"
             data-tooltip="{% if hotel in user.favorite_hotels.all %}Remove from favorites{% else %}Save to favorites{% endif %}">
@@ -63,7 +69,7 @@
 <h5 class="card-title">{{ hotel.get_public_name }}</h5>
                     <p>{{ hotel.suburb|default:hotel.city }}</p>
                     <div class="d-grid mt-auto">
-                        <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-primary">View Details</a>
+                        <a href="{% url 'hotel_detail' hotel.slug %}" class="btn btn-primary">View Details <i class="fas fa-arrow-right ms-1"></i></a>
                     </div>
                 </div>
             </div>
@@ -95,10 +101,111 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(18, 22, 67, 0.2);
     }
+    .btn-primary {
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateX(3px);
+}
+
+    .badge-wrapper,
+    .favorite-wrapper {
+    z-index: 10;
+    }
+
+    .duration-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+}
+
+/* Custom badge colors with better contrast */
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge.bg-primary {
+    background-color: #007bff !important;
+}
+
+.favorite-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.favorite-btn.favorited {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.favorite-btn i {
+    font-size: 1.1rem;
+    color: #dc3545;
+}
+
+
     @media (max-width: 768px) {
         .btn-yellow {
             margin-top: 10px;
+            width: 100%
         }
+        .duration-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+        }
+        .card-title {
+        font-size: 1.1rem;
     }
+    
+    .favorite-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .favorite-btn i {
+        font-size: 1rem;
+    }
+    }
+
+    @media (max-width: 576px) {
+    
+    .duration-badge {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+.tooltip-inner {
+    max-width: 250px;
+    text-align: left;
+    font-size: 0.85rem;
+}
 </style>
+
 {% endblock %}
