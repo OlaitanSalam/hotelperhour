@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Booking, ExtraService
+from .models import Booking, ExtraService, BookingDuration
 from .forms import BookingForm
 from hotels.models import Room, Hotel
 import requests
@@ -84,23 +84,19 @@ def book_room(request, room_id):
 
     mode = room.hotel.duration_mode
     if mode == 'all':
-        if room.price_per_hour:
-            add_option(3, room.price_per_hour * Decimal('3'))
-            add_option(6, room.price_per_hour * Decimal('6'))
-            add_option(9, room.price_per_hour * Decimal('9'))
-            if room.twelve_hour_price:
-                add_option(12, room.twelve_hour_price)
+        # Use BookingDuration rows so admins can add/remove short blocks
+        # without editing code. For 'all' mode we list whatever durations
+        # exist in BookingDuration; short-duration entries will not show a
+        # price in the dropdown. For 12 and 24 hours we only attach a price
+        # if the room has an explicit twelve_hour_price / twenty_four_hour_price.
+        for bd in BookingDuration.objects.all():
+            h = bd.hours
+            if h == 12:
+                add_option(12, room.twelve_hour_price if room.twelve_hour_price else None)
+            elif h == 24:
+                add_option(24, room.twenty_four_hour_price if room.twenty_four_hour_price else None)
             else:
-                add_option(12, room.price_per_hour * Decimal('12'))
-            if room.twenty_four_hour_price:
-                add_option(24, room.twenty_four_hour_price)
-            else:
-                add_option(24, room.price_per_hour * Decimal('24'))
-        else:
-            if room.twelve_hour_price:
-                add_option(12, room.twelve_hour_price)
-            if room.twenty_four_hour_price:
-                add_option(24, room.twenty_four_hour_price)
+                add_option(h, None)
 
     elif mode == '12_only':
         if room.twelve_hour_price:
@@ -134,7 +130,8 @@ def book_room(request, room_id):
                     )
                     return render(request, 'bookings/book_room.html', {
                         'form': form, 'room': room, 'is_customer': is_customer,
-                        'room_pricing': room_pricing, 'duration_options': duration_options
+                        'room_pricing': room_pricing, 'duration_options': duration_options,
+                        'room_json': room_json, 'duration_options_json': duration_options_json
                     })
             
             check_out = form.cleaned_data['check_out']
@@ -223,26 +220,14 @@ def book_room(request, room_id):
 
         mode = room.hotel.duration_mode
         if mode == 'all':
-            # include short blocks (3,6,9) computed from hourly rate, if available
-            if room.price_per_hour:
-                add_option(3, room.price_per_hour * Decimal('3'))
-                add_option(6, room.price_per_hour * Decimal('6'))
-                add_option(9, room.price_per_hour * Decimal('9'))
-                # include 12 and 24 as well; prefer explicit fields when present
-                if room.twelve_hour_price:
-                    add_option(12, room.twelve_hour_price)
+            for bd in BookingDuration.objects.all():
+                h = bd.hours
+                if h == 12:
+                    add_option(12, room.twelve_hour_price if room.twelve_hour_price else None)
+                elif h == 24:
+                    add_option(24, room.twenty_four_hour_price if room.twenty_four_hour_price else None)
                 else:
-                    add_option(12, room.price_per_hour * Decimal('12'))
-                if room.twenty_four_hour_price:
-                    add_option(24, room.twenty_four_hour_price)
-                else:
-                    add_option(24, room.price_per_hour * Decimal('24'))
-            else:
-                # no hourly rate: fall back to available fixed durations only
-                if room.twelve_hour_price:
-                    add_option(12, room.twelve_hour_price)
-                if room.twenty_four_hour_price:
-                    add_option(24, room.twenty_four_hour_price)
+                    add_option(h, None)
 
         elif mode == '12_only':
             if room.twelve_hour_price:
@@ -258,13 +243,34 @@ def book_room(request, room_id):
             if room.twenty_four_hour_price:
                 add_option(24, room.twenty_four_hour_price)
 
+        # Build JSON-safe blobs for client-side JS. Convert Decimals to floats or null.
+        def _dec(v):
+            try:
+                return float(v) if v is not None else None
+            except Exception:
+                return None
+
+        room_json = json.dumps({
+            'pricePerHour': _dec(room.price_per_hour),
+            'twelveHourPrice': _dec(room.twelve_hour_price),
+            'twentyFourHourPrice': _dec(room.twenty_four_hour_price),
+            'hotelMode': room.hotel.duration_mode,
+        })
+
+        duration_options_json = json.dumps([
+            {'hours': o['hours'], 'price': (float(o['price']) if o['price'] is not None else None)}
+            for o in duration_options
+        ])
+
     
     return render(request, 'bookings/book_room.html', {
-        'form': form, 
-        'room': room, 
+        'form': form,
+        'room': room,
         'is_customer': is_customer,
         'room_pricing': room_pricing,
         'duration_options': duration_options,
+        'room_json': room_json,
+        'duration_options_json': duration_options_json,
     })
 
 def initiate_payment(request, booking_reference):

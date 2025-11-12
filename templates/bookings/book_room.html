@@ -161,9 +161,7 @@
             </option>
             {% comment %} Use duration_options prepared by the view to avoid custom template math filters. {% endcomment %}
             {% for opt in duration_options %}
-                <option value="{{ opt.hours }}">
-                    {{ opt.hours }} hours (₦{% if opt.price %}{{ opt.price|floatformat:2|intcomma }}{% else %}N/A{% endif %})
-                </option>
+                <option value="{{ opt.hours }}">{{ opt.hours }} hours{% if opt.price %} (₦{{ opt.price|floatformat:2|intcomma }}){% endif %}</option>
             {% empty %}
                 <option disabled>Pricing not available</option>
             {% endfor %}
@@ -385,6 +383,10 @@
 }
 </style>
 
+<!-- JSON data for client-side JS (safe, serialized in view) -->
+<script id="room-data" type="application/json">{{ room_json|default:'{}'|safe }}</script>
+<script id="duration-options-data" type="application/json">{{ duration_options_json|default:'[]'|safe }}</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const now = new Date();
@@ -402,14 +404,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const discountAmountElement = document.getElementById('discount-amount');
     const usePointsCheckbox = document.getElementById('id_use_points');
     
-    // ========== UPDATED: Get pricing data from template context ==========
-    const roomData = {
-        pricePerHour: {{ room.price_per_hour|default:"null" }},
-        twelveHourPrice: {{ room.twelve_hour_price|default:"null" }},
-        twentyFourHourPrice: {{ room.twenty_four_hour_price|default:"null" }},
-        hotelMode: "{{ room.hotel.duration_mode }}"
-    };
-    // =====================================================================
+    // Parse pricing data provided as JSON by the view (safe serialization)
+    let roomData = {};
+    try {
+        const rd = document.getElementById('room-data');
+        if (rd) roomData = JSON.parse(rd.textContent || rd.innerText || '{}');
+    } catch (e) {
+        console.error('Failed to parse room JSON data', e);
+        roomData = { pricePerHour: null, twelveHourPrice: null, twentyFourHourPrice: null, hotelMode: '{{ room.hotel.duration_mode }}' };
+    }
     
     const extraCheckboxes = document.querySelectorAll('.extra-checkbox');
 
@@ -439,9 +442,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (roomData.pricePerHour) {
                     baseAmount = duration * roomData.pricePerHour;
                 } else {
-                    // This shouldn't happen if validation is correct
-                    console.error('Missing pricing data for selected duration');
-                    roomCostElement.textContent = "₦-- (Pricing Error)";
+                    // No explicit per-hour price: if the selected duration is a
+                    // short block (3/6/9) we'll compute from the room's
+                    // hourly rate only if it's present. Otherwise show an
+                    // informative message and keep total at 0.
+                    console.warn('Missing pricing data for selected duration');
+                    roomCostElement.textContent = "₦0";
+                    serviceChargeElement.textContent = "₦0";
+                    originalTotalElement.textContent = "₦0";
+                    totalAmountElement.textContent = "₦0";
                     return;
                 }
             }
@@ -550,7 +559,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     checkInDateInput.addEventListener('change', checkAvailability);
     checkInHourInput.addEventListener('change', checkAvailability);
-    durationInput.addEventListener('change', checkAvailability);
+    // Ensure picking a duration updates the summary immediately even when
+    // check-in date/hour are not yet selected.
+    durationInput.addEventListener('change', function() {
+        checkAvailability();
+        updateSummary();
+    });
     extraCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateSummary);
     });
