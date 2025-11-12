@@ -85,18 +85,25 @@ def book_room(request, room_id):
     mode = room.hotel.duration_mode
     if mode == 'all':
         # Use BookingDuration rows so admins can add/remove short blocks
-        # without editing code. For 'all' mode we list whatever durations
-        # exist in BookingDuration; short-duration entries will not show a
-        # price in the dropdown. For 12 and 24 hours we only attach a price
-        # if the room has an explicit twelve_hour_price / twenty_four_hour_price.
+        # without editing code. Collect seen hours so we can still include
+        # 12/24 if the room has explicit prices even when those rows are
+        # missing from BookingDuration.
+        seen = set()
         for bd in BookingDuration.objects.all():
             h = bd.hours
+            seen.add(h)
             if h == 12:
                 add_option(12, room.twelve_hour_price if room.twelve_hour_price else None)
             elif h == 24:
                 add_option(24, room.twenty_four_hour_price if room.twenty_four_hour_price else None)
             else:
                 add_option(h, None)
+        # Ensure 12 and 24 appear when room has explicit fixed prices even if
+        # BookingDuration doesn't contain those rows.
+        if room.twelve_hour_price and 12 not in seen:
+            add_option(12, room.twelve_hour_price)
+        if room.twenty_four_hour_price and 24 not in seen:
+            add_option(24, room.twenty_four_hour_price)
 
     elif mode == '12_only':
         if room.twelve_hour_price:
@@ -220,14 +227,20 @@ def book_room(request, room_id):
 
         mode = room.hotel.duration_mode
         if mode == 'all':
+            seen = set()
             for bd in BookingDuration.objects.all():
                 h = bd.hours
+                seen.add(h)
                 if h == 12:
                     add_option(12, room.twelve_hour_price if room.twelve_hour_price else None)
                 elif h == 24:
                     add_option(24, room.twenty_four_hour_price if room.twenty_four_hour_price else None)
                 else:
                     add_option(h, None)
+            if room.twelve_hour_price and 12 not in seen:
+                add_option(12, room.twelve_hour_price)
+            if room.twenty_four_hour_price and 24 not in seen:
+                add_option(24, room.twenty_four_hour_price)
 
         elif mode == '12_only':
             if room.twelve_hour_price:
