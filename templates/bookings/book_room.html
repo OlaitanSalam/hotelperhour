@@ -159,10 +159,13 @@
                     -- Choose 12 or 24 Hours --
                 {% endif %}
             </option>
-            {% for duration in form.duration.field.choices %}
-                <option value="{{ duration.0 }}">
-                    {{ duration.1 }}
+            {% comment %} Use duration_options prepared by the view to avoid custom template math filters. {% endcomment %}
+            {% for opt in duration_options %}
+                <option value="{{ opt.hours }}">
+                    {{ opt.hours }} hours (₦{% if opt.price %}{{ opt.price|floatformat:2|intcomma }}{% else %}N/A{% endif %})
                 </option>
+            {% empty %}
+                <option disabled>Pricing not available</option>
             {% endfor %}
         </select>
     </div>

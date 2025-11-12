@@ -406,7 +406,7 @@
                         
                         <!-- Smart Pricing Display -->
                         <div class="room-footer">
-                            <div class="price-section mb-2">
+                            <div class="price-section mb-2 {% if not price_info.secondary_info %}single-price{% endif %}">
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div>
                                         <span class="price">{{ price_info.primary_price }}</span>
@@ -1434,6 +1434,14 @@ h4 {
     border-radius: 8px;
     border: 1px solid #dee2e6;
     min-height: 80px; /* Prevents height collapse */
+}
+.price-section.single-price {
+    padding: 0.45rem;
+    min-height: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 .price-section small {
     word-break: break-word; /* Prevents overflow */

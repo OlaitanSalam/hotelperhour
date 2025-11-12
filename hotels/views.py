@@ -708,3 +708,6 @@ def submit_feedback(request):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+    
+
+    

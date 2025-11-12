@@ -64,6 +64,58 @@ def book_room(request, room_id):
         )
         return redirect('hotel_detail', hotel_id=hotel.id)
     
+    # --- Prepare pricing and duration options for template (per-room) ---
+    room_pricing = {
+        'price_per_hour': room.price_per_hour,
+        'twelve_hour_price': room.twelve_hour_price,
+        'twenty_four_hour_price': room.twenty_four_hour_price,
+    }
+
+    # Build duration options (hours -> price) based on hotel's duration_mode
+    duration_options = []
+    from decimal import Decimal
+
+    def add_option(hours, price):
+        try:
+            price_val = None if price is None else Decimal(price)
+        except Exception:
+            price_val = None
+        duration_options.append({'hours': hours, 'price': price_val})
+
+    mode = room.hotel.duration_mode
+    if mode == 'all':
+        if room.price_per_hour:
+            add_option(3, room.price_per_hour * Decimal('3'))
+            add_option(6, room.price_per_hour * Decimal('6'))
+            add_option(9, room.price_per_hour * Decimal('9'))
+            if room.twelve_hour_price:
+                add_option(12, room.twelve_hour_price)
+            else:
+                add_option(12, room.price_per_hour * Decimal('12'))
+            if room.twenty_four_hour_price:
+                add_option(24, room.twenty_four_hour_price)
+            else:
+                add_option(24, room.price_per_hour * Decimal('24'))
+        else:
+            if room.twelve_hour_price:
+                add_option(12, room.twelve_hour_price)
+            if room.twenty_four_hour_price:
+                add_option(24, room.twenty_four_hour_price)
+
+    elif mode == '12_only':
+        if room.twelve_hour_price:
+            add_option(12, room.twelve_hour_price)
+
+    elif mode == '24_only':
+        if room.twenty_four_hour_price:
+            add_option(24, room.twenty_four_hour_price)
+
+    elif mode == '12_and_24':
+        if room.twelve_hour_price:
+            add_option(12, room.twelve_hour_price)
+        if room.twenty_four_hour_price:
+            add_option(24, room.twenty_four_hour_price)
+
     if request.method == 'POST':
         form = BookingForm(request.POST, room=room, user=request.user)
         if form.is_valid():
@@ -81,7 +133,8 @@ def book_room(request, room_id):
                         "Please book at the front desk or choose a different time."
                     )
                     return render(request, 'bookings/book_room.html', {
-                        'form': form, 'room': room, 'is_customer': is_customer
+                        'form': form, 'room': room, 'is_customer': is_customer,
+                        'room_pricing': room_pricing, 'duration_options': duration_options
                     })
             
             check_out = form.cleaned_data['check_out']
@@ -149,11 +202,69 @@ def book_room(request, room_id):
             return redirect('initiate_payment', booking_reference=reference)
     else:
         form = BookingForm(room=room, user=request.user)
+        # Provide pricing context for the template. Compute explicit duration options
+        # so the template doesn't need custom math filters (mul) or iterate strings.
+        room_pricing = {
+            'price_per_hour': room.price_per_hour,
+            'twelve_hour_price': room.twelve_hour_price,
+            'twenty_four_hour_price': room.twenty_four_hour_price,
+        }
+
+        # Build duration options (hours -> price) based on hotel's duration_mode
+        duration_options = []
+        from decimal import Decimal
+
+        def add_option(hours, price):
+            try:
+                price_val = None if price is None else Decimal(price)
+            except Exception:
+                price_val = None
+            duration_options.append({'hours': hours, 'price': price_val})
+
+        mode = room.hotel.duration_mode
+        if mode == 'all':
+            # include short blocks (3,6,9) computed from hourly rate, if available
+            if room.price_per_hour:
+                add_option(3, room.price_per_hour * Decimal('3'))
+                add_option(6, room.price_per_hour * Decimal('6'))
+                add_option(9, room.price_per_hour * Decimal('9'))
+                # include 12 and 24 as well; prefer explicit fields when present
+                if room.twelve_hour_price:
+                    add_option(12, room.twelve_hour_price)
+                else:
+                    add_option(12, room.price_per_hour * Decimal('12'))
+                if room.twenty_four_hour_price:
+                    add_option(24, room.twenty_four_hour_price)
+                else:
+                    add_option(24, room.price_per_hour * Decimal('24'))
+            else:
+                # no hourly rate: fall back to available fixed durations only
+                if room.twelve_hour_price:
+                    add_option(12, room.twelve_hour_price)
+                if room.twenty_four_hour_price:
+                    add_option(24, room.twenty_four_hour_price)
+
+        elif mode == '12_only':
+            if room.twelve_hour_price:
+                add_option(12, room.twelve_hour_price)
+
+        elif mode == '24_only':
+            if room.twenty_four_hour_price:
+                add_option(24, room.twenty_four_hour_price)
+
+        elif mode == '12_and_24':
+            if room.twelve_hour_price:
+                add_option(12, room.twelve_hour_price)
+            if room.twenty_four_hour_price:
+                add_option(24, room.twenty_four_hour_price)
+
     
     return render(request, 'bookings/book_room.html', {
         'form': form, 
         'room': room, 
-        'is_customer': is_customer
+        'is_customer': is_customer,
+        'room_pricing': room_pricing,
+        'duration_options': duration_options,
     })
 
 def initiate_payment(request, booking_reference):
