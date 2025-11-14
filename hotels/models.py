@@ -101,7 +101,8 @@ class Hotel(models.Model):
                 os.remove(img_path)
             logger.info(f"Successfully converted image to WebP: {webp_path}")
         except Exception as e:
-            logger.error(f"Image processing failed for {self.name}: {e}")
+            hotel_name = getattr(self, 'name', 'Unknown Hotel')
+            logger.error(f"Image processing failed for Hotel '{hotel_name}': {e}")
 
 
     def get_public_name(self):
@@ -382,7 +383,9 @@ class Room(models.Model):
                 os.remove(img_path)
             logger.info(f"Successfully converted image to WebP: {webp_path}")
         except Exception as e:
-            logger.error(f"Image processing failed for {self.name}: {e}")
+            # Fixed: Use room_type and hotel.name
+            room_desc = f"{self.room_type} (Hotel: {self.hotel.name})"
+            logger.error(f"Image processing failed for Room '{room_desc}': {e}")
 
     def __str__(self):
         return f"{self.room_type} - {self.hotel.name}"
@@ -560,4 +563,4 @@ class HotelPolicy(models.Model):
     def __str__(self):
         return self.policy_text[:50]  # Truncate for display
     
-    
+
