@@ -17,6 +17,17 @@
     window.isHotelOwner = {{ user.is_hotel_owner|lower }};
 </script>
 <script src="{% static 'js/favorites.js' %}"></script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17733446204"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-17733446204');
+</script>
+
     
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&display=swap">
     <link rel="stylesheet" href="{% static 'css/aos.min.css' %}">
