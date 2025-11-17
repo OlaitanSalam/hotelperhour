@@ -298,63 +298,6 @@ class Room(models.Model):
     twelve_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 12-hour booking')
     twenty_four_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 24-hour booking')
 
-    def clean(self):
-        """
-        Smart validation based on hotel's duration mode:
-        - 'all' mode: Requires price_per_hour + optional 12/24 (if set, must be discounted)
-        - '12_only': Requires twelve_hour_price only
-        - '24_only': Requires twenty_four_hour_price only
-        - '12_and_24': Requires both twelve and twenty_four prices
-        """
-        hotel_mode = self.hotel.duration_mode if self.hotel else 'all'
-        
-        # ========== VALIDATION LOGIC BASED ON HOTEL MODE ==========
-        
-        if hotel_mode == 'all':
-            # Standard mode: Must have hourly rate
-            if not self.price_per_hour:
-                raise ValidationError({
-                    'price_per_hour': 'Hourly rate is required when hotel accepts all durations.'
-                })
-            
-            # If 12-hour price is set, it must be a discount
-            if self.twelve_hour_price:
-                if self.twelve_hour_price >= self.price_per_hour * 12:
-                    raise ValidationError({
-                        'twelve_hour_price': f'Must be less than ₦{self.price_per_hour * 12:,.2f} (12 × hourly rate) to be a discount.'
-                    })
-            
-            # If 24-hour price is set, it must be a discount
-            if self.twenty_four_hour_price:
-                if self.twenty_four_hour_price >= self.price_per_hour * 24:
-                    raise ValidationError({
-                        'twenty_four_hour_price': f'Must be less than ₦{self.price_per_hour * 24:,.2f} (24 × hourly rate) to be a discount.'
-                    })
-        
-        elif hotel_mode == '12_only':
-            # Only 12-hour bookings: Must have 12-hour price, others optional
-            if not self.twelve_hour_price:
-                raise ValidationError({
-                    'twelve_hour_price': 'This hotel only accepts 12-hour bookings. You must set a 12-hour price.'
-                })
-        
-        elif hotel_mode == '24_only':
-            # Only 24-hour bookings: Must have 24-hour price, others optional
-            if not self.twenty_four_hour_price:
-                raise ValidationError({
-                    'twenty_four_hour_price': 'This hotel only accepts 24-hour bookings. You must set a 24-hour price.'
-                })
-        
-        elif hotel_mode == '12_and_24':
-            # Both 12 and 24-hour: Must have both prices
-            errors = {}
-            if not self.twelve_hour_price:
-                errors['twelve_hour_price'] = 'This hotel requires 12-hour pricing.'
-            if not self.twenty_four_hour_price:
-                errors['twenty_four_hour_price'] = 'This hotel requires 24-hour pricing.'
-            
-            if errors:
-                raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Validate before saving
@@ -563,4 +506,3 @@ class HotelPolicy(models.Model):
     def __str__(self):
         return self.policy_text[:50]  # Truncate for display
     
-
