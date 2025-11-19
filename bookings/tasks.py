@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 import logging
 from decimal import Decimal
-from utils.sms import send_sms
+#from utils.sms import send_sms
 
 
 logger = logging.getLogger(__name__)
