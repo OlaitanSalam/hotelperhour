@@ -114,33 +114,50 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Weekly Hotel Revenue</h6>
-                <h4 class="fw-bold text-warning">₦{{ weekly_revenue|floatformat:2|intcomma }}</h4>
-                <small class="text-muted">Last 7 days</small>
-            </div>
+
+    <!-- NEW: Payout KPI Cards -->
+<div class="col-md-3 col-sm-6 mb-3">
+    <div class="card shadow-sm border-0 text-center">
+        <div class="card-body">
+            <h6 class="text-muted">Pending Revenue (0-3 days)</h6>
+            <h4 class="fw-bold text-warning">₦{{ pending_revenue|floatformat:2|intcomma }}</h4>
+            <small class="text-muted">In holding period</small>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Weekly Hotel Payout</h6>
-                <h4 class="fw-bold text-warning">₦{{ weekly_payout|floatformat:2|intcomma }}</h4>
-                <small class="text-muted">Last 7 days</small>
-            </div>
+</div>
+<div class="col-md-3 col-sm-6 mb-3">
+    <div class="card shadow-sm border-0 text-center">
+        <div class="card-body">
+            <h6 class="text-muted">Payable Revenue (4+ days)</h6>
+            <h4 class="fw-bold text-success">₦{{ payable_revenue|floatformat:2|intcomma }}</h4>
+            <small class="text-muted">Ready for payout</small>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Weekly Hotel Commission</h6>
-                <h4 class="fw-bold text-warning">₦{{ weekly_commission|floatformat:2|intcomma }}</h4>
-                <small class="text-muted">Last 7 days</small>
-            </div>
+</div>
+<div class="col-md-3 col-sm-6 mb-3">
+    <div class="card shadow-sm border-0 text-center">
+        <div class="card-body">
+            <h6 class="text-muted">Last Payout</h6>
+            <h4 class="fw-bold">
+                {% if last_payout_date %}
+                    {{ last_payout_date|date:"M d, Y" }}
+                {% else %}
+                    Never
+                {% endif %}
+            </h4>
+            <small class="text-muted">Most recent payment</small>
         </div>
     </div>
+</div>
+<div class="col-md-3 col-sm-6 mb-3">
+    <div class="card shadow-sm border-0 text-center">
+        <div class="card-body">
+            <a href="{% url 'superadmin_payout_dashboard' %}" class="btn btn-success w-100">
+                <i class="fas fa-money-bill-wave"></i> Manage Payouts
+            </a>
+        </div>
+    </div>
+</div>
 </div>
 
 <!-- Chart -->

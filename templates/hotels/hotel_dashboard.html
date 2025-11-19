@@ -51,6 +51,7 @@
                                 <li><a class="dropdown-item" href="{% url 'hotel_bookings' hotel.slug %}"><i class="fas fa-calendar-check me-2"></i>Bookings</a></li>
                                 <li><a class="dropdown-item" href="{% url 'hotel_rooms' hotel.slug %}"><i class="fas fa-door-open me-2"></i>Rooms</a></li>
                                 <li><a class="dropdown-item" href="{% url 'hotel_sales_report' hotel.slug %}"><i class="fas fa-chart-line me-2"></i>Sales Report</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hotel_payout_history' hotel.slug %}"><i class="fas fa-wallet me-2"></i>Payouts</a></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'hotel_delete' hotel.slug %}"><i class="fas fa-trash-alt me-2 text-danger"></i>Delete Hotel</a></li>
                             </ul>
                         </div>

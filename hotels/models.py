@@ -8,6 +8,12 @@ import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
 import logging
+from django.db.models import Sum, Q
+from decimal import Decimal
+from datetime import timedelta
+from django.utils.deconstruct import deconstructible
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -18,6 +24,22 @@ DURATION_MODE_CHOICES = [
     ('24_only', '24-Hour Bookings Only'),
     ('12_and_24', '12-Hour and 24-Hour Only'),
 ]
+
+def validate_image_size(value):
+    if value.size > 2 * 1024 * 1024:  # 2 MB
+        raise ValidationError("Image must be under 2MB")
+    
+@deconstructible
+class UploadToPath:
+    def __init__(self, subfolder):
+        self.subfolder = subfolder.rstrip('/')
+
+    def __call__(self, instance, filename):
+        hotel = instance if hasattr(instance, 'slug') else instance.hotel
+        slug = getattr(hotel, 'slug', 'unsaved')
+        name, ext = os.path.splitext(filename)
+        safe_name = name.replace(' ', '_')
+        return f"hotels/{slug}/{self.subfolder}/{safe_name}{ext.lower()}"
 
 class Amenity(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -36,7 +58,7 @@ class Hotel(models.Model):
     hotel_phone = models.CharField(max_length=20, null=True, blank=True)
     hotel_email = models.EmailField(max_length=255, null=True, blank=True)
     description = models.TextField()
-    image = models.ImageField(upload_to='hotels/images/default/', null=True, blank=True, default='images/default_hotel.webp')
+    image = models.ImageField(upload_to=UploadToPath('cover'), null=True, blank=True, default='images/default_hotel.webp', validators=[validate_image_size],)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
@@ -78,31 +100,37 @@ class Hotel(models.Model):
 
         super().save(*args, **kwargs)  # Save to generate slug if new
 
-        # Update image path to hotel-specific folder and convert to WebP
-        if self.image and 'default' in self.image.name:  # Skip default image
-            pass
-        elif self.image:
-            new_path = f'hotels/{self.slug}/images/{os.path.basename(self.image.name)}'
-            if self.image.name != new_path:
-                self.image.name = new_path
-                super().save(update_fields=['image'])
-            self._convert_image_to_webp(self.image.path)
+        # === PROCESS IMAGE (only if uploaded and not WebP) ===
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
 
-    def _convert_image_to_webp(self, img_path):
+
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
-            logger.info(f"Successfully converted image to WebP: {webp_path}")
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            hotel_name = getattr(self, 'name', 'Unknown Hotel')
-            logger.error(f"Image processing failed for Hotel '{hotel_name}': {e}")
+            logger.error(f"Image processing failed: {e}")
 
 
     def get_public_name(self):
@@ -146,7 +174,7 @@ class Hotel(models.Model):
         if self.blackout_start and self.blackout_end:
             s = self.blackout_start.strftime("%I:%M %p")
             e = self.blackout_end.strftime("%I:%M %p")
-            return f"{self.name} (Blackout: {s} – {e})"
+            return f"{self.name}"
         return self.name
     
     def get_available_durations(self):
@@ -283,6 +311,91 @@ class Hotel(models.Model):
            'description': 'Call for pricing information'
        }
     
+    def get_pending_revenue(self):
+        """
+        Revenue from bookings 0-3 days old (not yet payable).
+        These bookings are in the "holding period" for refunds/disputes.
+        """
+        from bookings.models import Booking
+        
+        cutoff_date = timezone.now().date() - timedelta(days=3)
+        
+        bookings = Booking.objects.filter(
+            room__hotel=self,
+            is_paid=True,
+            created_at__date__gt=cutoff_date  # Last 3 days
+        ).select_related('room').prefetch_related('extras')
+        
+        # ✅ Calculate manually using the property
+        total = Decimal('0.00')
+        for booking in bookings:
+            total += booking.hotel_revenue
+        
+        return total
+
+    def get_payable_revenue(self):
+        """
+        Revenue from bookings 4+ days old (ready for payout).
+        These have passed the holding period and can be safely disbursed.
+        Excludes already-paid bookings.
+        """
+        from bookings.models import Booking
+        from superadmin.models import PayoutRecord
+        
+        cutoff_date = timezone.now().date() - timedelta(days=3)
+        
+        # Get all booking IDs that have already been paid
+        paid_booking_ids = []
+        for payout in PayoutRecord.objects.filter(
+            hotel=self,
+            status__in=['completed', 'processing']
+        ):
+            paid_booking_ids.extend(
+                list(payout.get_related_bookings().values_list('id', flat=True))
+            )
+        
+        # Get unpaid bookings older than 3 days
+        bookings = Booking.objects.filter(
+            room__hotel=self,
+            is_paid=True,
+            created_at__date__lte=cutoff_date  # 4+ days ago
+        ).exclude(
+            id__in=paid_booking_ids  # Not already included in a payout
+        ).select_related('room').prefetch_related('extras')
+        
+        # ✅ Calculate manually using the property
+        total = Decimal('0.00')
+        for booking in bookings:
+            total += booking.hotel_revenue
+        
+        return total
+
+    def get_last_payout_date(self):
+        """Get the date of the most recent completed payout"""
+        from superadmin.models import PayoutRecord
+        
+        last_payout = PayoutRecord.objects.filter(
+            hotel=self,
+            status='completed'
+        ).order_by('-paid_at').first()
+        
+        return last_payout.paid_at if last_payout else None
+
+    def calculate_next_payout_due(self):
+        """
+        Calculate when the next payout is due.
+        Returns None if no payment schedule is set.
+        Payouts are processed every 3 days after bookings are made.
+        """
+        last_payout = self.get_last_payout_date()
+        
+        if not last_payout:
+            # If never paid, next payout is 3 days from now
+            return timezone.now().date() + timedelta(days=3)
+        
+        # Next payout is 3 days after last payout
+        return last_payout.date() + timedelta(days=3)
+    
 
 
 
@@ -291,44 +404,104 @@ class Room(models.Model):
     room_type = models.CharField(max_length=100)
     total_units = models.PositiveIntegerField(default=1, help_text="Number of physical rooms for this category")
     price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, null=True,  blank=True, validators=[MinValueValidator(0)], help_text="Hourly rate (required only if offering 3, 6, 9 hour bookings)")
-    image = models.ImageField(upload_to='hotels/rooms/images/default/', null=True, blank=True, default='images/default_room.webp')
+    image = models.ImageField(upload_to=UploadToPath('rooms'), null=True, blank=True, default='images/default_room.webp', validators=[validate_image_size])
     description = models.TextField()
     capacity = models.IntegerField()
     is_available = models.BooleanField(default=True)
     twelve_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 12-hour booking')
     twenty_four_hour_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)], help_text='Fixed price for 24-hour booking')
 
+    '''def clean(self):
+        """
+        Smart validation based on hotel's duration mode:
+        - 'all' mode: Requires price_per_hour + optional 12/24 (if set, must be discounted)
+        - '12_only': Requires twelve_hour_price only
+        - '24_only': Requires twenty_four_hour_price only
+        - '12_and_24': Requires both twelve and twenty_four prices
+        """
+        hotel_mode = self.hotel.duration_mode if self.hotel else 'all'
+        
+        # ========== VALIDATION LOGIC BASED ON HOTEL MODE ==========
+        
+        if hotel_mode == 'all':
+            # Standard mode: Must have hourly rate
+            if not self.price_per_hour:
+                raise ValidationError({
+                    'price_per_hour': 'Hourly rate is required when hotel accepts all durations.'
+                })
+            
+            # If 12-hour price is set, it must be a discount
+            if self.twelve_hour_price:
+                if self.twelve_hour_price >= self.price_per_hour * 12:
+                    raise ValidationError({
+                        'twelve_hour_price': f'Must be less than ₦{self.price_per_hour * 12:,.2f} (12 × hourly rate) to be a discount.'
+                    })
+            
+            # If 24-hour price is set, it must be a discount
+            if self.twenty_four_hour_price:
+                if self.twenty_four_hour_price >= self.price_per_hour * 24:
+                    raise ValidationError({
+                        'twenty_four_hour_price': f'Must be less than ₦{self.price_per_hour * 24:,.2f} (24 × hourly rate) to be a discount.'
+                    })
+        
+        elif hotel_mode == '12_only':
+            # Only 12-hour bookings: Must have 12-hour price, others optional
+            if not self.twelve_hour_price:
+                raise ValidationError({
+                    'twelve_hour_price': 'This hotel only accepts 12-hour bookings. You must set a 12-hour price.'
+                })
+        
+        elif hotel_mode == '24_only':
+            # Only 24-hour bookings: Must have 24-hour price, others optional
+            if not self.twenty_four_hour_price:
+                raise ValidationError({
+                    'twenty_four_hour_price': 'This hotel only accepts 24-hour bookings. You must set a 24-hour price.'
+                })
+        
+        elif hotel_mode == '12_and_24':
+            # Both 12 and 24-hour: Must have both prices
+            errors = {}
+            if not self.twelve_hour_price:
+                errors['twelve_hour_price'] = 'This hotel requires 12-hour pricing.'
+            if not self.twenty_four_hour_price:
+                errors['twenty_four_hour_price'] = 'This hotel requires 24-hour pricing.'
+            
+            if errors:
+                raise ValidationError(errors)'''
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Validate before saving
+        self.full_clean()
         super().save(*args, **kwargs)
 
-        # Update image path to hotel-specific folder and convert to WebP
-        if self.image and 'default' in self.image.name:  # Skip default image
-            pass
-        elif self.image:
-            new_path = f'hotels/{self.hotel.slug}/rooms/images/{os.path.basename(self.image.name)}'
-            if self.image.name != new_path:
-                self.image.name = new_path
-                super().save(update_fields=['image'])
-            self._convert_image_to_webp(self.image.path)
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
 
-    def _convert_image_to_webp(self, img_path):
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
-            logger.info(f"Successfully converted image to WebP: {webp_path}")
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            # Fixed: Use room_type and hotel.name
-            room_desc = f"{self.room_type} (Hotel: {self.hotel.name})"
-            logger.error(f"Image processing failed for Room '{room_desc}': {e}")
+            logger.error(f"Image processing failed: {e}")
 
     def __str__(self):
         return f"{self.room_type} - {self.hotel.name}"
@@ -460,7 +633,7 @@ class AppFeedback(models.Model):
 
 class HotelImage(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='hotels/images/default/', null=True, blank=True)
+    image = models.ImageField(upload_to=UploadToPath('gallery'), null=True, blank=True, validators=[validate_image_size],)
     alt_text = models.CharField(max_length=255, blank=True, help_text="Optional description for accessibility")
     order = models.PositiveIntegerField(default=0, help_text="Order for display (lower first)")
 
@@ -472,27 +645,37 @@ class HotelImage(models.Model):
         return self.hotel.slug  
 
     def save(self, *args, **kwargs):
-        if not self.hotel_id:
-            raise ValueError("Hotel must be set before saving HotelImage")
-        
-        self.image.field.upload_to = f'hotels/images/{self.hotel.slug}/'
         super().save(*args, **kwargs)
-        if self.image:
-            self._convert_image_to_webp(self.image.path)
 
-    def _convert_image_to_webp(self, img_path):
+        if self.image and not self.image.name.lower().endswith('.webp'):
+            self._process_image()
+
+    def _process_image(self):
         try:
-            img = Image.open(img_path)
-            max_size = (1200, 1200)
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            webp_path = os.path.splitext(img_path)[0] + ".webp"
+            # Open original file
+            original_path = self.image.path
+            img = Image.open(original_path)
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+
+            # Save as WebP
+            webp_path = os.path.splitext(original_path)[0] + ".webp"
             img.save(webp_path, "WEBP", quality=80, method=6)
-            self.image.name = os.path.splitext(self.image.name)[0] + ".webp"
-            super().save(update_fields=["image"])
-            if img_path != webp_path and os.path.exists(img_path):
-                os.remove(img_path)
+
+            # Update DB path
+            old_name = self.image.name
+            new_name = os.path.splitext(old_name)[0] + ".webp"
+            self.image.name = new_name
+            self.save(update_fields=['image'])
+
+            # Delete original file
+            if os.path.exists(original_path) and original_path != webp_path:
+                os.remove(original_path)
+                logger.info(f"Deleted original: {original_path}")
+
+            logger.info(f"Converted: {old_name} → {new_name}")
+
         except Exception as e:
-            logger.error(f"HotelImage processing failed: {e}")
+            logger.error(f"Image processing failed: {e}")
 
     def __str__(self):
         return f"Image for {self.hotel.name} ({self.order})"
@@ -505,4 +688,5 @@ class HotelPolicy(models.Model):
 
     def __str__(self):
         return self.policy_text[:50]  # Truncate for display
+    
     

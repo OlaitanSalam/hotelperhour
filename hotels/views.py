@@ -32,6 +32,10 @@ from datetime import timedelta
 from .forms import DateRangeForm
 from django.template.defaultfilters import register
 from django.db.models import Min
+from django.db.models import Case, When, F, ExpressionWrapper, DecimalField, Sum, Count, Q, OuterRef, Subquery, Sum
+from django.db.models.functions import Coalesce
+
+
 
 
 
@@ -42,6 +46,7 @@ def hotel_owner_required(view_func):
             return redirect('dashboard')
         return view_func(request, *args, **kwargs)
     return wrapper
+
 
 
 @login_required
@@ -437,10 +442,28 @@ def nearby_hotels(request):
 @login_required
 @hotel_owner_required
 def hotel_bookings(request, slug):
-    # Changed from hotel_id to slug
     hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
-    bookings = Booking.objects.filter(room__hotel=hotel).order_by('-check_in')
-    paginator = Paginator(bookings, 10)  # 10 bookings per page
+
+    # ------------------------------------------------------------------
+    # 1. All bookings for this hotel (paid or unpaid)
+    # ------------------------------------------------------------------
+    bookings_qs = Booking.objects.filter(
+        room__hotel=hotel
+    ).select_related('room').order_by('-check_in')
+
+    # ------------------------------------------------------------------
+    # 2. Annotate: full room cost + extras = hotel_revenue
+    # ------------------------------------------------------------------
+    # ✅ Just fetch bookings - hotel_revenue property handles it
+    bookings = bookings_qs.select_related('room').prefetch_related('extras')
+
+    # In your template, use: {{ booking.hotel_revenue }}
+    # It will automatically use the frozen snapshot
+
+    # ------------------------------------------------------------------
+    # 3. Pagination
+    # ------------------------------------------------------------------
+    paginator = Paginator(bookings, 10)
     page = request.GET.get('page')
     try:
         bookings_page = paginator.page(page)
@@ -448,11 +471,17 @@ def hotel_bookings(request, slug):
         bookings_page = paginator.page(1)
     except EmptyPage:
         bookings_page = paginator.page(paginator.num_pages)
+
     query_params = request.GET.copy()
-    if 'page' in query_params:
-        del query_params['page']
+    query_params.pop('page', None)
     query_string = urlencode(query_params)
-    return render(request, 'hotels/hotel_bookings.html', {'hotel': hotel, 'bookings': bookings_page, 'query_string': query_string})
+
+    context = {
+        'hotel': hotel,
+        'bookings': bookings_page,
+        'query_string': query_string,
+    }
+    return render(request, 'hotels/hotel_bookings.html', context)
 
 @login_required
 @hotel_owner_required
@@ -504,153 +533,203 @@ def toggle_room_availability(request, hotel_slug, room_id):
 @hotel_owner_required
 def hotel_sales_report(request, slug):
     hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
-
     form = DateRangeForm(request.GET or None)
 
-    # Default to last 30 days
-    start_date = Booking.objects.filter(room__hotel=hotel).aggregate(first=Min('check_in'))['first'] or timezone.now().date()
-    end_date = timezone.now().date()
+    # ---- Default date range (last 30 days) ----
+    default_end = timezone.now().date()
+    # Get the earliest check-in date for this hotel
+    first_checkin = Booking.objects.filter(
+        room__hotel=hotel,
+        is_paid=True
+    ).aggregate(first=Min('check_in'))['first']
+
+    default_start = first_checkin.date() if first_checkin else default_end
+
+    start_date = default_start
+    end_date = default_end
 
     if form.is_valid():
-        start_date = form.cleaned_data["start_date"]
-        end_date = form.cleaned_data["end_date"]
+        start_date = form.cleaned_data.get("start_date") or default_start
+        end_date = form.cleaned_data.get("end_date") or default_end
 
-    # Paid bookings in range
-    bookings = Booking.objects.filter(
+    # ---- Paid bookings in the selected range (check-in date) ----
+    bookings_qs = Booking.objects.filter(
         room__hotel=hotel,
         check_in__date__range=(start_date, end_date),
         is_paid=True,
-    )
+    ).select_related('room')
 
-    # --- Aggregate sales by day ---
-    sales_data_qs = (
-        bookings.annotate(date=TruncDate("check_in"))
-        .values("date")
+    # ------------------------------------------------------------------
+    # 1. Base room cost (full price – ignore discount_applied)
+    # ------------------------------------------------------------------
+    def full_room_cost(booking):
+        hrs = booking.total_hours
+        room = booking.room
+        if hrs == 12 and room.twelve_hour_price:
+            return room.twelve_hour_price
+        if hrs == 24 and room.twenty_four_hour_price:
+            return room.twenty_four_hour_price
+        # fallback to hourly
+        return room.price_per_hour * Decimal(str(hrs))
+
+    # ✅ Don't annotate - just fetch bookings
+    bookings = bookings_qs.select_related('room').prefetch_related('extras')
+
+    # Then manually sum using the property:
+    total_hotel_rev = sum(booking.hotel_revenue for booking in bookings)
+
+    # For daily aggregation:
+    daily_data = {}
+    for booking in bookings:
+        day = booking.check_in.date()
+        if day not in daily_data:
+            daily_data[day] = {'count': 0, 'revenue': Decimal('0.00')}
+        daily_data[day]['count'] += 1
+        daily_data[day]['revenue'] += booking.hotel_revenue
+
+    # Convert to list and sort
+    sales_data = [
+        {
+            'date': day,
+            'booking_count': data['count'],
+            'total_sales': data['revenue'],
+            'commission': data['revenue'] * Decimal('0.10'),
+            'payout': data['revenue'] * Decimal('0.90'),
+        }
+        for day, data in sorted(daily_data.items(), reverse=True)
+    ]
+
+    # ------------------------------------------------------------------
+    # 2. Daily aggregation (latest first)
+    # ------------------------------------------------------------------
+    daily_qs = (
+        bookings.annotate(day=TruncDate('check_in'))
+        .values('day')
         .annotate(
-            booking_count=Count("id"),
-            total_sales=Sum(F("total_amount") - F("service_charge")),
+            booking_count=Count('id'),
+            hotel_revenue_total=Sum('hotel_revenue_snapshot')
         )
-        .order_by("-date")  # ✅ latest first
+        .order_by('-day')
     )
 
     sales_data = []
-    for row in sales_data_qs:
-        total_sales = row["total_sales"] or Decimal("0.00")
-        commission = total_sales * Decimal("0.10") # 10% commission
-        payout = total_sales - commission
+    for row in daily_qs:
+        rev = row['hotel_revenue_total'] or Decimal('0.00')
+        commission = rev * Decimal('0.10')
+        payout = rev - commission
         sales_data.append({
-            "date": row["date"],
-            "booking_count": row["booking_count"],
-            "total_sales": total_sales,
-            "commission": commission,
-            "payout": payout,
+            'date': row['day'],
+            'booking_count': row['booking_count'],
+            'total_sales': rev,
+            'commission': commission,
+            'payout': payout,
         })
 
-    # --- Pagination ---
+    # ------------------------------------------------------------------
+    # 3. Pagination
+    # ------------------------------------------------------------------
     paginator = Paginator(sales_data, 10)
-    page = request.GET.get("page")
+    page = request.GET.get('page')
     try:
-        sales_data_page = paginator.page(page)
+        sales_page = paginator.page(page)
     except PageNotAnInteger:
-        sales_data_page = paginator.page(1)
+        sales_page = paginator.page(1)
     except EmptyPage:
-        sales_data_page = paginator.page(paginator.num_pages)
+        sales_page = paginator.page(paginator.num_pages)
 
     query_params = request.GET.copy()
-    if "page" in query_params:
-        del query_params["page"]
+    query_params.pop('page', None)
     query_string = urlencode(query_params)
 
-    # --- Summary totals ---
+    # ------------------------------------------------------------------
+    # 4. Summary totals (full hotel revenue)
+    # ------------------------------------------------------------------
     total_bookings = bookings.count()
-    total_revenue = bookings.aggregate(
-        total=Sum(F("total_amount") - F("service_charge"))
-    )["total"] or Decimal("0.00")
-    total_commission = total_revenue * Decimal("0.10")
-    total_payout = total_revenue - total_commission
-    avg_booking_value = (
-        total_revenue / total_bookings if total_bookings else Decimal("0.00")
-    )
+    total_hotel_rev = bookings.aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+    total_commission = total_hotel_rev * Decimal('0.10')
+    total_payout = total_hotel_rev - total_commission
+    avg_booking = total_hotel_rev / total_bookings if total_bookings else Decimal('0.00')
 
-    # --- KPIs: Today / This Month / Previous Month ---
+    # ------------------------------------------------------------------
+    # 5. KPI blocks (today / this month / previous month)
+    # ------------------------------------------------------------------
     now = timezone.now()
-    current_year, current_month = now.year, now.month
-
-    today_revenue = bookings.filter(check_in__date=now.date()).aggregate(
-        total=Sum(F("total_amount") - F("service_charge"))
-    )["total"] or Decimal("0.00")
-
-    current_month_revenue = bookings.filter(
-        check_in__year=current_year, check_in__month=current_month
-    ).aggregate(total=Sum(F("total_amount") - F("service_charge")))["total"] or Decimal("0.00")
-
-    prev_month = current_month - 1 if current_month > 1 else 12
-    prev_year = current_year if current_month > 1 else current_year - 1
-    previous_month_revenue = bookings.filter(
+    today_rev = bookings.filter(check_in__date=now.date()).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+    cur_month_rev = bookings.filter(
+        check_in__year=now.year, check_in__month=now.month
+    ).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+    prev_month = now.month - 1 if now.month > 1 else 12
+    prev_year = now.year if now.month > 1 else now.year - 1
+    prev_month_rev = bookings.filter(
         check_in__year=prev_year, check_in__month=prev_month
-    ).aggregate(total=Sum(F("total_amount") - F("service_charge")))["total"] or Decimal("0.00")
+    ).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
 
-    # --- Chart data ---
-    # Monthly (Jan–Dec current year)
-    monthly_chart_labels = [calendar.month_abbr[m] for m in range(1, 13)]
-    monthly_revenue_data = []
-    for month in range(1, 13):
-        month_revenue = bookings.filter(
-            check_in__year=current_year, check_in__month=month
-        ).aggregate(total=Sum(F("total_amount") - F("service_charge")))["total"] or Decimal("0.00")
-        monthly_revenue_data.append(float(month_revenue))
+    # ------------------------------------------------------------------
+    # 6. Chart data (monthly / daily / weekly) – all use *hotel_revenue*
+    # ------------------------------------------------------------------
+    import calendar
+    from collections import defaultdict
 
-    # Daily (last 30 days)
-    last_30_days = [end_date - timedelta(days=i) for i in range(29, -1, -1)]
-    daily_chart_labels = [d.strftime("%b %d") for d in last_30_days]
-    daily_revenue_data = []
-    for d in last_30_days:
-        revenue = bookings.filter(check_in__date=d).aggregate(
-            total=Sum(F("total_amount") - F("service_charge"))
-        )["total"] or Decimal("0.00")
-        daily_revenue_data.append(float(revenue))
+    # ---- Monthly (current year) ----
+    monthly_labels = [calendar.month_abbr[m] for m in range(1, 13)]
+    monthly_data = []
+    for m in range(1, 13):
+        rev = bookings.filter(
+            check_in__year=now.year, check_in__month=m
+        ).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+        monthly_data.append(float(rev))
 
-    # Weekly (last 12 weeks)
-    weekly_chart_labels, weekly_revenue_data = [], []
+    # ---- Daily (last 30 days) ----
+    last_30 = [default_end - timedelta(days=i) for i in range(29, -1, -1)]
+    daily_labels = [d.strftime('%b %d') for d in last_30]
+    daily_data = []
+    for d in last_30:
+        rev = bookings.filter(check_in__date=d).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+        daily_data.append(float(rev))
+
+    # ---- Weekly (last 12 weeks) ----
+    weekly_labels, weekly_data = [], []
     for i in range(11, -1, -1):
-        week_start = end_date - timedelta(weeks=i, days=end_date.weekday())
+        week_start = default_end - timedelta(weeks=i, days=default_end.weekday())
         week_end = week_start + timedelta(days=6)
-        week_label = f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d')}"
-        revenue = bookings.filter(check_in__date__range=(week_start, week_end)).aggregate(
-            total=Sum(F("total_amount") - F("service_charge"))
-        )["total"] or Decimal("0.00")
-        weekly_chart_labels.append(week_label)
-        weekly_revenue_data.append(float(revenue))
+        label = f"{week_start:%b %d} - {week_end:%b %d}"
+        rev = bookings.filter(
+            check_in__date__range=(week_start, week_end)
+        ).aggregate(t=Sum('hotel_revenue_snapshot'))['t'] or Decimal('0.00')
+        weekly_labels.append(label)
+        weekly_data.append(float(rev))
 
+    # ------------------------------------------------------------------
+    # 7. Context
+    # ------------------------------------------------------------------
     context = {
-        "hotel": hotel,
-        "form": form,
-        "sales_data": sales_data_page,
-        "query_string": query_string,
-        "summary": {
-            "total_revenue": total_revenue,
-            "total_commission": total_commission,
-            "total_payout": total_payout,
-            "total_bookings": total_bookings,
-            "average_booking_value": avg_booking_value,
-            "today_revenue": today_revenue,
-            "current_month_revenue": current_month_revenue,
-            "current_month_commission": current_month_revenue * Decimal("0.10"),
-            "current_month_payout": current_month_revenue * Decimal("0.90"),
-            "previous_month_revenue": previous_month_revenue,
-            "monthly_payout": total_payout,
+        'hotel': hotel,
+        'form': form,
+        'sales_data': sales_page,
+        'query_string': query_string,
+        'summary': {
+            'total_revenue': total_hotel_rev,
+            'total_commission': total_commission,
+            'total_payout': total_payout,
+            'total_bookings': total_bookings,
+            'average_booking_value': avg_booking,
+            'today_revenue': today_rev,
+            'current_month_revenue': cur_month_rev,
+            'current_month_commission': cur_month_rev * Decimal('0.10'),
+            'current_month_payout': cur_month_rev * Decimal('0.90'),
+            'previous_month_revenue': prev_month_rev,
         },
-        # Charts
-        "monthly_chart_data": json.dumps(monthly_chart_labels),
-        "monthly_revenue_data": json.dumps(monthly_revenue_data),
-        "daily_chart_data": json.dumps(daily_chart_labels),
-        "daily_revenue_data": json.dumps(daily_revenue_data),
-        "weekly_chart_data": json.dumps(weekly_chart_labels),
-        "weekly_revenue_data": json.dumps(weekly_revenue_data),
-        "start_date": start_date,
-        "end_date": end_date,
+        # chart JSON
+        'monthly_chart_data': json.dumps(monthly_labels),
+        'monthly_revenue_data': json.dumps(monthly_data),
+        'daily_chart_data': json.dumps(daily_labels),
+        'daily_revenue_data': json.dumps(daily_data),
+        'weekly_chart_data': json.dumps(weekly_labels),
+        'weekly_revenue_data': json.dumps(weekly_data),
+        'start_date': start_date,
+        'end_date': end_date,
     }
-    return render(request, "hotels/hotel_sales_report.html", context)
+    return render(request, 'hotels/hotel_sales_report.html', context)
 
 
 
@@ -711,3 +790,76 @@ def submit_feedback(request):
     
 
     
+@login_required
+@hotel_owner_required
+def hotel_payout_history(request, slug):
+    """
+    Show payout history for hotel owner - audit trail of all payouts
+    """
+    from superadmin.models import PayoutRecord
+    
+    hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    
+    # Get all payouts for this hotel
+    payouts = PayoutRecord.objects.filter(
+        hotel=hotel
+    ).order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(payouts, 10)
+    page = request.GET.get('page')
+    try:
+        payouts_page = paginator.page(page)
+    except PageNotAnInteger:
+        payouts_page = paginator.page(1)
+    except EmptyPage:
+        payouts_page = paginator.page(paginator.num_pages)
+    
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = urlencode(query_params)
+    
+    # ✅ UPDATED: Calculate revenue states using hotel methods
+    pending_revenue = hotel.get_pending_revenue()  # 0-3 days old
+    payable_revenue = hotel.get_payable_revenue()  # 4+ days old
+    
+    # Summary stats for completed/processing payouts
+    completed_payouts = payouts.filter(status='completed')
+    total_received = sum(p.net_payout for p in completed_payouts)
+    
+    # Active payouts (pending/approved/processing)
+    active_payouts = payouts.filter(status__in=['pending', 'approved', 'processing'])
+    total_active = sum(p.net_payout for p in active_payouts)
+    
+    context = {
+        'hotel': hotel,
+        'payouts': payouts_page,
+        'query_string': query_string,
+        'total_received': total_received,
+        'total_active': total_active,  # Changed from total_pending
+        'pending_revenue': pending_revenue,
+        'payable_revenue': payable_revenue,
+    }
+    return render(request, 'hotels/payout_history.html', context)
+
+@login_required
+@hotel_owner_required
+def hotel_payout_detail(request, slug, payout_id):
+    """
+    Show detailed view of a specific payout with all related bookings
+    """
+    from superadmin.models import PayoutRecord
+    
+    hotel = get_object_or_404(Hotel, slug=slug, owner=request.user)
+    payout = get_object_or_404(PayoutRecord, id=payout_id, hotel=hotel)
+    
+    # Get related bookings
+    bookings = payout.get_related_bookings()
+    
+    context = {
+        'hotel': hotel,
+        'payout': payout,
+        'bookings': bookings,
+    }
+    return render(request, 'hotels/payout_detail.html', context)

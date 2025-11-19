@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from decouple import config
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,13 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = []
+'''ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '.ngrok-free.dev',   # <-- add this
+    '.ngrok-free.app',
+    '.ngrok.io',
+]'''
 
 
 # Application definition
@@ -49,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_q',
     
 
     # drf-spectacular for OpenAPI schema + Swagger UI
@@ -197,6 +206,11 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+#SMS SENDING
+SMS_API_KEY = config("SMS_API_KEY")
+SMS_SENDER_ID = config("SMS_SENDER_ID")
+
+
 
 
 MAPBOX_ACCESS_TOKEN = config('MAPBOX_ACCESS_TOKEN')
@@ -264,6 +278,34 @@ try:
 except ImportError:
     pass
 
+REDIS_URL = os.getenv('REDIS_URL') or config('REDIS_URL', default=None)
 
-
+if REDIS_URL:
+    redis_parsed = urlparse(REDIS_URL)
+    Q_CLUSTER = {
+        'name': 'HotelPerHour',
+        'workers': 4,
+        'recycle': 500,
+        'timeout': 90,
+        'retry': 120,
+        'compress': True,
+        'save_limit': 250,
+        'queue_limit': 500,
+        'cpu_affinity': 1,
+        'label': 'Background Tasks',
+        'redis': {
+            'host': redis_parsed.hostname,
+            'port': redis_parsed.port,
+            'password': redis_parsed.password,
+            'db': 0,
+            'ssl': True,
+        }
+    }
+else:
+    # Fallback to ORM if Redis down (never happens with Upstash)
+    Q_CLUSTER = {
+        'orm': 'default',
+        'timeout': 90,
+        'retry': 180,
+    }
 

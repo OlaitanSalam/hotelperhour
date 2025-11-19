@@ -19,7 +19,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_staff', 'date_joined')
     search_fields = ('email', 'full_name', 'phone_number')
     ordering = ('-date_joined',)
-    readonly_fields = ('date_joined', 'loyalty_points')
+    readonly_fields = ('date_joined',)
     list_per_page = 25
 
     fieldsets = (

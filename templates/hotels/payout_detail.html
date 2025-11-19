@@ -1,0 +1,132 @@
+{% extends 'base2.html' %}
+{% load humanize %}
+
+{% block title %}Payout {{ payout.payout_reference }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Payout Details: {{ payout.payout_reference }}</h2>
+        <a href="{% url 'hotel_payout_history' slug=hotel.slug %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Payout History
+        </a>
+    </div>
+
+    <!-- Status Alert -->
+    {% if payout.status == 'completed' %}
+    <div class="alert alert-success">
+        <i class="bi bi-check-circle"></i>
+        <strong>Payment Completed:</strong> This payout was successfully processed on {{ payout.paid_at|date:"M d, Y" }}.
+        The amount should be in your account.
+    </div>
+    {% elif payout.status == 'approved' %}
+    <div class="alert alert-warning">
+        <i class="bi bi-clock"></i>
+        <strong>Processing:</strong> This payout is being processed. You should receive payment within 1-2 business days.
+    </div>
+    {% endif %}
+
+    <!-- Payout Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td><strong>Period:</strong></td>
+                            <td class="text-end">{{ payout.period_start|date:"M d, Y" }} - {{ payout.period_end|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bookings:</strong></td>
+                            <td class="text-end">{{ payout.booking_count }} bookings</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><strong>Gross Revenue:</strong></td>
+                            <td class="text-end">₦{{ payout.gross_revenue|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Commission (10%):</strong></td>
+                            <td class="text-end text-danger">- ₦{{ payout.commission_amount|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><strong class="fs-5">Net Payout:</strong></td>
+                            <td class="text-end"><h4 class="text-success mb-0">₦{{ payout.net_payout|floatformat:2|intcomma }}</h4></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bank"></i> Bank Account</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Bank:</strong> {{ hotel.bank_name }}</p>
+                    <p class="mb-2"><strong>Account Number:</strong> {{ hotel.account_number }}</p>
+                    <p class="mb-2"><strong>Account Name:</strong> {{ hotel.account_name }}</p>
+                    <hr>
+                    <p class="mb-1"><strong>Status:</strong>
+                        {% if payout.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% elif payout.status == 'approved' %}
+                            <span class="badge bg-warning">Processing</span>
+                        {% elif payout.status == 'pending' %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% endif %}
+                    </p>
+                    <p class="mb-1"><strong>Created:</strong> {{ payout.created_at|date:"M d, Y H:i" }}</p>
+                    {% if payout.paid_at %}
+                    <p class="mb-0"><strong>Paid:</strong> {{ payout.paid_at|date:"M d, Y H:i" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Bookings -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Included Bookings ({{ bookings.count }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Reference</th>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Date</th>
+                            <th>Hours</th>
+                            <th class="text-end">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td><code>{{ booking.booking_reference }}</code></td>
+                            <td>{{ booking.name }}</td>
+                            <td>{{ booking.room.room_type }}</td>
+                            <td>{{ booking.check_in|date:"M d, Y" }}</td>
+                            <td>{{ booking.total_hours }}h</td>
+                            <td class="text-end">₦{{ booking.hotel_revenue|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="5" class="text-end">TOTAL:</td>
+                            <td class="text-end">₦{{ payout.gross_revenue|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

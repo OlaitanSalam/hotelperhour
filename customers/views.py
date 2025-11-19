@@ -184,17 +184,73 @@ def customer_profile(request):
         form = CustomerProfileForm(instance=request.user)
     return render(request, 'customers/profile.html', {'form': form})
 
+# customers/views.py
+from django.shortcuts import render
+from bookings.models import Booking
+from decimal import Decimal
+from django.core.exceptions import ValidationError
+
 def verify_booking(request):
     if request.method == 'POST':
         reference = request.POST.get('reference', '').strip()
         email = request.POST.get('email', '').strip()
+
         try:
-            booking = Booking.objects.get(booking_reference=reference, email=email)
-            return render(request, 'customers/verify_booking.html', {'booking': booking})
+            booking = Booking.objects.select_related('room', 'room__hotel').get(
+                booking_reference=reference,
+                email=email
+            )
+
+            # --- CALCULATE ALL VALUES ---
+            total_hours = booking.total_hours
+
+            # Base room cost (12h / 24h / hourly)
+            if total_hours == 12 and booking.room.twelve_hour_price:
+                base_room_cost = booking.room.twelve_hour_price
+                package_label = "12-hour package"
+            elif total_hours == 24 and booking.room.twenty_four_hour_price:
+                base_room_cost = booking.room.twenty_four_hour_price
+                package_label = "24-hour package"
+            else:
+                base_room_cost = booking.room.price_per_hour * Decimal(str(total_hours))
+                package_label = f"{total_hours} hour{{ total_hours|pluralize }}"
+
+            # Extras
+            extras = booking.extras.all()
+            extras_total = sum(extra.price for extra in extras)
+
+            # Final room cost after discount
+            final_room_cost = base_room_cost - booking.discount_applied
+
+            # Discount percentage
+            discount_percentage = (
+                (booking.discount_applied / base_room_cost * 100)
+                if base_room_cost > 0 and booking.discount_applied > 0
+                else 0
+            )
+
+            # Pass everything to template
+            context = {
+                'booking': booking,
+                'base_room_cost': base_room_cost,
+                'final_room_cost': final_room_cost,
+                'extras_total': extras_total,
+                'extras': extras,
+                'discount_percentage': discount_percentage,
+                'hours_paid': total_hours,
+                'package_label': package_label,
+            }
+            return render(request, 'customers/verify_booking.html', context)
+
         except Booking.DoesNotExist:
-            return render(request, 'customers/verify_booking.html', {'error': 'No booking found with this reference and email.'})
+            return render(request, 'customers/verify_booking.html', {
+                'error': 'No booking found with this reference and email.'
+            })
         except ValidationError:
-            return render(request, 'customers/verify_booking.html', {'error': 'Invalid booking reference format.'})
+            return render(request, 'customers/verify_booking.html', {
+                'error': 'Invalid booking reference format.'
+            })
+
     return render(request, 'customers/verify_booking.html')
 
 

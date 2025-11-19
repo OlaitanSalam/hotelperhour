@@ -19,7 +19,6 @@ from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from customers.models import Customer, LoyaltyRule
 from users.models import CustomUser
-
 import hmac
 import hashlib
 
@@ -336,6 +335,25 @@ def payment_callback(request):
 
     # Prepare booking
     room = Room.objects.get(id=booking_data['room_id'])
+    total_hours = booking_data['total_hours']
+
+    if total_hours == 12 and room.twelve_hour_price:
+        base_room_cost = room.twelve_hour_price
+    elif total_hours == 24 and room.twenty_four_hour_price:
+        base_room_cost = room.twenty_four_hour_price
+    else:
+        base_room_cost = room.price_per_hour * Decimal(str(total_hours))
+
+    
+    # Get extras
+    extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
+    extras_cost = sum(extra.price for extra in extras)
+
+    discount_amount = Decimal(str(booking_data['discount_amount']))
+
+     # ✅ Calculate hotel revenue snapshot (frozen at booking time)
+    hotel_revenue_snapshot = base_room_cost + extras_cost
+
     check_in = timezone.datetime.fromisoformat(booking_data['check_in'])
     check_out = timezone.datetime.fromisoformat(booking_data['check_out'])
     if not timezone.is_aware(check_in):
@@ -351,6 +369,8 @@ def payment_callback(request):
     except ContentType.DoesNotExist:
         content_type = None
 
+
+
     # Create booking
     booking = Booking(
         room=room,
@@ -363,19 +383,23 @@ def payment_callback(request):
         email=booking_data['email'],
         phone_number=booking_data['phone_number'],
         booking_reference=reference,
-        total_price=Decimal(str(booking_data['total_amount'])) - Decimal(str(booking_data['service_charge'])) - Decimal(str(booking_data['discount_amount'])),
+        total_price=base_room_cost - discount_amount,
+        # total_price=Decimal(str(booking_data['total_amount'])) - Decimal(str(booking_data['service_charge'])) - Decimal(str(booking_data['discount_amount'])),
         service_charge=Decimal(str(booking_data['service_charge'])),
         discount_applied=Decimal(str(booking_data['discount_amount'])),
         points_used=booking_data['points_used'],
         content_type=content_type,
         object_id=booking_data['user_object_id'] if booking_data.get('user_object_id') else None,
         total_amount=Decimal(str(booking_data['total_amount'])),
+        hotel_revenue_snapshot=hotel_revenue_snapshot, 
     )
     booking.save()
 
     # Set extras
-    extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
     booking.extras.set(extras)
+
+    booking.hotel_revenue_snapshot = hotel_revenue_snapshot
+    booking.save(update_fields=['hotel_revenue_snapshot'])
 
     # Deduct points if applicable
     if booking_data.get('user_object_id') and booking.points_used > 0:
@@ -399,7 +423,7 @@ def payment_callback(request):
 
     extras_cost = sum(extra.price for extra in extras)
     final_room_cost = base_room_cost - booking.discount_applied
-    hotel_revenue = final_room_cost + extras_cost
+    hotel_revenue = base_room_cost + extras_cost
     price_per_hour_display = (
         room.twelve_hour_price if booking.total_hours == 12 and room.twelve_hour_price else
         room.twenty_four_hour_price if booking.total_hours == 24 and room.twenty_four_hour_price else
@@ -407,7 +431,14 @@ def payment_callback(request):
     )
 
     # Notifications
-    try:
+
+        # === OFFLOAD ALL EMAILS TO BACKGROUND (INSTANT RESPONSE) ===
+    from bookings.tasks import send_booking_emails
+    from django_q.tasks import async_task
+    async_task(send_booking_emails, booking.id)
+
+   
+    '''try:
         # Hotel owner email
         subject = 'New Booking Notification'
         context = {
@@ -466,7 +497,7 @@ def payment_callback(request):
                 fail_silently=False
             )
     except Exception as e:
-        logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
+        logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")'''
 
     # Clear session
     del request.session['pending_booking_data']
@@ -559,7 +590,6 @@ def is_room_available(room, check_in, check_out):
 
 @login_required
 def verify_booking(request):
-    # Check user permission
     user = request.user
     is_superuser = user.is_superuser
     is_hotel_owner = Hotel.objects.filter(owner=user).exists()
@@ -570,28 +600,38 @@ def verify_booking(request):
     if request.method == 'POST':
         reference = request.POST.get('reference', '').strip()
         if not reference:
-            return render(request, 'bookings/verify.html', {
-                'error': 'Please enter a booking reference.'
-            })
+            return render(request, 'bookings/verify.html', {'error': 'Please enter a booking reference.'})
 
         try:
             booking = Booking.objects.get(booking_reference=reference)
+
             # Restrict to hotels owned by this user
             if not is_superuser and booking.room.hotel.owner != user:
                 return render(request, 'bookings/verify.html', {
                     'error': 'This booking does not belong to your hotel.'
                 })
-            return render(request, 'bookings/verify.html', {'booking': booking})
-        except Booking.DoesNotExist:
+
+           # ✅ Use frozen snapshot for hotel revenue
+            hotel_revenue = booking.hotel_revenue  # Uses frozen snapshot automatically
+            extras_cost = sum(extra.price for extra in booking.extras.all())
+            base_room_cost = hotel_revenue - extras_cost
+            total_paid = hotel_revenue  # This is what hotel will actually receive
+
             return render(request, 'bookings/verify.html', {
-                'error': 'No booking found with this reference.'
-            })
-        except ValidationError:
-            return render(request, 'bookings/verify.html', {
-                'error': 'The booking reference format is invalid.'
+                'booking': booking,
+                'total_paid': total_paid,
+                'extras_cost': extras_cost,
+                'base_room_cost': base_room_cost,
             })
 
+        except Booking.DoesNotExist:
+            return render(request, 'bookings/verify.html', {'error': 'No booking found with this reference.'})
+        except ValidationError:
+            return render(request, 'bookings/verify.html', {'error': 'The booking reference format is invalid.'})
+
     return render(request, 'bookings/verify.html')
+
+
 
 def cancel_booking(request, booking_reference):
     booking = get_object_or_404(Booking, booking_reference=booking_reference)

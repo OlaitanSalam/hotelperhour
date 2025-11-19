@@ -20,9 +20,10 @@ urlpatterns = [
     path('<slug:slug>/sales/', views.hotel_sales_report, name='hotel_sales_report'),
     path('<slug:hotel_slug>/rooms/toggle/<int:room_id>/', views.toggle_room_availability, name='toggle_room_availability'),
     path('hotels/<slug:slug>/bookings/<int:booking_id>/cancel/', views.cancel_booking, name='cancel_booking'),
-    path('hotels/<slug:slug>/bookings/<int:booking_id>/confirm-cancel/', 
-     views.confirm_cancel_booking, 
-     name='confirm_cancel_booking'),
-    
+    path('hotels/<slug:slug>/bookings/<int:booking_id>/confirm-cancel/', views.confirm_cancel_booking, name='confirm_cancel_booking'),
+
+    path('hotels/<slug:slug>/payouts/', views.hotel_payout_history, name='hotel_payout_history'),
+    path('hotels/<slug:slug>/payouts/<int:payout_id>/', views.hotel_payout_detail, name='hotel_payout_detail'),
+        
     # Other patterns...
 ]

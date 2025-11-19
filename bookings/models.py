@@ -40,24 +40,69 @@ class Booking(models.Model):
     extras = models.ManyToManyField(ExtraService, blank=True)
     discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     points_used = models.IntegerField(default=0)
+    hotel_revenue_snapshot = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00,
+        help_text="Hotel's revenue at time of booking (room cost + extras, frozen)"
+    )
 
 
 
     def save(self, *args, **kwargs):
         if not self.booking_reference:
             self.booking_reference = self.generate_booking_reference()
+        # ✅ Calculate and freeze hotel revenue on first save
+        if not self.pk:  # Only on creation
+            self.hotel_revenue_snapshot = self._calculate_hotel_revenue()
         super().save(*args, **kwargs)
         if self.is_paid and self.user and isinstance(self.user, Customer):
             points_earned = int(self.total_hours * 10)  # 10 points per hour
             self.user.loyalty_points += points_earned
             self.user.save()
     
+    
+    '''@property
+    def hotel_revenue(self):
+        """Full revenue hotel earns: full room cost + extras (ignores discount)"""
+        if self.total_hours == 12 and self.room.twelve_hour_price:
+            room_cost = self.room.twelve_hour_price
+        elif self.total_hours == 24 and self.room.twenty_four_hour_price:
+            room_cost = self.room.twenty_four_hour_price
+        else:
+            room_cost = (self.room.price_per_hour or Decimal('0')) * Decimal(str(self.total_hours or 0))
+        
+        extras_cost = sum(extra.price or 0 for extra in self.extras.all())
+        return room_cost + extras_cost'''
+    
+
+    def _calculate_hotel_revenue(self):
+        """Calculate hotel revenue based on current prices (used only at booking time)"""
+        if self.total_hours == 12 and self.room.twelve_hour_price:
+            room_cost = self.room.twelve_hour_price
+        elif self.total_hours == 24 and self.room.twenty_four_hour_price:
+            room_cost = self.room.twenty_four_hour_price
+        else:
+            room_cost = (self.room.price_per_hour or Decimal('0')) * Decimal(str(self.total_hours or 0))
+        
+        # Note: extras are added via M2M, so we calculate them separately
+        return room_cost
+    
     @property
     def hotel_revenue(self):
-        """Amount excluding service charge and discounts, including full room cost"""
-        full_room_cost = self.room.price_per_hour * Decimal(str(self.total_hours))
-        extras_cost = sum(extra.price for extra in self.extras.all())
-        return full_room_cost + extras_cost
+        """
+        Returns the frozen hotel revenue from booking time.
+        This ensures financial integrity even if room prices change later.
+        """
+        # If snapshot exists, use it (for all new bookings)
+        if self.hotel_revenue_snapshot and self.hotel_revenue_snapshot > 0:
+            return self.hotel_revenue_snapshot
+        
+        # Fallback for old bookings (before this field was added)
+        return self._calculate_hotel_revenue() + sum(
+            extra.price or Decimal('0') for extra in self.extras.all()
+        )
+
 
     @staticmethod
     def generate_booking_reference():

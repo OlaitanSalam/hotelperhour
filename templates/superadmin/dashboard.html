@@ -53,39 +53,53 @@
     </div>
 </form>
 
-<!-- KPI Summary Cards -->
-<div class="row mb-4">
-    <!-- ALL-TIME KPIs -->
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+<!-- KPI Summary Cards – 5-column Bootstrap layout -->
+<div class="row g-3 mb-4">
+
+    {# ---- ALL-TIME KPIs ---- #}
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">All-Time Hotel Revenue</h6>
                 <h4 class="fw-bold text-primary">₦{{ all_hotel_revenue|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Before commissions</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h6 class="text-muted">All-Time Payouts</h6>
+                <h4 class="fw-bold text-primary">₦{{ all_payouts|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">After commissions</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">All-Time Service Charge (10% from Customers)</h6>
                 <h4 class="fw-bold text-success">₦{{ all_service_charge|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Platform earnings from bookings</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">All-Time Hotel Commissions (10%)</h6>
                 <h4 class="fw-bold text-danger">₦{{ all_hotel_commission|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Platform earnings from hotels</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">All-Time Platform Gain</h6>
                 <h4 class="fw-bold text-dark">₦{{ all_platform_gain|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Combined commissions + service charge</small>
@@ -93,43 +107,57 @@
         </div>
     </div>
 
-    <!-- MONTHLY KPIs -->
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+    {# ---- MONTHLY KPIs ---- #}
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">Monthly Hotel Revenue</h6>
                 <h4 class="fw-bold text-warning">₦{{ monthly_hotel_revenue|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Before commission (resets monthly)</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h6 class="text-muted">Monthly Payouts</h6>
+                <h4 class="fw-bold text-warning">₦{{ monthly_payouts|floatformat:2|intcomma }}</h4>
+                <small class="text-muted">After commission (resets monthly)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">Monthly Service Charge (10% from Customers)</h6>
                 <h4 class="fw-bold text-info">₦{{ monthly_service_charge|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Platform gain from bookings</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">Monthly Hotel Commissions (10%)</h6>
                 <h4 class="fw-bold text-secondary">₦{{ monthly_hotel_commission|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Platform gain from hotels</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
+
+    <div class="col-xl-2dot4 col-lg-4 col-md-4 col-sm-6">
+        <div class="card shadow-sm border-0 text-center h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h6 class="text-muted">Monthly Platform Gain</h6>
                 <h4 class="fw-bold text-success">₦{{ monthly_platform_gain|floatformat:2|intcomma }}</h4>
                 <small class="text-muted">Combined commissions + service charge</small>
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- Chart with toggle -->
@@ -360,5 +388,14 @@ function updateChart(type) {
     color: white;
     border-radius: 0px;
 }
+@media (min-width: 1200px) {
+    .col-xl-2dot4 {
+        flex: 0 0 20%;   
+        max-width: 20%;
+    }
+}
+
+
+.card.h-100 { min-height: 130px; }
 </style>
 {% endblock %}

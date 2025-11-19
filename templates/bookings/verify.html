@@ -32,18 +32,31 @@
                 <p><strong>Check-in:</strong> {{ booking.check_in }}</p>
                 <p><strong>Check-out:</strong> {{ booking.check_out }}</p>
                 <p><strong>Total Hours:</strong> {{ booking.total_hours }}</p>
-                <p><strong>Total Price:</strong> ₦{{ booking.total_price|floatformat:2 }}</p>
-                {% if booking.extras.exists %}
-                 <p><strong>Extras:</strong></p>
-                 <ul>
-                     {% for extra in booking.extras.all %}
-                         <li>{{ extra.name }} - ₦{{ extra.price }}</li>
-                     {% endfor %}
-                 </ul>
+                <p><strong>Room Cost:</strong> ₦{{ base_room_cost|floatformat:2 }}</p>
+
+                {% if extras_cost and extras_cost > 0 %}
+                    <p><strong>Extras Total:</strong> ₦{{ extras_cost|floatformat:2 }}</p>
                 {% endif %}
+
+                <hr>
+                <p><strong>Total Amount to Hotel (excluding 10% service charge):</strong> 
+                ₦{{ total_paid|floatformat:2 }}
+                </p>
+                <hr>
+
+                {% if booking.extras.exists %}
+                    <p><strong>Extras:</strong></p>
+                    <ul>
+                        {% for extra in booking.extras.all %}
+                            <li>{{ extra.name }} - ₦{{ extra.price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
                 <p><strong>Name:</strong> {{ booking.name }}</p>
                 <p><strong>Phone:</strong> {{ booking.phone_number }}</p>
                 <p><strong>Status:</strong> {% if booking.is_paid %}Paid{% else %}Payment Pending{% endif %}</p>
+
             </div>
         </div>
     {% endif %}

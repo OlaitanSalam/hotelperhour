@@ -10,6 +10,12 @@ from .views import (
     CustomerDeleteView,
     OwnerListView,
     OwnerDeleteView,
+    # NEW PAYOUT VIEWS
+    PayoutDashboardView,
+    PayoutDetailView,
+    PayoutHistoryView,
+    create_payout,
+    complete_payout,
 )
 
 urlpatterns = [
@@ -23,4 +29,10 @@ urlpatterns = [
     path('customers/<int:pk>/delete/', CustomerDeleteView.as_view(), name='superadmin_customer_delete'),
     path('owners/', OwnerListView.as_view(), name='superadmin_owner_list'),
     path('owners/<int:pk>/delete/', OwnerDeleteView.as_view(), name='superadmin_owner_delete'),
+    # NEW PAYOUT URLS
+    path('payouts/', PayoutDashboardView.as_view(), name='superadmin_payout_dashboard'),
+    path('payouts/history/', PayoutHistoryView.as_view(), name='superadmin_payout_history'),
+    path('payouts/<int:payout_id>/', PayoutDetailView.as_view(), name='superadmin_payout_detail'),
+    path('payouts/create/<int:hotel_id>/', create_payout, name='superadmin_create_payout'),
+    path('payouts/<int:payout_id>/complete/', complete_payout, name='superadmin_complete_payout'),
 ]

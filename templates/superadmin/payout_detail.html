@@ -1,0 +1,200 @@
+{% extends 'superadmin/base_admin.html' %}
+{% load humanize sum_attr %}
+
+{% block page_title %}Payout {{ payout.payout_reference }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Payout Details: {{ payout.payout_reference }}</h3>
+    <a href="{% url 'superadmin_payout_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Status Alert -->
+{% if payout.status == 'approved' %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Action Required:</strong> This payout is approved but not yet paid. 
+    Transfer ₦{{ payout.net_payout|floatformat:2|intcomma }} to the hotel's account, 
+    then mark as completed below.
+</div>
+{% elif payout.status == 'completed' %}
+<div class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <strong>Completed:</strong> This payout was successfully processed on {{ payout.paid_at|date:"M d, Y" }}.
+</div>
+{% endif %}
+
+<!-- Hotel & Payout Info -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-hotel"></i> Hotel Information</h5>
+            </div>
+            <div class="card-body">
+                <h4>{{ payout.hotel.name }}</h4>
+                <p class="mb-2"><i class="fas fa-user"></i> <strong>Owner:</strong> {{ payout.hotel.owner.full_name }}</p>
+                <p class="mb-2"><i class="fas fa-envelope"></i> {{ payout.hotel.owner.email }}</p>
+                <p class="mb-2"><i class="fas fa-phone"></i> {{ payout.hotel.hotel_phone|default:"Not provided" }}</p>
+                <hr>
+                <h6 class="text-muted mb-2">Banking Details</h6>
+                <p class="mb-1"><strong>Bank:</strong> {{ payout.hotel.bank_name }}</p>
+                <p class="mb-1"><strong>Account Number:</strong> {{ payout.hotel.account_number }}</p>
+                <p class="mb-0"><strong>Account Name:</strong> {{ payout.hotel.account_name }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Payout Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Period:</strong></td>
+                        <td class="text-end">{{ payout.period_start|date:"M d, Y" }} - {{ payout.period_end|date:"M d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bookings Included:</strong></td>
+                        <td class="text-end">{{ payout.booking_count }} bookings</td>
+                    </tr>
+                    <tr class="border-top">
+                        <td><strong>Gross Revenue:</strong></td>
+                        <td class="text-end">₦{{ payout.gross_revenue|floatformat:2|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Platform Commission (10%):</strong></td>
+                        <td class="text-end text-danger">- ₦{{ payout.commission_amount|floatformat:2|intcomma }}</td>
+                    </tr>
+                    <tr class="border-top">
+                        <td><strong class="fs-5">Net Payout:</strong></td>
+                        <td class="text-end"><h4 class="text-success mb-0">₦{{ payout.net_payout|floatformat:2|intcomma }}</h4></td>
+                    </tr>
+                </table>
+                <hr>
+                <p class="mb-1"><strong>Status:</strong> 
+                    {% if payout.status == 'pending' %}
+                        <span class="badge bg-warning">Pending Review</span>
+                    {% elif payout.status == 'approved' %}
+                        <span class="badge bg-info">Approved - Ready to Pay</span>
+                    {% elif payout.status == 'completed' %}
+                        <span class="badge bg-success">Payment Completed</span>
+                    {% elif payout.status == 'failed' %}
+                        <span class="badge bg-danger">Payment Failed</span>
+                    {% endif %}
+                </p>
+                <p class="mb-1"><strong>Created:</strong> {{ payout.created_at|date:"M d, Y H:i" }}</p>
+                {% if payout.approved_at %}
+                <p class="mb-1"><strong>Approved:</strong> {{ payout.approved_at|date:"M d, Y H:i" }}</p>
+                {% endif %}
+                {% if payout.paid_at %}
+                <p class="mb-1"><strong>Paid:</strong> {{ payout.paid_at|date:"M d, Y H:i" }}</p>
+                {% endif %}
+                {% if payout.paystack_transfer_code %}
+                <p class="mb-0"><strong>Transfer Code:</strong> <code>{{ payout.paystack_transfer_code }}</code></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Payout Form -->
+{% if payout.status == 'approved' %}
+<div class="card shadow-sm border-warning mb-4">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0"><i class="fas fa-check-circle"></i> Mark as Completed</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-3">After transferring <strong>₦{{ payout.net_payout|floatformat:2|intcomma }}</strong> to the hotel's account via Paystack, enter the transfer code below to complete this payout.</p>
+        <form method="post" action="{% url 'superadmin_complete_payout' payout.id %}">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Paystack Transfer Code:</strong></label>
+                        <input type="text" name="transfer_code" class="form-control" 
+                               placeholder="e.g., TRF_xxxxxxxxxxxxx" required>
+                        <small class="text-muted">Find this in your Paystack dashboard after completing the transfer</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-success w-100" 
+                            onclick="return confirm('Confirm payment of ₦{{ payout.net_payout|floatformat:2|intcomma }}?')">
+                        <i class="fas fa-check"></i> Confirm Payment Completed
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Related Bookings -->
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Related Bookings ({{ booking_count }})</h5>
+    </div>
+    <div class="card-body">
+        {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th>
+                        <th>Guest</th>
+                        <th>Room</th>
+                        <th>Check-in</th>
+                        <th>Hours</th>
+                        <th class="text-end">Total Amount</th>
+                        <th class="text-end">Service Charge</th>
+                        <th class="text-end">Hotel Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td><code>{{ booking.booking_reference }}</code></td>
+                    <td>{{ booking.name }}</td>
+                    <td>{{ booking.room.room_type }}</td>
+                    <td>{{ booking.check_in|date:"M d, Y H:i" }}</td>
+                    <td>{{ booking.total_hours }}h</td>
+                    <td class="text-end">₦{{ booking.total_amount|floatformat:2|intcomma }}</td>
+                    <td class="text-end">₦{{ booking.service_charge|floatformat:2|intcomma }}</td>
+                    <td class="text-end">₦{{ booking.hotel_revenue|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td colspan="5" class="text-end">TOTALS:</td>
+                        <td class="text-end">₦{{ bookings|sum_attr:"total_amount"|floatformat:2|intcomma }}</td>
+                        <td class="text-end">₦{{ bookings|sum_attr:"service_charge"|floatformat:2|intcomma }}</td>
+                        <td class="text-end">₦{{ payout.gross_revenue|floatformat:2|intcomma }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No bookings found</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Notes Section -->
+{% if payout.notes %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-sticky-note"></i> Internal Notes</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-0">{{ payout.notes }}</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -53,6 +53,10 @@ class BookingAdmin(admin.ModelAdmin):
         'check_in',
         'check_out',
         'colored_payment_status',
+        'total_price',
+        'service_charge',
+        'discount_applied',
+        'hotel_revenue_display',
         'total_amount_display',
     ]
     list_filter = [PaidFilter, ('check_in', DateRangeFilter), 'room__hotel']
@@ -75,7 +79,7 @@ class BookingAdmin(admin.ModelAdmin):
             'fields': (
                 'room',  'get_user',
                 'check_in', 'check_out', 'total_hours',
-                'total_price', 'total_amount',
+                'total_price', 'total_amount', 'hotel_revenue_snapshot'
             )
         }),
         (_('Payment Information'), {
@@ -109,3 +113,7 @@ class BookingAdmin(admin.ModelAdmin):
     def total_amount_display(self, obj):
         return f"₦{obj.total_amount:,.2f}"
     total_amount_display.short_description = 'Total Amount'
+
+    def hotel_revenue_display(self, obj):
+        return obj.hotel_revenue
+    hotel_revenue_display.short_description = 'Hotel Revenue'

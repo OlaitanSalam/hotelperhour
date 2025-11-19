@@ -1,0 +1,119 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payout Processed - Hotel per Hour</title>
+</head>
+<body style="margin:0; padding:20px; background-color:#f8f9fa; font-family: Arial, sans-serif; line-height:1.6;">
+
+  <!-- Main container -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width:600px; background-color:#ffffff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    <tr>
+      <td style="padding:0;">
+
+        <!-- Header -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#28a745,#20c997); color:#ffffff; text-align:center;">
+          <tr>
+            <td style="padding:30px 20px;">
+              <h1 style="margin:0; font-size:28px; font-weight:600;">Hotel per Hour</h1>
+              <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Payout Notification</p>
+
+              <div style="background-color:rgba(255,255,255,0.2); width:80px; height:80px; border-radius:50%; 
+                  text-align:center; line-height:80px; font-size:36px; margin:20px auto 0;">
+                💰
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Content -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:40px 30px;">
+
+              <h2 style="color:#28a745; font-size:32px; margin:0 0 20px; font-weight:700; text-align:center;">
+                Payment Successfully Processed!
+              </h2>
+
+              <p style="color:#495057; font-size:16px; margin:15px 0;">
+                Dear {{ owner.full_name }},
+                <br><br>
+                Your payout has been processed and should reflect in your bank account shortly.
+              </p>
+
+              <!-- Amount -->
+              <div style="font-size:36px; font-weight:700; text-align:center; color:#28a745; margin:25px 0;">
+                ₦{{ payout.net_payout|floatformat:2|intcomma }}
+              </div>
+
+              <!-- Payment Details Box -->
+              <div style="background-color:#f8f9fa; border-radius:8px; padding:20px; margin:25px 0; 
+                  border-left:4px solid #28a745;">
+
+                <h3 style="margin:0 0 15px; color:#2c3e50;">Payment Details</h3>
+
+                <p style="margin:8px 0; color:#495057;"><strong style="color:#2c3e50;">Reference:</strong> {{ payout.payout_reference }}</p>
+                <p style="margin:8px 0; color:#495057;"><strong style="color:#2c3e50;">Hotel:</strong> {{ hotel.name }}</p>
+                <p style="margin:8px 0; color:#495057;">
+                  <strong style="color:#2c3e50;">Period:</strong> 
+                  {{ payout.period_start|date:"M d, Y" }} - {{ payout.period_end|date:"M d, Y" }}
+                </p>
+                <p style="margin:8px 0; color:#495057;"><strong style="color:#2c3e50;">Bookings:</strong> {{ payout.booking_count }} bookings</p>
+                <p style="margin:8px 0; color:#495057;">
+                  <strong style="color:#2c3e50;">Bank Account:</strong> 
+                  {{ hotel.account_number }} ({{ hotel.bank_name }})
+                </p>
+                <p style="margin:8px 0; color:#495057;">
+                  <strong style="color:#2c3e50;">Payment Date:</strong> 
+                  {{ payout.paid_at|date:"M d, Y H:i" }}
+                </p>
+              </div>
+
+              <!-- Financial Breakdown -->
+              <div style="background-color:#f8f9fa; border-radius:8px; padding:20px; margin:25px 0; 
+                  border-left:4px solid #20c997;">
+
+                <h3 style="margin:0 0 15px; color:#2c3e50;">Financial Breakdown</h3>
+
+                <p style="margin:8px 0; color:#495057;">
+                  <strong style="color:#2c3e50;">Gross Revenue:</strong>
+                  ₦{{ payout.gross_revenue|floatformat:2|intcomma }}
+                </p>
+
+                <p style="margin:8px 0; color:#dc3545;">
+                  <strong style="color:#2c3e50;">Platform Commission (10%):</strong>
+                  -₦{{ payout.commission_amount|floatformat:2|intcomma }}
+                </p>
+
+                <p style="margin-top:15px; font-size:18px; color:#28a745;">
+                  <strong style="color:#2c3e50;">Net Payout:</strong>
+                  ₦{{ payout.net_payout|floatformat:2|intcomma }}
+                </p>
+              </div>
+
+              <p style="color:#495057; font-size:16px; margin-top:20px;">
+                Thank you for being a valued partner with Hotel per Hour.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #dee2e6; background-color:#f8f9fa; text-align:center;">
+          <tr>
+            <td style="padding:25px;">
+              <p style="margin:5px 0; font-weight:600; color:#2c3e50;">Hotel per Hour Team</p>
+              <p style="margin:5px 0; color:#6c757d; font-size:14px;">© 2025 Hotel per Hour. All rights reserved.</p>
+              <p style="font-size:12px; margin-top:15px; color:#6c757d;">
+                This is an automated payout notification. Please do not reply to this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
