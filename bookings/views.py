@@ -6,6 +6,7 @@ from .models import Booking, ExtraService, BookingDuration
 from .forms import BookingForm
 from hotels.models import Room, Hotel
 import requests
+from django.db import transaction, IntegrityError
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -320,6 +321,127 @@ def payment_callback(request):
     if not verify_payment(reference):
         return render(request, 'bookings/payment_error.html', {'error': 'Payment verification failed.'})
 
+    # ✅ CHECK IF BOOKING ALREADY EXISTS (webhook may have created it)
+    existing_booking = Booking.objects.filter(booking_reference=reference).first()
+    if existing_booking:
+        logger.info(f"Booking {reference} already exists (likely from webhook), skipping creation")
+        # Clear session and redirect
+        request.session.pop('pending_booking_data', None)
+        request.session.pop('pending_booking_reference', None)
+        return redirect('booking_confirmation', booking_reference=existing_booking.booking_reference)
+
+    booking_data = request.session.get('pending_booking_data')
+    pending_reference = request.session.get('pending_booking_reference')
+    if not booking_data or reference != pending_reference:
+        return render(request, 'bookings/payment_error.html', {'error': 'Invalid session data.'})
+
+    required_keys = [
+        'room_id', 'check_in', 'check_out', 'total_hours', 'name', 'phone_number',
+        'email', 'service_charge', 'total_amount', 'discount_amount', 'points_used', 'extras_ids'
+    ]
+    if not all(key in booking_data for key in required_keys):
+        logger.error(f"Missing keys in booking_data: {booking_data}")
+        return render(request, 'bookings/payment_error.html', {'error': 'Invalid booking data.'})
+
+    # Prepare booking
+    room = Room.objects.get(id=booking_data['room_id'])
+    total_hours = booking_data['total_hours']
+
+    if total_hours == 12 and room.twelve_hour_price:
+        base_room_cost = room.twelve_hour_price
+    elif total_hours == 24 and room.twenty_four_hour_price:
+        base_room_cost = room.twenty_four_hour_price
+    else:
+        base_room_cost = room.price_per_hour * Decimal(str(total_hours))
+
+    # Get extras
+    extras = ExtraService.objects.filter(id__in=booking_data['extras_ids'])
+    extras_cost = sum(extra.price for extra in extras)
+
+    discount_amount = Decimal(str(booking_data['discount_amount']))
+
+    # ✅ Calculate hotel revenue snapshot (frozen at booking time)
+    hotel_revenue_snapshot = base_room_cost + extras_cost
+
+    check_in = timezone.datetime.fromisoformat(booking_data['check_in'])
+    check_out = timezone.datetime.fromisoformat(booking_data['check_out'])
+    if not timezone.is_aware(check_in):
+        check_in = timezone.make_aware(check_in)
+    if not timezone.is_aware(check_out):
+        check_out = timezone.make_aware(check_out)
+
+    if not is_room_available(room, check_in, check_out):
+        return render(request, 'bookings/payment_error.html', {'error': 'Room no longer available. Payment will be refunded.'})
+
+    try:
+        content_type = ContentType.objects.get(id=booking_data['user_content_type_id']) if booking_data.get('user_content_type_id') else None
+    except ContentType.DoesNotExist:
+        content_type = None
+
+    # Create booking with transaction and race condition handling
+    try:
+        with transaction.atomic():
+            # Create booking
+            booking = Booking(
+                room=room,
+                check_in=check_in,
+                check_out=check_out,
+                total_hours=booking_data['total_hours'],
+                is_paid=True,
+                payment_reference=reference,
+                name=booking_data['name'],
+                email=booking_data['email'],
+                phone_number=booking_data['phone_number'],
+                booking_reference=reference,
+                total_price=base_room_cost - discount_amount,
+                service_charge=Decimal(str(booking_data['service_charge'])),
+                discount_applied=Decimal(str(booking_data['discount_amount'])),
+                points_used=booking_data['points_used'],
+                content_type=content_type,
+                object_id=booking_data['user_object_id'] if booking_data.get('user_object_id') else None,
+                total_amount=Decimal(str(booking_data['total_amount'])),
+                hotel_revenue_snapshot=hotel_revenue_snapshot,
+            )
+            booking.save()
+
+            # Set extras
+            booking.extras.set(extras)
+
+            # Deduct points if applicable
+            if booking_data.get('user_object_id') and booking.points_used > 0:
+                try:
+                    user = Customer.objects.select_for_update().get(id=booking_data['user_object_id'])
+                    user.loyalty_points -= booking.points_used
+                    user.save()
+                except Customer.DoesNotExist:
+                    logger.warning(f"No Customer found for user_id {booking_data['user_object_id']} when deducting points")
+
+        # Send emails AFTER transaction commits successfully
+        from bookings.tasks import send_booking_emails
+        from django_q.tasks import async_task
+        async_task(send_booking_emails, booking.id)
+
+    except IntegrityError as e:
+        logger.warning(f"Race condition detected: Booking {reference} already exists. Error: {e}")
+        # Booking was created by webhook, fetch it
+        booking = Booking.objects.get(booking_reference=reference)
+
+    # Clear session
+    request.session.pop('pending_booking_data', None)
+    request.session.pop('pending_booking_reference', None)
+
+    return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+
+'''def payment_callback(request):
+    reference = request.GET.get('reference')
+    if not reference:
+        return render(request, 'bookings/payment_error.html', {'error': 'No reference provided.'})
+
+    # Verify payment with Paystack
+    if not verify_payment(reference):
+        return render(request, 'bookings/payment_error.html', {'error': 'Payment verification failed.'})
+        
+
     booking_data = request.session.get('pending_booking_data')
     pending_reference = request.session.get('pending_booking_reference')
     if not booking_data or reference != pending_reference:
@@ -438,7 +560,7 @@ def payment_callback(request):
     async_task(send_booking_emails, booking.id)
 
    
-    '''try:
+    try:
         # Hotel owner email
         subject = 'New Booking Notification'
         context = {
@@ -497,15 +619,59 @@ def payment_callback(request):
                 fail_silently=False
             )
     except Exception as e:
-        logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")'''
+        logger.error(f"Failed to send notifications for booking {booking.booking_reference}: {str(e)}")
 
     # Clear session
     del request.session['pending_booking_data']
     del request.session['pending_booking_reference']
 
-    return redirect('booking_confirmation', booking_reference=booking.booking_reference)
+    return redirect('booking_confirmation', booking_reference=booking.booking_reference)'''
 
 
+
+@csrf_exempt
+def paystack_webhook(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+    
+    signature = request.headers.get('x-paystack-signature')
+    if not signature:
+        logger.warning("Paystack webhook: Missing signature")
+        return JsonResponse({'status': 'missing signature'}, status=400)
+    
+    expected = hmac.new(
+        settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
+        request.body,
+        hashlib.sha512
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        logger.warning("Paystack webhook: Invalid signature")
+        return JsonResponse({'status': 'invalid signature'}, status=400)
+    
+    try:
+        payload = json.loads(request.body)
+        if payload['event'] == 'charge.success':
+            reference = payload['data']['reference']
+            try:
+                booking = Booking.objects.get(booking_reference=reference)
+                if not booking.is_paid:
+                    booking.is_paid = True
+                    booking.payment_reference = reference
+                    booking.save()
+                    logger.info(f"Webhook: Booking {reference} marked as paid")
+                else:
+                    logger.info(f"Webhook: Booking {reference} already paid")
+            except Booking.DoesNotExist:
+                # This is expected - callback will create the booking
+                logger.info(f"Webhook: Booking {reference} not found yet (callback will create it)")
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        logger.error(f"Webhook processing error: {e}")
+        return JsonResponse({'status': 'error'}, status=500)
+
+'''
 @csrf_exempt
 def paystack_webhook(request):
     if request.method != 'POST':
@@ -539,7 +705,7 @@ def paystack_webhook(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         logger.error(f"Webhook processing error: {e}")
-        return JsonResponse({'status': 'error'}, status=500)
+        return JsonResponse({'status': 'error'}, status=500)'''
 
 def verify_payment(reference):
     url = f'https://api.paystack.co/transaction/verify/{reference}'
