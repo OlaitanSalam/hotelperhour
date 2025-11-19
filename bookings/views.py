@@ -328,6 +328,12 @@ def payment_callback(request):
         # Clear session and redirect
         request.session.pop('pending_booking_data', None)
         request.session.pop('pending_booking_reference', None)
+        
+        # ✅ Send emails for existing booking
+        from bookings.tasks import send_booking_emails
+        from django_q.tasks import async_task
+        async_task(send_booking_emails, existing_booking.id)
+        
         return redirect('booking_confirmation', booking_reference=existing_booking.booking_reference)
 
     booking_data = request.session.get('pending_booking_data')
@@ -378,6 +384,9 @@ def payment_callback(request):
     except ContentType.DoesNotExist:
         content_type = None
 
+    # ✅ Initialize booking variable
+    booking = None
+    
     # Create booking with transaction and race condition handling
     try:
         with transaction.atomic():
@@ -416,15 +425,22 @@ def payment_callback(request):
                 except Customer.DoesNotExist:
                     logger.warning(f"No Customer found for user_id {booking_data['user_object_id']} when deducting points")
 
-        # Send emails AFTER transaction commits successfully
-        from bookings.tasks import send_booking_emails
-        from django_q.tasks import async_task
-        async_task(send_booking_emails, booking.id)
-
     except IntegrityError as e:
         logger.warning(f"Race condition detected: Booking {reference} already exists. Error: {e}")
-        # Booking was created by webhook, fetch it
+        # ✅ Booking was created by webhook, fetch it properly
         booking = Booking.objects.get(booking_reference=reference)
+
+    # ✅ CRITICAL: Only send emails if booking exists and has an ID
+    if booking and booking.id:
+        try:
+            from bookings.tasks import send_booking_emails
+            from django_q.tasks import async_task
+            task_id = async_task(send_booking_emails, booking.id)
+            logger.info(f"Queued email task {task_id} for booking {booking.id}")
+        except Exception as e:
+            logger.error(f"Failed to queue emails for booking {booking.id}: {e}")
+    else:
+        logger.error(f"Cannot send emails - booking object is invalid: {booking}")
 
     # Clear session
     request.session.pop('pending_booking_data', None)
